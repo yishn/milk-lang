@@ -1,0 +1,11 @@
+{
+  "name": "milk-lang",
+  "productName": "Milk",
+  "version": "0.1.0",
+  "author": "Yichuan Shen",
+  "main": "milk.js",
+  "license": "MIT",
+  "dependencies": {
+    "nearley": "^1.5.0"
+  }
+}
