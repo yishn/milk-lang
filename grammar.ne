@@ -10,36 +10,47 @@ statementList -> null
 
 # Expressions
 
-   expression -> parenthesis
-                 {% id %}
-               | plusOp
-                 {% id %}
+expressionList -> expression
+                  {% function(d) { return [d[0]] } %}
+                | expressionList _ "," _ expression
+                  {% function(d) { return d[0].concat([d[4]]) } %}
 
-  parenthesis -> object
-                 {% id %}
-               | "(" _ parenthesis _ ")"
-                 {% function(d) { return d[2] } %}
-               | "(" _ plusOp _ ")"
-                 {% function(d) { return d[2] } %}
+    expression -> parenthesis
+                  {% id %}
+                | plusOp
+                  {% id %}
 
-      wedgeOp -> wedgeOp _ "^" _ parenthesis
-                 {% function(d) { return ['^', d[0], d[4]] } %}
-               | parenthesis
-                 {% id %}
+   parenthesis -> object
+                  {% id %}
+                | "(" _ parenthesis _ ")"
+                  {% function(d) { return d[2] } %}
+                | "(" _ plusOp _ ")"
+                  {% function(d) { return d[2] } %}
+                | parenthesis "." identifier
+                  {% function(d) { return ['.', d[0], d[2]] } %}
+                | parenthesis "[" _ expression _ "]"
+                  {% function(d) { return ['[]', d[0], d[3]] } %}
+                | parenthesis "(" _ (expressionList | null) _ ")"
+                  {% function(d) { return ['()', d[0], d[3] ? d[3] : []] } %}
 
-       starOp -> starOp _ "*" _ wedgeOp
-                 {% function(d) { return ['*', d[0], d[4]] } %}
-               | starOp _ "/" _ wedgeOp
-                 {% function(d) { return ['/', d[0], d[4]] } %}
-               | wedgeOp
-                 {% id %}
+       wedgeOp -> wedgeOp _ "^" _ parenthesis
+                  {% function(d) { return ['^', d[0], d[4]] } %}
+                | parenthesis
+                  {% id %}
 
-       plusOp -> plusOp _ "+" _ starOp
-                 {% function(d) { return ['+', d[0], d[4]] } %}
-               | plusOp _ "-" _ starOp
-                 {% function(d) { return ['-', d[0], d[4]] } %}
-               | starOp
-                 {% id %}
+        starOp -> starOp _ "*" _ wedgeOp
+                  {% function(d) { return ['*', d[0], d[4]] } %}
+                | starOp _ "/" _ wedgeOp
+                  {% function(d) { return ['/', d[0], d[4]] } %}
+                | wedgeOp
+                  {% id %}
+
+        plusOp -> plusOp _ "+" _ starOp
+                  {% function(d) { return ['+', d[0], d[4]] } %}
+                | plusOp _ "-" _ starOp
+                  {% function(d) { return ['-', d[0], d[4]] } %}
+                | starOp
+                  {% id %}
 
 # Values
 
@@ -64,13 +75,8 @@ stringBeginning -> "\""
                  | stringBeginning "\\" .
                    {% function(d) { return d[0] + d[1] + d[2] } %}
 
-          array -> arrayBeginning _ expression _ "]"
-                   {% function(d) { return ['array', d[0].concat([d[2]])] } %}
-
- arrayBeginning -> "["
-                   {% function(d) { return [] } %}
-                 | "[" (_ expression _ ","):*
-                   {% function(d) { return d[1].map(function(x) { return x[1] }) } %}
+          array -> "[" _ (expressionList | null) _ "]"
+                   {% function(d) { return ['array', d[2] ? d[2] : []] } %}
 
 # Functions
 # ['function', ['identifier', name], [args1, args2, ...], [statement1, statement2, ...]]
@@ -93,4 +99,4 @@ functionHead -> "function" _ "(" arguments ")"
 # Whitespace
 
  _ -> [\s]:*    {% function(d) { return null } %}
-__ -> [\s]:+    {% function(d) { return ' ' } %}
+__ -> [\s]:+    {% function(d) { return null } %}
