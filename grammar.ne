@@ -20,7 +20,7 @@ expressionList -> expression
                 | plusOp
                   {% id %}
 
-   parenthesis -> object
+   parenthesis -> entity
                   {% id %}
                 | "(" _ parenthesis _ ")"
                   {% function(d) { return d[2] } %}
@@ -54,29 +54,38 @@ expressionList -> expression
 
 # Values
 
-         object -> (number | identifier | string | array | function)
-                   {% function(d) { return d[0][0] } %}
+          entity -> (number | identifier | string | array | function)
+                    {% function(d) { return d[0][0] } %}
 
-         number -> [1-9] [0-9]:*
-                   {% function(d) { return ['number', parseInt(d[0] + d[1].join(''))] } %}
-                 | number:? "." number
-                   {% function(d) { return ['number', parseFloat((d[0] ? d[0][1] : '') + '.' + d[2][1])] } %}
+          number -> [1-9] [0-9]:*
+                    {% function(d) { return ['number', parseInt(d[0] + d[1].join(''))] } %}
+                  | number:? "." number
+                    {% function(d) { return ['number', parseFloat((d[0] ? d[0][1] : '') + '.' + d[2][1])] } %}
 
-     identifier -> [a-zA-Z_] [0-9a-zA-Z_]:*
-                   {% function(d) { return ['identifier', d[0] + d[1].join('')] } %}
+      identifier -> [a-zA-Z_] [0-9a-zA-Z_]:*
+                    {% function(d) { return ['identifier', d[0] + d[1].join('')] } %}
 
-         string -> stringBeginning "\""
-                   {% function(d) { return ['string', d[0] + d[1]] } %}
+          string -> stringBeginning1 "\""
+                    {% function(d) { return ['string', d[0] + d[1]] } %}
+                  | stringBeginning2 "'"
+                    {% function(d) { return ['string', d[0] + d[1]] } %}
 
-stringBeginning -> "\""
-                   {% id %}
-                 | stringBeginning [^"\n]
-                   {% function(d) { return d[0] + d[1] } %}
-                 | stringBeginning "\\" .
-                   {% function(d) { return d[0] + d[1] + d[2] } %}
+stringBeginning1 -> "\""
+                    {% id %}
+                  | stringBeginning1 [^"\n]
+                    {% function(d) { return d[0] + d[1] } %}
+                  | stringBeginning1 "\\" .
+                    {% function(d) { return d[0] + d[1] + d[2] } %}
 
-          array -> "[" _ (expressionList | null) _ "]"
-                   {% function(d) { return ['array', d[2] ? d[2] : []] } %}
+stringBeginning2 -> "'"
+                    {% id %}
+                  | stringBeginning2 [^'\n]
+                    {% function(d) { return d[0] + d[1] } %}
+                  | stringBeginning2 "\\" .
+                    {% function(d) { return d[0] + d[1] + d[2] } %}
+
+           array -> "[" _ (expressionList | null) _ "]"
+                    {% function(d) { return ['array', d[2] ? d[2] : []] } %}
 
 # Functions
 # ['function', ['identifier', name], [args1, args2, ...], [statement1, statement2, ...]]
