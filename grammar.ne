@@ -6,7 +6,7 @@ statementList -> (_ statement _ [;\n]):*
 
 # Expressions
 
-    expression -> inlineIf
+    expression -> lambda
                   {% id %}
 
    parenthesis -> "(" _ expression _ ")"
@@ -115,6 +115,13 @@ statementList -> (_ statement _ [;\n]):*
                 | existential
                   {% id %}
 
+        lambda -> arguments ")" _ "=>" _ lambda
+                  {% function(d) { return ['lambda', d[0], d[5]] } %}
+                | identifier _ "=>" _ lambda
+                  {% function(d) { return ['lambda', [d[0]], d[4]] } %}
+                | inlineIf
+                  {% id %}
+
 # Values
 
          literal -> (void | bool | number | string | array | func)
@@ -189,7 +196,6 @@ statementList -> (_ statement _ [;\n]):*
                     {% function(d) { return d[0].concat([d[4]]) } %}
 
 # Functions
-# ['function', name, [args1, args2, ...], [statement1, statement2, ...]]
 
           func -> "func" (__ identifier):? _ (arguments | "(") ")" _ ":" statementList _ "endfunc"
                   {% function(d) {
