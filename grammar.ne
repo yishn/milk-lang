@@ -153,14 +153,15 @@ statementList -> null
                             'null', 'undefined', 'and', 'or', 'not', 'true', 'false',
                             'export', 'import', 'void', 'debugger', 'with',
                             'delete', 'var', 'let', 'const', 'typeof',
-                            'new', 'class', 'extends', 'this', 'self', 'super',
-                            'func', 'return', 'yield', 'end', 'function',
-                            'if', 'else', 'elif',
-                            'switch', 'case', 'default',
-                            'do', 'while', 'break', 'continue',
-                            'for', 'in', 'of', 'instanceof',
-                            'try', 'catch', 'finally', 'throw',
+                            'new', 'class', 'extends', 'this', 'self', 'super', 'endclass',
+                            'func', 'return', 'yield', 'endfunc', 'function',
+                            'if', 'else', 'elif', 'endif',
+                            'switch', 'case', 'default', 'endswitch',
+                            'do', 'while', 'break', 'continue', 'endwhile',
+                            'for', 'in', 'of', 'instanceof', 'endfor',
+                            'try', 'catch', 'finally', 'throw', 'endtry',
                             'await', 'defer',
+                            
                             'enum', 'implements', 'static', 'public', 'package',
                             'interface', 'protected', 'private', 'abstract', 'final',
                             'native', 'boolean', 'float', 'short', 'byte',
@@ -202,7 +203,7 @@ stringBeginning2 -> "'"
 # Functions
 # ['function', name, [args1, args2, ...], [statement1, statement2, ...]]
 
-          func -> "func" (__ identifier):? _ "(" arguments ")" _ ":" statementList __ "end"
+          func -> "func" (__ identifier):? _ "(" arguments ")" _ ":" statementList __ "endfunc"
                   {% function(d) { return ['function', d[1] ? d[1][1][1] : null, d[4], d[8]] } %}
 
      arguments -> null
