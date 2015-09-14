@@ -27,17 +27,30 @@ expressionList -> expression
                 | "(" _ plusOp _ ")"
                   {% function(d) { return d[2] } %}
                 | parenthesis "." identifier
-                  {% function(d) { return ['.', d[0], d[2]] } %}
+                  {% function(d) { return [d[1], d[0], d[2]] } %}
+                | parenthesis "?." identifier
+                  {% function(d) { return [d[1], d[0], d[2]] } %}
                 | parenthesis "[" _ expression _ "]"
                   {% function(d) { return ['[]', d[0], d[3]] } %}
+                | parenthesis "?[" _ expression _ "]"
+                  {% function(d) { return ['?[]', d[0], d[3]] } %}
                 | parenthesis "[" _ expression _ ":" _ expression _ "]"
                   {% function(d) { return ['[]', d[0], d[3], d[7]] } %}
+                | parenthesis "?[" _ expression _ ":" _ expression _ "]"
+                  {% function(d) { return ['?[]', d[0], d[3], d[7]] } %}
                 | parenthesis "(" _ (expressionList | null) _ ")"
                   {% function(d) { return ['()', d[0], d[3] ? d[3] : []] } %}
+                | parenthesis "?(" _ (expressionList | null) _ ")"
+                  {% function(d) { return ['?()', d[0], d[3] ? d[3] : []] } %}
 
-       wedgeOp -> wedgeOp _ "^" _ parenthesis
-                  {% function(d) { return ['^', d[0], d[4]] } %}
+   existential -> parenthesis _ "??" _ existential
+                  {% function(d) { return ['?', ['==', d[0], ['void', 'null']], d[4], d[0]] } %}
                 | parenthesis
+                  {% id %}
+
+       wedgeOp -> wedgeOp _ "^" _ existential
+                  {% function(d) { return ['^', d[0], d[4]] } %}
+                | existential
                   {% id %}
 
         starOp -> starOp _ "*" _ wedgeOp
