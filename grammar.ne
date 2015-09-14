@@ -93,12 +93,12 @@ stringBeginning2 -> "'"
 # Functions
 # ['function', ['identifier', name], [args1, args2, ...], [statement1, statement2, ...]]
 
-    function -> functionHead _ "{" statementList "}"
+    function -> functionHead _ ":" statementList __ "end" __
                 {% function(d) { return ['function', d[0][0], d[0][1], d[3]] } %}
 
-functionHead -> "function" _ "(" arguments ")"
+functionHead -> "func" _ "(" arguments ")"
                 {% function(d) { return [null, d[3]] } %}
-              | "function" __ identifier _ "(" arguments ")"
+              | "func" __ identifier _ "(" arguments ")"
                 {% function(d) { return [d[2], d[5]] } %}
 
    arguments -> null
