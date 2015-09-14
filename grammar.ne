@@ -1,12 +1,12 @@
-statementList -> (_ statement _ [;\n]):*
-                 {% function(d) { return d[0].map(function(x) { return x[1] }) } %}
+ statementList -> (_ statement _ [;\n]):*
+                  {% function(d) { return d[0].map(function(x) { return x[1] }) } %}
 
-    statement -> expression
-                 {% id %}
+     statement -> expression
+                  {% id %}
 
 # Expressions
 
-    expression -> lambda
+    expression -> assignment
                   {% id %}
 
    parenthesis -> "(" _ expression _ ")"
@@ -118,8 +118,15 @@ statementList -> (_ statement _ [;\n]):*
         lambda -> arguments ")" _ "=>" _ lambda
                   {% function(d) { return ['lambda', d[0], d[5]] } %}
                 | identifier _ "=>" _ lambda
-                  {% function(d) { return ['lambda', [d[0]], d[4]] } %}
+                  {% function(d) { return ['lambda', [d[0][1]], d[4]] } %}
                 | inlineIf
+                  {% id %}
+
+    assignment -> memberAccess _ "=" _ assignment
+                  {% function(d) { return ['=', d[0], d[4]] } %}
+                | memberAccess _ [+\-*^/%] "=" _ assignment
+                  {% function(d) { return [d[2] + d[3], d[0], d[5]] } %}
+                | lambda
                   {% id %}
 
 # Values
