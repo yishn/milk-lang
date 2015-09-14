@@ -44,9 +44,14 @@
                 | "_" _ "," _ callList
                   {% function(d) { return [['keyword', '_']].concat(d[4]) } %}
 
-   postfixIncr -> memberAccess _ ("++" | "--")
-                  {% function(d) { return ['_' + d[2][0], d[0]] } %}
+   keywordExpr -> "new" [\s] _ memberAccess
+                  {% function(d) { return ['new', d[3]] } %}
                 | memberAccess
+                  {% id %}
+
+   postfixIncr -> keywordExpr _ ("++" | "--")
+                  {% function(d) { return ['_' + d[2][0], d[0]] } %}
+                | keywordExpr
                   {% id %}
 
          unary -> [+-] postfixIncr
