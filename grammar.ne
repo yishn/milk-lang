@@ -171,17 +171,17 @@
       identifier -> [a-zA-Z_$] [0-9a-zA-Z_$]:*
                     {% function(d, _, r) {
                         var keywords = [
-                            '_', 'pass',
+                            '_', 'pass', 'end',
                             'null', 'undefined', 'and', 'or', 'not', 'true', 'false',
                             'export', 'import', 'void', 'debugger', 'with',
                             'delete', 'var', 'let', 'const', 'typeof',
-                            'new', 'class', 'extends', 'this', 'self', 'super', 'endclass',
-                            'func', 'return', 'yield', 'endfunc', 'function',
-                            'if', 'else', 'elif', 'endif',
-                            'switch', 'case', 'default', 'endswitch',
-                            'do', 'while', 'break', 'continue', 'endwhile',
-                            'for', 'in', 'of', 'instanceof', 'endfor',
-                            'try', 'catch', 'finally', 'throw', 'endtry',
+                            'new', 'class', 'extends', 'this', 'self', 'super',
+                            'func', 'return', 'yield', 'function',
+                            'if', 'else', 'elif',
+                            'switch', 'case', 'default',
+                            'do', 'while', 'break', 'continue',
+                            'for', 'in', 'of', 'instanceof',
+                            'try', 'catch', 'finally', 'throw',
                             'await', 'defer',
 
                             'enum', 'implements', 'static', 'public', 'package',
@@ -235,7 +235,7 @@
 
 # Functions
 
-          func -> "func" ([\s] _ identifier):? _ (arguments | "(") ")" _ ":" statementList "endfunc"
+          func -> "func" ([\s] _ identifier):? _ (arguments | "(") ")" _ ":" statementList "end"
                   {% function(d) {
                       return ['function',
                           d[1] ? d[1][2][1] : null,
@@ -267,7 +267,7 @@
                           }).concat(d[1] ? [d[1]] : [])
                       } %}
 
-     elseStatement -> (_ "else" _ ":" statementList):? "endif"
+     elseStatement -> (_ "else" _ ":" statementList):? "end"
                       {% function(d) { return d[0] ? ['else', d[0][4]] : null } %}
 
 # Loops
@@ -275,7 +275,7 @@
        loop -> forLoop
                {% id %}
 
-    forLoop -> "for" _+ identifier _+ "in" _+ (expression | range) _ ":" statementList "endfor"
+    forLoop -> "for" _+ identifier _+ "in" _+ (expression | range) _ ":" statementList "end"
                {% function(d) { return ['for', d[2][1], d[6][0], d[9]] } %}
 
       range -> "[" _ expression _ ".." _ expression _ "]"
