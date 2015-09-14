@@ -130,9 +130,10 @@ expressionList -> expression
                   | number:? "." number
                     {% function(d) { return ['number', parseFloat((d[0] ? d[0][1] : '') + '.' + d[2][1])] } %}
 
-      identifier -> [a-zA-Z_] [0-9a-zA-Z_]:*
+      identifier -> [a-zA-Z_$] [0-9a-zA-Z_$]:*
                     {% function(d, _, r) {
                         var keywords = [
+                            '_',
                             'null', 'undefined', 'and', 'or', 'not', 'true', 'false',
                             'export', 'import', 'void', 'debugger', 'with',
                             'delete', 'var', 'let', 'const', 'typeof',
@@ -200,7 +201,7 @@ functionHead -> "func" _ "(" arguments ")"
               | identifier _ "=" _ literal
                 {% function(d) { return [d[0][1], d[4]] } %}
               | "..." _ identifier
-                {% function(d) { return [d[0][1], '...'] } %}
+                {% function(d) { return [d[2][1], '...'] } %}
 
 # Whitespace
 
