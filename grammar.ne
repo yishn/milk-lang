@@ -54,11 +54,14 @@ expressionList -> expression
 
 # Values
 
-          entity -> (number | identifier | string | array | function)
+         literal -> (number | string | array | function)
                     {% function(d) { return d[0][0] } %}
 
-          number -> [1-9] [0-9]:*
-                    {% function(d) { return ['number', parseInt(d[0] + d[1].join(''))] } %}
+          entity -> (identifier | literal)
+                    {% function(d) { return d[0][0] } %}
+
+          number -> [0-9]:+
+                    {% function(d) { return ['number', parseInt(d[0].join(''))] } %}
                   | number:? "." number
                     {% function(d) { return ['number', parseFloat((d[0] ? d[0][1] : '') + '.' + d[2][1])] } %}
 
@@ -100,10 +103,17 @@ functionHead -> "function" _ "(" arguments ")"
 
    arguments -> null
                 {% function(d) { return [] } %}
-              | _ identifier _
+              | _ argument _
                 {% function(d) { return [d[1]] } %}
-              | arguments "," _ identifier _
+              | arguments "," _ argument _
                 {% function(d) { return d[0].concat([d[3]]) } %}
+
+    argument -> identifier
+                {% function(d) { return [d[0][1], null] } %}
+              | identifier _ "=" _ literal
+                {% function(d) { return [d[0][1], d[4]] } %}
+              | identifier _ "..."
+                {% function(d) { return [d[0][1], '...'] } %}
 
 # Whitespace
 
