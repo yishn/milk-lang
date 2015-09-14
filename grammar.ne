@@ -1,12 +1,18 @@
 # Statements
 
- statementList -> _ statement __
-                  {% function(d) { return ['statements', d[1]] } %}
-                | (_ statement __ [;\n]):*
-                  {% function(d) { return ['statements'].concat(d[0].map(function(x) { return x[1] })) } %}
+       statementList -> _ statement __
+                        {% function(d) { return ['statements', d[1]] } %}
+                      | (_ statement __ [;\n]):*
+                        {% function(d) { return ['statements'].concat(d[0].map(function(x) { return x[1] })) } %}
 
-     statement -> (expression | ifStatement)
-                  {% function(d) { return d[0][0] } %}
+           statement -> (expression | keywordStatement | ifStatement)
+                        {% function(d) { return d[0][0] } %}
+
+    keywordStatement -> ("break" | "continue" | "pass")
+                      | ("return") ([\s] _ expression):?
+                        {% function(d) { return [d[0][0], d[1] ? d[1][2] : null] } %}
+                      | ("throw") [\s] _ expression
+                        {% function(d) { return [d[0][0], d[3]] } %}
 
 # Expressions
 
@@ -140,14 +146,14 @@
 
 # Values
 
-         literal -> (void | bool | number | string | array | object | func)
+         literal -> (bool | number | string | array | object | func)
                     {% function(d) { return d[0][0] } %}
 
-          entity -> (identifier | literal)
+          entity -> (keywordEntity | identifier | literal)
                     {% function(d) { return d[0][0] } %}
 
-            void -> "null"
-                    {% function(d) { return ['keyword', 'null'] } %}
+   keywordEntity -> ("null" | "this" | "self" | "super")
+                    {% function(d) { return ['keyword', d[0][0]] } %}
 
             bool -> ("true" | "false")
                     {% function(d) { return ['bool', d[0][0]] } %}
