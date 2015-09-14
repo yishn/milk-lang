@@ -219,11 +219,8 @@
                   | (_ objectListItem _ ","):* _ objectListItem _ ("," _):?
                     {% function(d) { return d[0].map(function(x) { return x[1] }).concat([d[2]]) } %}
 
-  objectListItem -> objectKey _ ":" _ expression
+  objectListItem -> expression _ ":" _ expression
                     {% function(d) { return [d[0], d[4]] } %}
-
-       objectKey -> (identifier | string)
-                    {% function(d) { return d[0][0] } %}
 
 # Functions
 
