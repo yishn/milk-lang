@@ -4,6 +4,8 @@
                         {% function(d) { return ['statements', d[1]] } %}
                       | statementList [;\n] _ statement __
                         {% function(d) { return d[0].concat([d[3]]) } %}
+                      | statementList [;\n] __
+                        {% id %}
 
            statement -> (expression | keywordStatement | ifStatement)
                         {% function(d) { return d[0][0] } %}
