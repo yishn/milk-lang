@@ -7,7 +7,7 @@
                       | statementList [;\n] __ statement __
                         {% function(d) { return d[0].concat([d[3]]) } %}
 
-           statement -> (expression | keywordStatement | ifStatement | loop)
+           statement -> (expression | keywordStatement | condStatement | loop)
                         {% function(d) { return d[0][0] } %}
 
     keywordStatement -> ("break" | "continue" | "pass")
@@ -255,7 +255,10 @@
                 | "..." _ identifier
                   {% function(d) { return [d[2][1], '...'] } %}
 
-# If statement
+# Conditional statements
+
+     condStatement -> ifStatement
+                      {% id %}
 
        ifStatement -> "if" _+ expression _ ":" statementList elifStatements
                       {% function(d) { return ['if', [d[2], d[5]]].concat(d[6]) } %}
@@ -269,6 +272,8 @@
 
      elseStatement -> (_ "else" _ ":" statementList):? "end"
                       {% function(d) { return d[0] ? ['else', d[0][4]] : null } %}
+
+switchStatement ->
 
 # Loops
 
