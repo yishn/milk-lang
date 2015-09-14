@@ -161,23 +161,23 @@ statementList -> (_ statement _ [;\n]):*
                         return ['identifier', id]
                     } %}
 
-          string -> stringBeginning1 "\""
+          string -> stringBeg1 "\""
                     {% function(d) { return ['string', d[0] + d[1]] } %}
-                  | stringBeginning2 "'"
+                  | stringBeg2 "'"
                     {% function(d) { return ['string', d[0] + d[1]] } %}
 
-stringBeginning1 -> "\""
+      stringBeg1 -> "\""
                     {% id %}
-                  | stringBeginning1 [^"\n]
+                  | stringBeg1 [^"\n]
                     {% function(d) { return d[0] + d[1] } %}
-                  | stringBeginning1 "\\" .
+                  | stringBeg1 "\\" .
                     {% function(d) { return d[0] + d[1] + d[2] } %}
 
-stringBeginning2 -> "'"
+      stringBeg2 -> "'"
                     {% id %}
-                  | stringBeginning2 [^'\n]
+                  | stringBeg2 [^'\n]
                     {% function(d) { return d[0] + d[1] } %}
-                  | stringBeginning2 "\\" .
+                  | stringBeg2 "\\" .
                     {% function(d) { return d[0] + d[1] + d[2] } %}
 
            array -> (arrayList | "[") _ "]"
@@ -213,5 +213,5 @@ stringBeginning2 -> "'"
 
 # Whitespace
 
- _ -> [\s]:*    {% function(d) { return null } %}
-__ -> [\s]:+    {% function(d) { return null } %}
+     _ -> [\s]:*    {% function(d) { return null } %}
+    __ -> [\s]:+    {% function(d) { return null } %}
