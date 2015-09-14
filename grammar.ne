@@ -235,7 +235,7 @@
 
 # Functions
 
-          func -> "func" ([\s] _ identifier):? _ (arguments | "(") ")" _ ":" statementList _ "endfunc"
+          func -> "func" ([\s] _ identifier):? _ (arguments | "(") ")" _ ":" statementList "endfunc"
                   {% function(d) {
                       return ['function',
                           d[1] ? d[1][2][1] : null,
@@ -267,7 +267,7 @@
                           }).concat(d[1] ? [d[1]] : [])
                       } %}
 
-     elseStatement -> (_ "else" _ ":" statementList):? _ "endif"
+     elseStatement -> (_ "else" _ ":" statementList):? "endif"
                       {% function(d) { return d[0] ? ['else', d[0][4]] : null } %}
 
 # Whitespace
