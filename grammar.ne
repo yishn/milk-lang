@@ -1,5 +1,5 @@
- statementList -> (_ statement _ [;\n]):*
-                  {% function(d) { return d[0].map(function(x) { return x[1] }) } %}
+ statementList -> (_ statement __ [;\n]):*
+                  {% function(d, _, r) { return d[0].map(function(x) { return x[1] }) } %}
 
      statement -> expression
                   {% id %}
@@ -43,7 +43,7 @@
                   {% function(d) { return [['keyword', '_']].concat(d[4]) } %}
 
    postfixIncr -> memberAccess _ ("++" | "--")
-                  {% function(d) { ['_' + d[2][0], d[0]] } %}
+                  {% function(d) { return ['_' + d[2][0], d[0]] } %}
                 | memberAccess
                   {% id %}
 
@@ -51,8 +51,8 @@
                   {% function(d) { return [d[0], d[1]] } %}
                 | ("++" | "--") _ postfixIncr
                   {% function(d) { return [d[0][0] + '_', d[2]] } %}
-                | "typeof" __ postfixIncr
-                  {% function(d) { return [d[0], d[2]] } %}
+                | "typeof" [\s] _ postfixIncr
+                  {% function(d) { return [d[0], d[3]] } %}
                 | postfixIncr
                   {% id %}
 
@@ -81,26 +81,26 @@
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | comparison _ "!=" _ plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison __ "in" __ plusOp
+                | comparison ([\s] _) "in" ([\s] _) plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison __ "of" __ plusOp
+                | comparison ([\s] _) "of" ([\s] _) plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison __ "instanceof" __ plusOp
+                | comparison ([\s] _) "instanceof" ([\s] _) plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | plusOp
                   {% id %}
 
-       boolNot -> "not" __ comparison
+       boolNot -> "not" ([\s] _) comparison
                   {% function(d) { return ['not', d[2]] } %}
                 | comparison
                   {% id %}
 
-       boolAnd -> boolAnd __ "and" __ boolNot
+       boolAnd -> boolAnd ([\s] _) "and" ([\s] _) boolNot
                   {% function(d) { return ['and', d[0], d[4]] } %}
                 | boolNot
                   {% id %}
 
-       boolOr -> boolOr __ "or" __ boolAnd
+       boolOr -> boolOr ([\s] _) "or" ([\s] _) boolAnd
                   {% function(d) { return ['or', d[0], d[4]] } %}
                 | boolAnd
                   {% id %}
@@ -206,10 +206,10 @@
 
 # Functions
 
-          func -> "func" (__ identifier):? _ (arguments | "(") ")" _ ":" statementList _ "endfunc"
+          func -> "func" ([\s] _ identifier):? _ (arguments | "(") ")" _ ":" statementList _ "endfunc"
                   {% function(d) {
                       return ['function',
-                          d[1] ? d[1][1][1] : null,
+                          d[1] ? d[1][2][1] : null,
                           d[3][0] == '(' ? [] : d[3][0],
                           d[7]]
                   } %}
@@ -228,5 +228,5 @@
 
 # Whitespace
 
-     _ -> [\s]:*    {% function(d) { return null } %}
-    __ -> [\s]:+    {% function(d) { return null } %}
+     _ -> [\s]:*        {% function(d) { return null } %}
+    __ -> [^\S\n]:*     {% function(d) { return null } %}
