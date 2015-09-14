@@ -162,7 +162,7 @@ functionHead -> "func" _ "(" arguments ")"
                 {% function(d) { return [d[0][1], null] } %}
               | identifier _ "=" _ literal
                 {% function(d) { return [d[0][1], d[4]] } %}
-              | identifier _ "..."
+              | "..." _ identifier
                 {% function(d) { return [d[0][1], '...'] } %}
 
 # Whitespace
