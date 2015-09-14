@@ -124,8 +124,16 @@ expressionList -> expression
 
       identifier -> [a-zA-Z_] [0-9a-zA-Z_]:*
                     {% function(d, _, r) {
+                        var keywords = [
+                            'null', 'and', 'or', 'not', 'true', 'false'
+                            'func', 'return', 'yield', 'end',
+                            'if', 'else', 'elif',
+                            'do', 'while',
+                            'for', 'in', 'of', 'instanceof',
+                            'try', 'catch', 'finally'
+                        ]
                         var id = d[0] + d[1].join('')
-                        if (id == 'null') return r
+                        if (keywords.indexOf(id) != -1) return r
                         return ['identifier', id]
                     } %}
 
