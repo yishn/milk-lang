@@ -1,3 +1,5 @@
+# Statements
+
  statementList -> (_ statement __ [;\n]):*
                   {% function(d, _, r) { return d[0].map(function(x) { return x[1] }) } %}
 
@@ -66,7 +68,7 @@
                 | wedgeOp
                   {% id %}
 
-        plusOp -> plusOp _ [+-] _ starOp
+        plusOp -> plusOp __ [+-] _ starOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | starOp
                   {% id %}
