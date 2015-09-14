@@ -10,11 +10,6 @@ statementList -> null
 
 # Expressions
 
-expressionList -> expression
-                  {% function(d) { return [d[0]] } %}
-                | expressionList _ "," _ expression
-                  {% function(d) { return d[0].concat([d[4]]) } %}
-
     expression -> parenthesis
                   {% id %}
                 | inlineIf
@@ -37,16 +32,36 @@ expressionList -> expression
                   {% function(d) { return ['[]', d[0], d[3], d[7]] } %}
                 | memberAccess "?[" _ expression _ ":" _ expression _ "]"
                   {% function(d) { return ['?[]', d[0], d[3], d[7]] } %}
-                | memberAccess "(" _ (expressionList | null) _ ")"
-                  {% function(d) { return ['()', d[0], d[3] ? d[3] : []] } %}
-                | memberAccess "?(" _ (expressionList | null) _ ")"
-                  {% function(d) { return ['?()', d[0], d[3] ? d[3] : []] } %}
+                | memberAccess "(" _ (callList | ")")
+                  {% function(d) { return ['()', d[0], d[3][0] != ')' ? d[3][0] : []] } %}
+                | memberAccess "?(" _ (callList | ")")
+                  {% function(d) { return ['?()', d[0], d[3][0] != ')' ? d[3][0] : []] } %}
                 | parenthesis
                   {% id %}
 
-       wedgeOp -> wedgeOp _ "^" _ memberAccess
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
+      callList -> expression _ ")"
+                  {% function(d) { return [d[0]] } %}
+                | expression _ "," _ callList
+                  {% function(d) { return [d[0]].concat(d[4]) } %}
+                | "_" _ "," _ callList
+                  {% function(d) { return [['keyword', '_']].concat(d[4]) } %}
+
+   postfixIncr -> memberAccess _ ("++" | "--")
+                  {% function(d) { ['_' + d[2][0], d[0]] } %}
                 | memberAccess
+                  {% id %}
+
+         unary -> ("+" | "-") postfixIncr
+                  {% function(d) { return [d[0][0], d[1]] } %}
+                | ("++" | "--") _ postfixIncr
+                  {% function(d) { return [d[0][0] + '_', d[2]] } %}
+                | "typeof" __ postfixIncr
+                  {% function(d) { return [d[0], d[2]] } %}
+                | postfixIncr
+
+       wedgeOp -> wedgeOp _ "^" _ unary
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
+                | unary
                   {% id %}
 
         starOp -> starOp _ "*" _ wedgeOp
@@ -120,7 +135,7 @@ expressionList -> expression
                     {% function(d) { return d[0][0] } %}
 
             void -> "null"
-                    {% function(d) { return ['void', 'null'] } %}
+                    {% function(d) { return ['keyword', 'null'] } %}
 
             bool -> ("true" | "false")
                     {% function(d) { return ['bool', d[0][0]] } %}
@@ -175,33 +190,38 @@ stringBeginning2 -> "'"
                   | stringBeginning2 "\\" .
                     {% function(d) { return d[0] + d[1] + d[2] } %}
 
-           array -> "[" _ (expressionList | null) _ "]"
-                    {% function(d) { return ['array', d[2] ? d[2] : []] } %}
+           array -> (arrayList | "[") _ "]"
+                    {% function(d) { return ['array', d[0][0] != '[' ? d[0][0] : []] } %}
+
+       arrayList -> "[" _ expression
+                    {% function(d) { return [d[2]] } %}
+                  | arrayList _ "," _ expression
+                    {% function(d) { return d[0].concat([d[4]]) } %}
 
 # Functions
 # ['function', ['identifier', name], [args1, args2, ...], [statement1, statement2, ...]]
 
-    function -> functionHead _ ":" statementList __ "end" __
-                {% function(d) { return ['function', d[0][0], d[0][1], d[3]] } %}
+      function -> functionHead _ ":" statementList __ "end" __
+                  {% function(d) { return ['function', d[0][0], d[0][1], d[3]] } %}
 
-functionHead -> "func" _ "(" arguments ")"
-                {% function(d) { return [null, d[3]] } %}
-              | "func" __ identifier _ "(" arguments ")"
-                {% function(d) { return [d[2], d[5]] } %}
+  functionHead -> "func" _ "(" arguments ")"
+                  {% function(d) { return [null, d[3]] } %}
+                | "func" __ identifier _ "(" arguments ")"
+                  {% function(d) { return [d[2], d[5]] } %}
 
-   arguments -> null
-                {% function(d) { return [] } %}
-              | _ argument _
-                {% function(d) { return [d[1]] } %}
-              | arguments "," _ argument _
-                {% function(d) { return d[0].concat([d[3]]) } %}
+     arguments -> null
+                  {% function(d) { return [] } %}
+                | _ argument _
+                  {% function(d) { return [d[1]] } %}
+                | arguments "," _ argument _
+                  {% function(d) { return d[0].concat([d[3]]) } %}
 
-    argument -> identifier
-                {% function(d) { return [d[0][1], null] } %}
-              | identifier _ "=" _ literal
-                {% function(d) { return [d[0][1], d[4]] } %}
-              | "..." _ identifier
-                {% function(d) { return [d[2][1], '...'] } %}
+      argument -> identifier
+                  {% function(d) { return [d[0][1], null] } %}
+                | identifier _ "=" _ literal
+                  {% function(d) { return [d[0][1], d[4]] } %}
+                | "..." _ identifier
+                  {% function(d) { return [d[2][1], '...'] } %}
 
 # Whitespace
 
