@@ -98,8 +98,6 @@
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | comparison ([\s] _) "in" ([\s] _) plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison ([\s] _) "of" ([\s] _) plusOp
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
                 | comparison ([\s] _) "instanceof" ([\s] _) plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | plusOp
