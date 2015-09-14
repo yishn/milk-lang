@@ -30,6 +30,8 @@ expressionList -> expression
                   {% function(d) { return ['.', d[0], d[2]] } %}
                 | parenthesis "[" _ expression _ "]"
                   {% function(d) { return ['[]', d[0], d[3]] } %}
+                | parenthesis "[" _ expression _ ":" _ expression _ "]"
+                  {% function(d) { return ['[]', d[0], d[3], d[7]] } %}
                 | parenthesis "(" _ (expressionList | null) _ ")"
                   {% function(d) { return ['()', d[0], d[3] ? d[3] : []] } %}
 
