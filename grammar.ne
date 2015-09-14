@@ -10,15 +10,13 @@ statementList -> null
 
 # Expressions
 
-    expression -> parenthesis
-                  {% id %}
-                | inlineIf
+    expression -> inlineIf
                   {% id %}
 
-   parenthesis -> entity
-                  {% id %}
-                | "(" _ expression _ ")"
+   parenthesis -> "(" _ expression _ ")"
                   {% function(d) { return d[2] } %}
+                | entity
+                  {% id %}
 
   memberAccess -> memberAccess "." identifier
                   {% function(d) { return [d[1], d[0], d[2]] } %}
@@ -41,6 +39,8 @@ statementList -> null
 
       callList -> expression _ ")"
                   {% function(d) { return [d[0]] } %}
+                | "_" _ ")"
+                  {% function(d) { return [['keyword', '_']] } %}
                 | expression _ "," _ callList
                   {% function(d) { return [d[0]].concat(d[4]) } %}
                 | "_" _ "," _ callList
@@ -58,6 +58,7 @@ statementList -> null
                 | "typeof" __ postfixIncr
                   {% function(d) { return [d[0], d[2]] } %}
                 | postfixIncr
+                  {% id %}
 
        wedgeOp -> wedgeOp _ "^" _ unary
                   {% function(d) { return [d[2], d[0], d[4]] } %}
@@ -128,7 +129,7 @@ statementList -> null
 
 # Values
 
-         literal -> (void | bool | number | string | array | function)
+         literal -> (void | bool | number | string | array | func)
                     {% function(d) { return d[0][0] } %}
 
           entity -> (identifier | literal)
@@ -201,11 +202,8 @@ stringBeginning2 -> "'"
 # Functions
 # ['function', name, [args1, args2, ...], [statement1, statement2, ...]]
 
-      function -> functionHead _ ":" statementList __ "end" __
-                  {% function(d) { return ['function', d[0][0], d[0][1], d[3]] } %}
-
-  functionHead -> "func" (__ identifier):? _ "(" arguments ")"
-                  {% function(d) { return [d[1] ? d[1][1] : null, d[4]] } %}
+          func -> "func" (__ identifier):? _ "(" arguments ")" _ ":" statementList __ "end"
+                  {% function(d) { return ['function', d[1] ? d[1][1][1] : null, d[4], d[8]] } %}
 
      arguments -> null
                   {% function(d) { return [] } %}
