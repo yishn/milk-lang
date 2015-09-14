@@ -1,7 +1,9 @@
 # Statements
 
-       statementList -> (_ statement __ [;\n]):*
-                        {% function(d) { return ['statements'].concat(d[0].map(function(x) { return x[1] })) } %}
+       statementList -> _ statement __
+                        {% function(d) { return ['statements', d[1]] } %}
+                      | statementList [;\n] _ statement __
+                        {% function(d) { return d[0].concat([d[3]]) } %}
 
            statement -> (expression | keywordStatement | ifStatement)
                         {% function(d) { return d[0][0] } %}
@@ -252,18 +254,18 @@
 
 # If statement
 
-    ifStatement -> "if" _ expression _ ":" statementList elifStatements
-                   {% function(d) { return ['if', [d[2], d[5]]].concat(d[6]) } %}
+       ifStatement -> "if" _ expression _ ":" statementList elifStatements
+                      {% function(d) { return ['if', [d[2], d[5]]].concat(d[6]) } %}
 
- elifStatements -> (_ "elif" _ expression _ ":" statementList):* elseStatement
-                   {% function(d) {
-                       return d[0].map(function(x) {
-                           return [x[3], x[6]]
-                       }).concat(d[1] ? [d[1]] : [])
-                   } %}
+    elifStatements -> (_ "elif" _ expression _ ":" statementList):* elseStatement
+                      {% function(d) {
+                          return d[0].map(function(x) {
+                              return [x[3], x[6]]
+                          }).concat(d[1] ? [d[1]] : [])
+                      } %}
 
-  elseStatement -> (_ "else:" statementList):? _ "endif"
-                   {% function(d) { return d[0] ? ['else', d[0][2]] : null } %}
+     elseStatement -> (_ "else" _ ":" statementList):? _ "endif"
+                      {% function(d) { return d[0] ? ['else', d[0][4]] : null } %}
 
 # Whitespace
 
