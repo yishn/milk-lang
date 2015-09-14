@@ -14,10 +14,10 @@
                 | entity
                   {% id %}
 
-  memberAccess -> memberAccess "." identifier
-                  {% function(d) { return [d[1], d[0], d[2]] } %}
-                | memberAccess "?." identifier
-                  {% function(d) { return [d[1], d[0], d[2]] } %}
+  memberAccess -> memberAccess _ "." identifier
+                  {% function(d) { return [d[2], d[0], d[3]] } %}
+                | memberAccess _ "?." identifier
+                  {% function(d) { return [d[2], d[0], d[3]] } %}
                 | memberAccess "[" _ expression _ "]"
                   {% function(d) { return ['[]', d[0], d[3]] } %}
                 | memberAccess "?[" _ expression _ "]"
@@ -221,7 +221,7 @@
 
       argument -> identifier
                   {% function(d) { return [d[0][1], null] } %}
-                | identifier _ "=" _ literal
+                | identifier _ "=" _ expression
                   {% function(d) { return [d[0][1], d[4]] } %}
                 | "..." _ identifier
                   {% function(d) { return [d[2][1], '...'] } %}
