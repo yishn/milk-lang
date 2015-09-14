@@ -3,8 +3,8 @@
  statementList -> (_ statement __ [;\n]):*
                   {% function(d, _, r) { return ['statements'].concat(d[0].map(function(x) { return x[1] })) } %}
 
-     statement -> expression
-                  {% id %}
+     statement -> (expression | ifStatement)
+                  {% function(d) { return d[0][0] } %}
 
 # Expressions
 
@@ -160,7 +160,7 @@
       identifier -> [a-zA-Z_$] [0-9a-zA-Z_$]:*
                     {% function(d, _, r) {
                         var keywords = [
-                            '_',
+                            '_', 'pass',
                             'null', 'undefined', 'and', 'or', 'not', 'true', 'false',
                             'export', 'import', 'void', 'debugger', 'with',
                             'delete', 'var', 'let', 'const', 'typeof',
@@ -243,6 +243,21 @@
                   {% function(d) { return [d[0][1], d[4]] } %}
                 | "..." _ identifier
                   {% function(d) { return [d[2][1], '...'] } %}
+
+# If statement
+
+    ifStatement -> "if" _ expression _ ":" statementList elifStatements
+                   {% function(d) { return ['if', [d[2], d[5]]].concat(d[6]) } %}
+
+ elifStatements -> (_ "elif" _ expression _ ":" statementList):* elseStatement
+                   {% function(d) {
+                       return d[0].map(function(x) {
+                           return [x[3], x[6]]
+                       }).concat(d[1] ? [d[1]] : [])
+                   } %}
+
+  elseStatement -> (_ "else:" statementList):? _ "endif"
+                   {% function(d) { return d[0] ? ['else', d[0][2]] : null } %}
 
 # Whitespace
 
