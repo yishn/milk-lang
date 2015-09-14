@@ -7,7 +7,7 @@
                       | statementList [;\n] __
                         {% id %}
 
-           statement -> (expression | keywordStatement | ifStatement)
+           statement -> (expression | keywordStatement | ifStatement | loop)
                         {% function(d) { return d[0][0] } %}
 
     keywordStatement -> ("break" | "continue" | "pass")
@@ -269,6 +269,19 @@
 
      elseStatement -> (_ "else" _ ":" statementList):? "endif"
                       {% function(d) { return d[0] ? ['else', d[0][4]] : null } %}
+
+# Loops
+
+       loop -> forLoop
+               {% id %}
+
+    forLoop -> "for" _+ identifier _+ "in" _+ (expression | range) _ ":" statementList "endfor"
+               {% function(d) { return ['for', d[2][1], d[6][0], d[9]] } %}
+
+      range -> "[" _ expression _ ".." _ expression _ "]"
+               {% function(d) { return ['range', d[2], d[6], ['number', 1]] } %}
+             | "[" _ expression _ ".." _ expression _ ".." _ expression _ "]"
+               {% function(d) { return ['range', d[2], d[6], d[10]] } %}
 
 # Whitespace
 
