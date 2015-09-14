@@ -199,15 +199,13 @@ stringBeginning2 -> "'"
                     {% function(d) { return d[0].concat([d[4]]) } %}
 
 # Functions
-# ['function', ['identifier', name], [args1, args2, ...], [statement1, statement2, ...]]
+# ['function', name, [args1, args2, ...], [statement1, statement2, ...]]
 
       function -> functionHead _ ":" statementList __ "end" __
                   {% function(d) { return ['function', d[0][0], d[0][1], d[3]] } %}
 
-  functionHead -> "func" _ "(" arguments ")"
-                  {% function(d) { return [null, d[3]] } %}
-                | "func" __ identifier _ "(" arguments ")"
-                  {% function(d) { return [d[2], d[5]] } %}
+  functionHead -> "func" (__ identifier):? _ "(" arguments ")"
+                  {% function(d) { return [d[1] ? d[1][1] : null, d[4]] } %}
 
      arguments -> null
                   {% function(d) { return [] } %}
