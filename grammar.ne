@@ -17,7 +17,7 @@ expressionList -> expression
 
     expression -> parenthesis
                   {% id %}
-                | plusOp
+                | inlineIf
                   {% id %}
 
    parenthesis -> entity
@@ -53,6 +53,47 @@ expressionList -> expression
                   {% function(d) { return ['-', d[0], d[4]] } %}
                 | starOp
                   {% id %}
+
+    comparison -> comparison _ "<=" _ plusOp
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
+                | comparison _ ">=" _ plusOp
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
+                | comparison _ "<" _ plusOp
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
+                | comparison _ ">" _ plusOp
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
+                | comparison _ "==" _ plusOp
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
+                | comparison _ "!=" _ plusOp
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
+                | comparison __ "in" __ plusOp
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
+                | comparison __ "of" __ plusOp
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
+                | comparison __ "instanceof" __ plusOp
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
+                | plusOp
+                  {% id %}
+
+       boolNot -> "not" __ comparison
+                  {% function(d) { return ['not', d[2]] } %}
+                | comparison
+                  {% id %}
+
+       boolAnd -> boolAnd __ "and" __ boolNot
+                  {% function(d) { return ['and', d[0], d[4]] } %}
+                | boolNot
+                  {% id %}
+
+       boolOr -> boolOr __ "or" __ boolAnd
+                  {% function(d) { return ['or', d[0], d[4]] } %}
+                | boolAnd
+                  {% id %}
+
+     inlineIf -> boolOr _ "?" _ inlineIf _ ":" _ inlineIf
+                 {% function(d) { return ['?', d[0], d[4], d[8]] } %}
+               | boolOr
+                 {% id %}
 
 # Values
 
