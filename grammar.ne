@@ -2,10 +2,10 @@
 
        statementList -> _ statement __
                         {% function(d) { return ['statements', d[1]] } %}
-                      | statementList [;\n] _ statement __
-                        {% function(d) { return d[0].concat([d[3]]) } %}
                       | statementList [;\n] __
                         {% id %}
+                      | statementList [;\n] __ statement __
+                        {% function(d) { return d[0].concat([d[3]]) } %}
 
            statement -> (expression | keywordStatement | ifStatement | loop)
                         {% function(d) { return d[0][0] } %}
@@ -272,16 +272,19 @@
 
 # Loops
 
-       loop -> forLoop
-               {% id %}
+       loop -> (forLoop | whileLoop)
+               {% function(d) { return d[0][0] } %}
 
     forLoop -> "for" _+ identifier _+ "in" _+ (expression | range) _ ":" statementList "end"
                {% function(d) { return ['for', d[2][1], d[6][0], d[9]] } %}
 
-      range -> "[" _ expression _ ".." _ expression _ "]"
-               {% function(d) { return ['range', d[2], d[6], ['number', 1]] } %}
-             | "[" _ expression _ ".." _ expression _ ".." _ expression _ "]"
-               {% function(d) { return ['range', d[2], d[6], d[10]] } %}
+      range -> expression _ ".." _ expression
+               {% function(d) { return ['range', d[0], d[4]] } %}
+             | expression _ ".." _ expression _ ".." _ expression
+               {% function(d) { return ['range', d[0], d[4], d[8]] } %}
+
+  whileLoop -> "while" _+ expression _ ":" statementList "end"
+               {% function(d) { return ['while', d[2], d[5]] } %}
 
 # Whitespace
 
