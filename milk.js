@@ -8,6 +8,7 @@ var filename = process.argv[2]
 var data = fs.readFileSync(filename, 'utf8')
 var result = p.feed(data)
 
-console.dir(result.results[0], {
+console.log(result.results.length)
+console.dir(result.results, {
     depth: null
 })
