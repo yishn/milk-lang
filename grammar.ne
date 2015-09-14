@@ -273,8 +273,6 @@
      elseStatement -> (_ "else" _ ":" statementList):? "end"
                       {% function(d) { return d[0] ? ['else', d[0][4]] : null } %}
 
-switchStatement ->
-
 # Loops
 
        loop -> (forLoop | whileLoop)
