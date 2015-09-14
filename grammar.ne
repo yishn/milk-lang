@@ -125,7 +125,7 @@
         lambda -> arguments ")" _ "=>" _ lambda
                   {% function(d) { return ['lambda', d[0], d[5]] } %}
                 | identifier _ "=>" _ lambda
-                  {% function(d) { return ['lambda', [d[0][1]], d[4]] } %}
+                  {% function(d) { return ['lambda', [[d[0][1], null]], d[4]] } %}
                 | inlineIf
                   {% id %}
 
