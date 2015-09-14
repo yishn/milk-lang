@@ -140,6 +140,8 @@ statementList -> (_ statement _ [;\n]):*
                     {% function(d) { return ['number', parseInt(d[0].join(''), 10)] } %}
                   | number:? "." number
                     {% function(d) { return ['number', parseFloat((d[0] ? d[0][1] : '') + '.' + d[2][1])] } %}
+                  | "0x" [0-9a-fA-F]:+
+                    {% function(d) { return ['number', parseInt(d[0] + d[1].join(''), 16)] } %}
 
       identifier -> [a-zA-Z_$] [0-9a-zA-Z_$]:*
                     {% function(d, _, r) {
