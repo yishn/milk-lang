@@ -98,24 +98,24 @@
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | comparison _ "!=" _ plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison ([\s] _) "in" ([\s] _) plusOp
+                | comparison _+ "in" _+ plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison ([\s] _) "instanceof" ([\s] _) plusOp
+                | comparison _+ "instanceof" _+ plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | plusOp
                   {% id %}
 
-       boolNot -> "not" ([\s] _) comparison
+       boolNot -> "not" _+ comparison
                   {% function(d) { return ['not', d[2]] } %}
                 | comparison
                   {% id %}
 
-       boolAnd -> boolAnd ([\s] _) "and" ([\s] _) boolNot
+       boolAnd -> boolAnd _+ "and" _+ boolNot
                   {% function(d) { return ['and', d[0], d[4]] } %}
                 | boolNot
                   {% id %}
 
-       boolOr -> boolOr ([\s] _) "or" ([\s] _) boolAnd
+       boolOr -> boolOr _+ "or" _+ boolAnd
                   {% function(d) { return ['or', d[0], d[4]] } %}
                 | boolAnd
                   {% id %}
@@ -254,10 +254,10 @@
 
 # If statement
 
-       ifStatement -> "if" _ expression _ ":" statementList elifStatements
+       ifStatement -> "if" _+ expression _ ":" statementList elifStatements
                       {% function(d) { return ['if', [d[2], d[5]]].concat(d[6]) } %}
 
-    elifStatements -> (_ "elif" _ expression _ ":" statementList):* elseStatement
+    elifStatements -> (_ "elif" _+ expression _ ":" statementList):* elseStatement
                       {% function(d) {
                           return d[0].map(function(x) {
                               return [x[3], x[6]]
@@ -271,3 +271,4 @@
 
      _ -> [\s]:*        {% function(d) { return null } %}
     __ -> [^\S\n]:*     {% function(d) { return null } %}
+    _+ -> ([\s] _)      {% function(d) { return null } %}
