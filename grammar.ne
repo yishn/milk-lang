@@ -42,21 +42,23 @@ expressionList -> expression
                   {% function(d) { return ['?()', d[0], d[3] ? d[3] : []] } %}
 
        wedgeOp -> wedgeOp _ "^" _ parenthesis
-                  {% function(d) { return ['^', d[0], d[4]] } %}
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
                 | parenthesis
                   {% id %}
 
         starOp -> starOp _ "*" _ wedgeOp
-                  {% function(d) { return ['*', d[0], d[4]] } %}
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
                 | starOp _ "/" _ wedgeOp
-                  {% function(d) { return ['/', d[0], d[4]] } %}
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
+                | starOp _ "%" _ wedgeOp
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
                 | wedgeOp
                   {% id %}
 
         plusOp -> plusOp _ "+" _ starOp
-                  {% function(d) { return ['+', d[0], d[4]] } %}
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
                 | plusOp _ "-" _ starOp
-                  {% function(d) { return ['-', d[0], d[4]] } %}
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
                 | starOp
                   {% id %}
 
@@ -108,7 +110,7 @@ expressionList -> expression
 
 # Values
 
-         literal -> (void | number | string | array | function)
+         literal -> (void | bool | number | string | array | function)
                     {% function(d) { return d[0][0] } %}
 
           entity -> (identifier | literal)
@@ -117,20 +119,33 @@ expressionList -> expression
             void -> "null"
                     {% function(d) { return ['void', 'null'] } %}
 
+            bool -> ("true" | "false")
+                    {% function(d) { return ['bool', d[0][0]] } %}
+
           number -> [0-9]:+
-                    {% function(d) { return ['number', parseInt(d[0].join(''))] } %}
+                    {% function(d) { return ['number', parseInt(d[0].join(''), 10)] } %}
                   | number:? "." number
                     {% function(d) { return ['number', parseFloat((d[0] ? d[0][1] : '') + '.' + d[2][1])] } %}
 
       identifier -> [a-zA-Z_] [0-9a-zA-Z_]:*
                     {% function(d, _, r) {
                         var keywords = [
-                            'null', 'and', 'or', 'not', 'true', 'false'
-                            'func', 'return', 'yield', 'end',
+                            'null', 'undefined', 'and', 'or', 'not', 'true', 'false',
+                            'export', 'import', 'void', 'debugger', 'with',
+                            'delete', 'var', 'let', 'const', 'typeof',
+                            'new', 'class', 'extends', 'this', 'self', 'super',
+                            'func', 'return', 'yield', 'end', 'function',
                             'if', 'else', 'elif',
-                            'do', 'while',
+                            'switch', 'case', 'default',
+                            'do', 'while', 'break', 'continue',
                             'for', 'in', 'of', 'instanceof',
-                            'try', 'catch', 'finally'
+                            'try', 'catch', 'finally', 'throw',
+                            'await', 'defer',
+                            'enum', 'implements', 'static', 'public', 'package',
+                            'interface', 'protected', 'private', 'abstract', 'final',
+                            'native', 'boolean', 'float', 'short', 'byte',
+                            'goto', 'synchronized', 'char', 'int', 'transient', 'double',
+                            'long', 'volatile'
                         ]
                         var id = d[0] + d[1].join('')
                         if (keywords.indexOf(id) != -1) return r
