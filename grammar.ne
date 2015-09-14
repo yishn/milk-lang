@@ -1,9 +1,5 @@
-statementList -> null
-                 {% function(d) { return [] } %}
-               | _ statement _
-                 {% function(d) { return [d[1]] } %}
-               | statementList ("\n" | ";") _ statement _
-                 {% function(d) { return d[0].concat([d[3]]) } %}
+statementList -> (_ statement _ [;\n]):*
+                 {% function(d) { return d[0].map(function(x) { return x[1] }) } %}
 
     statement -> expression
                  {% id %}
@@ -51,8 +47,8 @@ statementList -> null
                 | memberAccess
                   {% id %}
 
-         unary -> ("+" | "-") postfixIncr
-                  {% function(d) { return [d[0][0], d[1]] } %}
+         unary -> [+-] postfixIncr
+                  {% function(d) { return [d[0], d[1]] } %}
                 | ("++" | "--") _ postfixIncr
                   {% function(d) { return [d[0][0] + '_', d[2]] } %}
                 | "typeof" __ postfixIncr
@@ -65,18 +61,12 @@ statementList -> null
                 | unary
                   {% id %}
 
-        starOp -> starOp _ "*" _ wedgeOp
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
-                | starOp _ "/" _ wedgeOp
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
-                | starOp _ "%" _ wedgeOp
+        starOp -> starOp _ [*/%] _ wedgeOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | wedgeOp
                   {% id %}
 
-        plusOp -> plusOp _ "+" _ starOp
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
-                | plusOp _ "-" _ starOp
+        plusOp -> plusOp _ [+-] _ starOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | starOp
                   {% id %}
@@ -85,9 +75,7 @@ statementList -> null
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | comparison _ ">=" _ plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison _ "<" _ plusOp
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison _ ">" _ plusOp
+                | comparison _ [<>] _ plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | comparison _ "==" _ plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
@@ -161,7 +149,7 @@ statementList -> null
                             'for', 'in', 'of', 'instanceof', 'endfor',
                             'try', 'catch', 'finally', 'throw', 'endtry',
                             'await', 'defer',
-                            
+
                             'enum', 'implements', 'static', 'public', 'package',
                             'interface', 'protected', 'private', 'abstract', 'final',
                             'native', 'boolean', 'float', 'short', 'byte',
@@ -203,13 +191,16 @@ stringBeginning2 -> "'"
 # Functions
 # ['function', name, [args1, args2, ...], [statement1, statement2, ...]]
 
-          func -> "func" (__ identifier):? _ "(" arguments ")" _ ":" statementList __ "endfunc"
-                  {% function(d) { return ['function', d[1] ? d[1][1][1] : null, d[4], d[8]] } %}
+          func -> "func" (__ identifier):? _ (arguments | "(") ")" _ ":" statementList "endfunc"
+                  {% function(d) {
+                      return ['function',
+                          d[1] ? d[1][1][1] : null,
+                          d[3][0] == '(' ? [] : d[3][0],
+                          d[7]]
+                  } %}
 
-     arguments -> null
-                  {% function(d) { return [] } %}
-                | _ argument _
-                  {% function(d) { return [d[1]] } %}
+     arguments -> "(" _ argument _
+                  {% function(d) { return [d[2]] } %}
                 | arguments "," _ argument _
                   {% function(d) { return d[0].concat([d[3]]) } %}
 
