@@ -9,6 +9,6 @@ var data = fs.readFileSync(filename, 'utf8')
 var result = p.feed(data)
 
 console.log(result.results.length)
-console.dir(result.results, {
+console.dir(result.results[0], {
     depth: null
 })

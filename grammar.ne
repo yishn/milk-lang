@@ -191,7 +191,7 @@ stringBeginning2 -> "'"
 # Functions
 # ['function', name, [args1, args2, ...], [statement1, statement2, ...]]
 
-          func -> "func" (__ identifier):? _ (arguments | "(") ")" _ ":" statementList "endfunc"
+          func -> "func" (__ identifier):? _ (arguments | "(") ")" _ ":" statementList _ "endfunc"
                   {% function(d) {
                       return ['function',
                           d[1] ? d[1][1][1] : null,
