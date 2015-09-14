@@ -1,7 +1,7 @@
 # Statements
 
  statementList -> (_ statement __ [;\n]):*
-                  {% function(d, _, r) { return d[0].map(function(x) { return x[1] }) } %}
+                  {% function(d, _, r) { return ['statements'].concat(d[0].map(function(x) { return x[1] })) } %}
 
      statement -> expression
                   {% id %}
@@ -133,7 +133,7 @@
 
 # Values
 
-         literal -> (void | bool | number | string | array | func)
+         literal -> (void | bool | number | string | array | object | func)
                     {% function(d) { return d[0][0] } %}
 
           entity -> (identifier | literal)
@@ -198,13 +198,27 @@
                   | stringBeg2 "\\" .
                     {% function(d) { return d[0] + d[1] + d[2] } %}
 
-           array -> (arrayList | "[") _ "]"
-                    {% function(d) { return ['array', d[0][0] != '[' ? d[0][0] : []] } %}
+           array -> (arrayList | "[") _ ("," _):? "]"
+                    {% function(d) { return ['array'].concat(d[0][0] != '[' ? d[0][0] : []) } %}
 
        arrayList -> "[" _ expression
                     {% function(d) { return [d[2]] } %}
                   | arrayList _ "," _ expression
                     {% function(d) { return d[0].concat([d[4]]) } %}
+
+          object -> "{" objectList "}"
+                    {% function(d) { return ['object'].concat(d[1]) } %}
+
+      objectList -> null
+                    {% function(d) { return [] } %}
+                  | (_ objectListItem _ ","):* _ objectListItem _ ("," _):?
+                    {% function(d) { return d[0].map(function(x) { return x[1] }).concat([d[2]]) } %}
+
+  objectListItem -> objectKey _ ":" _ expression
+                    {% function(d) { return [d[0], d[4]] } %}
+
+       objectKey -> (identifier | string)
+                    {% function(d) { return d[0][0] } %}
 
 # Functions
 
