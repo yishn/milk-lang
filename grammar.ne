@@ -54,11 +54,14 @@ expressionList -> expression
 
 # Values
 
-         literal -> (number | string | array | function)
+         literal -> (void | number | string | array | function)
                     {% function(d) { return d[0][0] } %}
 
           entity -> (identifier | literal)
                     {% function(d) { return d[0][0] } %}
+
+            void -> "null"
+                    {% function(d) { return ['void', 'null'] } %}
 
           number -> [0-9]:+
                     {% function(d) { return ['number', parseInt(d[0].join(''))] } %}
@@ -66,7 +69,11 @@ expressionList -> expression
                     {% function(d) { return ['number', parseFloat((d[0] ? d[0][1] : '') + '.' + d[2][1])] } %}
 
       identifier -> [a-zA-Z_] [0-9a-zA-Z_]:*
-                    {% function(d) { return ['identifier', d[0] + d[1].join('')] } %}
+                    {% function(d, _, r) {
+                        var id = d[0] + d[1].join('')
+                        if (id == 'null') return r
+                        return ['identifier', id]
+                    } %}
 
           string -> stringBeginning1 "\""
                     {% function(d) { return ['string', d[0] + d[1]] } %}
