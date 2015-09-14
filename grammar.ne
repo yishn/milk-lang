@@ -24,26 +24,29 @@ expressionList -> expression
                   {% id %}
                 | "(" _ expression _ ")"
                   {% function(d) { return d[2] } %}
-                | parenthesis "." identifier
-                  {% function(d) { return [d[1], d[0], d[2]] } %}
-                | parenthesis "?." identifier
-                  {% function(d) { return [d[1], d[0], d[2]] } %}
-                | parenthesis "[" _ expression _ "]"
-                  {% function(d) { return ['[]', d[0], d[3]] } %}
-                | parenthesis "?[" _ expression _ "]"
-                  {% function(d) { return ['?[]', d[0], d[3]] } %}
-                | parenthesis "[" _ expression _ ":" _ expression _ "]"
-                  {% function(d) { return ['[]', d[0], d[3], d[7]] } %}
-                | parenthesis "?[" _ expression _ ":" _ expression _ "]"
-                  {% function(d) { return ['?[]', d[0], d[3], d[7]] } %}
-                | parenthesis "(" _ (expressionList | null) _ ")"
-                  {% function(d) { return ['()', d[0], d[3] ? d[3] : []] } %}
-                | parenthesis "?(" _ (expressionList | null) _ ")"
-                  {% function(d) { return ['?()', d[0], d[3] ? d[3] : []] } %}
 
-       wedgeOp -> wedgeOp _ "^" _ parenthesis
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
+  memberAccess -> memberAccess "." identifier
+                  {% function(d) { return [d[1], d[0], d[2]] } %}
+                | memberAccess "?." identifier
+                  {% function(d) { return [d[1], d[0], d[2]] } %}
+                | memberAccess "[" _ expression _ "]"
+                  {% function(d) { return ['[]', d[0], d[3]] } %}
+                | memberAccess "?[" _ expression _ "]"
+                  {% function(d) { return ['?[]', d[0], d[3]] } %}
+                | memberAccess "[" _ expression _ ":" _ expression _ "]"
+                  {% function(d) { return ['[]', d[0], d[3], d[7]] } %}
+                | memberAccess "?[" _ expression _ ":" _ expression _ "]"
+                  {% function(d) { return ['?[]', d[0], d[3], d[7]] } %}
+                | memberAccess "(" _ (expressionList | null) _ ")"
+                  {% function(d) { return ['()', d[0], d[3] ? d[3] : []] } %}
+                | memberAccess "?(" _ (expressionList | null) _ ")"
+                  {% function(d) { return ['?()', d[0], d[3] ? d[3] : []] } %}
                 | parenthesis
+                  {% id %}
+
+       wedgeOp -> wedgeOp _ "^" _ memberAccess
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
+                | memberAccess
                   {% id %}
 
         starOp -> starOp _ "*" _ wedgeOp
