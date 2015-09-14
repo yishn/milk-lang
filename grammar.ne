@@ -1,7 +1,9 @@
 # Statements
 
- statementList -> (_ statement __ [;\n]):*
-                  {% function(d, _, r) { return ['statements'].concat(d[0].map(function(x) { return x[1] })) } %}
+ statementList -> _ statement __
+                  {% function(d) { return ['statements', d[1]] } %}
+                | (_ statement __ [;\n]):*
+                  {% function(d) { return ['statements'].concat(d[0].map(function(x) { return x[1] })) } %}
 
      statement -> (expression | ifStatement)
                   {% function(d) { return d[0][0] } %}
