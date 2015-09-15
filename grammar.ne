@@ -332,8 +332,8 @@
     forLoop -> forHead _ ":" statementList [\s] "end"
                {% function(d) { return d[0].concat([d[3]]) } %}
 
-    forHead -> "for" _+ identifier _+ "in" _+ expression (_+ "if" _ expression):?
-               {% function(d) { return ['for', d[2][1], d[6], d[7] ? d[7][3] : null] } %}
+    forHead -> "for" _+ identifier (_ "," _ identifier):? _+ "in" _+ expression (_+ "if" _ expression):?
+               {% function(d) { return ['for', d[2][1], d[3] ? d[3][3] : null, d[7], d[8] ? d[8][3] : null] } %}
 
   whileLoop -> "while" _+ expression _ ":" statementList [\s] "end"
                {% function(d) { return ['while', d[2], d[5]] } %}
