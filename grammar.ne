@@ -87,7 +87,7 @@
                 | starOp
                   {% id %}
 
-    comparison -> plusOp _ ("<=" | ">=" | [<>] | "==" | "!=") _ plusOp
+    comparison -> plusOp _ cmpOperator _ plusOp
                   {% function(d) { return [d[2][0], d[0], d[4]] } %}
                 | plusOp _+ ("in" | "instanceof") _+ plusOp
                   {% function(d) { return [d[2][0], d[0], d[4]] } %}
@@ -96,17 +96,16 @@
                 | plusOp
                   {% id %}
 
-    chainedCmp -> plusOp _ ("<=" | ">=" | [<>]) _ plusOp _ ("<=" | ">=" | [<>]) _ plusOp
+   cmpOperator -> ("<=" | ">=" | [<>] | "==" | "!=")
+                  {% function(d) { return d[0][0] } %}
+
+    chainedCmp -> plusOp _ cmpOperator _ plusOp (_ cmpOperator _ plusOp):+
                   {% function(d) {
-                      return ['and', [
-                          d[2][0], d[0], d[4]
-                      ], [
-                          d[6][0], d[4], d[8]
-                      ]]
-                  } %}
-                | chainedCmp _ ("<=" | ">=" | [<>]) _ plusOp
-                  {% function(d) {
-                      return ['and', d[0], [d[2], d[0][2][2], d[4]]]
+                      var r = ['chaincmp', d[0], d[2], d[4]]
+                      d[5].forEach(function(x) {
+                           r.push(x[1], x[3])
+                      })
+                      return r
                   } %}
 
        boolNot -> "not" _+ comparison
