@@ -45,15 +45,6 @@
                 | parenthesis
                   {% id %}
 
-      callList -> expression _ ")"
-                  {% function(d) { return [d[0]] } %}
-                | "_" _ ")"
-                  {% function(d) { return [['keyword', '_']] } %}
-                | expression _ "," _ callList
-                  {% function(d) { return [d[0]].concat(d[4]) } %}
-                | "_" _ "," _ callList
-                  {% function(d) { return [['keyword', '_']].concat(d[4]) } %}
-
    keywordExpr -> "new" _+ memberAccess
                   {% function(d) { return ['new', d[2]] } %}
                 | memberAccess
@@ -247,8 +238,17 @@
                   {% function(d) { return [d[0][1], null] } %}
                 | identifier _ "=" _ expression
                   {% function(d) { return [d[0][1], d[4]] } %}
-                | "..." _ identifier
-                  {% function(d) { return [d[2][1], '...'] } %}
+                | "*" identifier
+                  {% function(d) { return [d[2][1], '*'] } %}
+
+      callList -> expression _ ")"
+                  {% function(d) { return [d[0]] } %}
+                | "_" _ ")"
+                  {% function(d) { return [['keyword', '_']] } %}
+                | expression _ "," _ callList
+                  {% function(d) { return [d[0]].concat(d[4]) } %}
+                | "_" _ "," _ callList
+                  {% function(d) { return [['keyword', '_']].concat(d[4]) } %}
 
 # Conditional statements
 
