@@ -241,7 +241,7 @@
                 | identifier _ "=" _ expression
                   {% function(d) { return [d[0][1], d[4]] } %}
                 | "*" identifier
-                  {% function(d) { return [d[2][1], '*'] } %}
+                  {% function(d) { return [d[1][1], '*'] } %}
 
       callList -> expression _ ")"
                   {% function(d) { return [d[0]] } %}
