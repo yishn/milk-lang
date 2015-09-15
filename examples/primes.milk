@@ -1,0 +1,49 @@
+/**
+ * Gets all the primes below a certain integer
+ * @param  int   limit    the limit
+ * @return array          the list of all primes below limit
+ */
+function getPrimes(limit):
+    // Initialize checklist
+    l = [true for i in [0...limit]]
+    l[0] = false
+    l[1] = false
+
+    for i in [0...limit] if l[i]:
+        x = 2
+        // Check all multiples of i
+        while i * x <= limit:
+            l[i * x] = false
+            x++
+
+    // Accumulate unchecked items
+    primes = []
+    for i in [0...limit] if l[i]:
+        primes.push(i)
+
+    return primes
+
+/**
+ * Factorizes a given number in its unique prime
+ * number factorization
+ * @param  int   number    the number
+ * @return array           a list of ascending numbers,
+ *                         the unique prime factorization
+ *                         of number
+ */
+function factorization(number):
+    if number <= 1:
+        return []
+
+    // Get primes
+    primes = getPrimes(number)
+
+    // Search for divisor
+    for p in primes if number % p == 0:
+        // Recursively get factorization
+        result = factorization(number / p)
+        result.push(p)
+        return result
+
+console.log('Here is your prime factorization for 1372878:')
+console.log(factorization(1372878))
