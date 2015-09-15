@@ -156,7 +156,7 @@
 
 # Values
 
-         literal -> (bool | number | string | regex | array | range | object | func)
+         literal -> (bool | number | string | array | range | object | func)
                     {% function(d) { return d[0][0] } %}
 
           entity -> (keywordEntity | identifier | literal)
@@ -221,16 +221,6 @@
                   | stringBeg2 [^'] #'
                     {% function(d) { return d.join('') } %}
                   | stringBeg2 "\\" [^]
-                    {% function(d) { return d.join('') } %}
-
-           regex -> regexBeg "/" [gim]:*
-                    {% function(d) { return ['regex', d[0] + d[1] + d[2].join('')] } %}
-
-        regexBeg -> "/" [^/\n]
-                    {% function(d) { return d.join('') } %}
-                  | regexBeg [^/\n]
-                    {% function(d) { return d.join('') } %}
-                  | regexBeg "\\" [^\n]
                     {% function(d) { return d.join('') } %}
 
            array -> (arrayList | "[") __ ([,\n] _):? "]"
