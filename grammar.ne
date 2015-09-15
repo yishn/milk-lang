@@ -235,7 +235,7 @@
 
 # Functions
 
-          func -> "func" (_+ identifier):? _ (arguments | "(") ")" _ ":" statementList "end"
+          func -> "func" (_+ identifier):? _ (arguments | "(") ")" _ ":" statementList [\s] "end"
                   {% function(d) {
                       return ['func',
                           d[1] ? d[1][1][1] : null,
@@ -266,7 +266,7 @@
 
 # Classes
 
-        class -> "class" _+ identifier (_+ "extends" _+ expression):? _ ":" functionList "end"
+        class -> "class" _+ identifier (_+ "extends" _+ expression):? _ ":" functionList [\s] "end"
                  {% function(d) { return ['class', d[2][1], d[3] ? d[3][3] : null, d[6]] } %}
 
 # Conditional statements
@@ -284,7 +284,7 @@
                           }).concat(d[1] ? [d[1]] : [])
                       } %}
 
-     elseStatement -> ("else" _ ":" statementList):? "end"
+     elseStatement -> ("else" _ ":" statementList):? [\s] "end"
                       {% function(d) { return d[0] ? ['else', d[0][3]] : null } %}
 
 # Try statement
@@ -295,7 +295,7 @@
       catchStatement -> ("catch" (_+ identifier):? _ ":" statementList):? finallyStatement
                         {% function(d) { return [d[0] ? [d[0][1] ? d[0][1][1] : null, d[0][4]] : null, d[1]] } %}
 
-    finallyStatement -> ("finally" _ ":" statementList):? "end"
+    finallyStatement -> ("finally" _ ":" statementList):? [\s] "end"
                         {% function(d) { return d[0] ? d[0][3] : null } %}
 
 # Loops
@@ -303,13 +303,13 @@
        loop -> (forLoop | whileLoop)
                {% function(d) { return d[0][0] } %}
 
-    forLoop -> forHead _ ":" statementList "end"
+    forLoop -> forHead _ ":" statementList [\s] "end"
                {% function(d) { return d[0].concat([d[3]]) } %}
 
     forHead -> "for" _+ identifier _+ "in" _+ expression (_+ "if" _ expression):?
                {% function(d) { return ['for', d[2][1], d[6], d[7] ? d[7][3] : null] } %}
 
-  whileLoop -> "while" _+ expression _ ":" statementList "end"
+  whileLoop -> "while" _+ expression _ ":" statementList [\s] "end"
                {% function(d) { return ['while', d[2], d[5]] } %}
 
 # Whitespace
