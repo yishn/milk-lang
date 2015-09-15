@@ -199,6 +199,8 @@
 
            array -> (arrayList | "[") __ ([,\n] _):? "]"
                     {% function(d) { return ['array'].concat(d[0][0] != '[' ? d[0][0] : []) } %}
+                  | "[" _ expression _+ forHead _ "]"
+                    {% function(d) { return ['array', d[4].concat([d[2]])] } %}
 
        arrayList -> "[" _ expression
                     {% function(d) { return [d[2]] } %}
@@ -212,6 +214,8 @@
 
           object -> "{" objectList "}"
                     {% function(d) { return ['object'].concat(d[1]) } %}
+                  | "{" _ objectListItem _+ forHead _ "}"
+                    {% function(d) { return ['object', d[4].concat([d[2]])] } %}
 
       objectList -> null
                     {% function(d) { return [] } %}
@@ -275,8 +279,11 @@
        loop -> (forLoop | whileLoop)
                {% function(d) { return d[0][0] } %}
 
-    forLoop -> "for" _+ identifier _+ "in" _+ expression _ ":" statementList "end"
-               {% function(d) { return ['for', d[2][1], d[6], d[9]] } %}
+    forLoop -> forHead _ ":" statementList "end"
+               {% function(d) { return d[0].concat([d[3]]) } %}
+
+    forHead -> "for" _+ identifier _+ "in" _+ expression (_+ "if" _ expression):?
+               {% function(d) { return ['for', d[2][1], d[6], d[7] ? d[7][3] : null] } %}
 
   whileLoop -> "while" _+ expression _ ":" statementList "end"
                {% function(d) { return ['while', d[2], d[5]] } %}
@@ -284,5 +291,5 @@
 # Whitespace
 
      _ -> [\s]:*        {% function(d) { return null } %}
+    _+ -> [\s]:+        {% function(d) { return null } %}
     __ -> [^\S\n]:*     {% function(d) { return null } %}
-    _+ -> [\s] _        {% function(d) { return null } %}
