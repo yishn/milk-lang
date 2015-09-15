@@ -99,7 +99,7 @@
                 | comparison _ "!=" _ plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | comparison _+ "in" _+ plusOp
-                  {% function(d) { return [d[2], d[0], d[4] } %}
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
                 | comparison _+ "instanceof" _+ plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | plusOp
