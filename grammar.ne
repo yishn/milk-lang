@@ -125,7 +125,7 @@
                   {% id %}
 
    existential -> boolOr _ "??" _ existential
-                  {% function(d) { return ['?', ['==', d[0], ['void', 'null']], d[4], d[0]] } %}
+                  {% function(d) { return ['?', ['==', d[0], ['keyword', 'null']], d[4], d[0]] } %}
                 | boolOr
                   {% id %}
 
