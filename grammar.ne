@@ -11,10 +11,10 @@
                         {% function(d) { return d[0][0] } %}
 
     keywordStatement -> ("break" | "continue" | "pass")
-                      | ("return") ([\s] _ expression):?
-                        {% function(d) { return [d[0][0], d[1] ? d[1][2] : null] } %}
-                      | ("throw") [\s] _ expression
-                        {% function(d) { return [d[0][0], d[3]] } %}
+                      | ("return") (_+ expression):?
+                        {% function(d) { return [d[0][0], d[1] ? d[1][1] : null] } %}
+                      | ("throw") _+ expression
+                        {% function(d) { return [d[0][0], d[2]] } %}
 
 # Expressions
 
@@ -54,8 +54,8 @@
                 | "_" _ "," _ callList
                   {% function(d) { return [['keyword', '_']].concat(d[4]) } %}
 
-   keywordExpr -> "new" [\s] _ memberAccess
-                  {% function(d) { return ['new', d[3]] } %}
+   keywordExpr -> "new" _+ memberAccess
+                  {% function(d) { return ['new', d[2]] } %}
                 | memberAccess
                   {% id %}
 
@@ -68,8 +68,8 @@
                   {% function(d) { return [d[0], d[1]] } %}
                 | ("++" | "--") _ postfixIncr
                   {% function(d) { return [d[0][0] + '_', d[2]] } %}
-                | "typeof" [\s] _ postfixIncr
-                  {% function(d) { return [d[0], d[3]] } %}
+                | "typeof" _+ postfixIncr
+                  {% function(d) { return [d[0], d[2]] } %}
                 | postfixIncr
                   {% id %}
 
@@ -88,20 +88,10 @@
                 | starOp
                   {% id %}
 
-    comparison -> comparison _ "<=" _ plusOp
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison _ ">=" _ plusOp
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison _ [<>] _ plusOp
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison _ "==" _ plusOp
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison _ "!=" _ plusOp
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison _+ "in" _+ plusOp
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison _+ "instanceof" _+ plusOp
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
+    comparison -> comparison _ ("<=" | ">=" | [<>] | "==" | "!=") _ plusOp
+                  {% function(d) { return [d[2][0], d[0], d[4]] } %}
+                | comparison _+ ("in" | "instanceof") _+ plusOp
+                  {% function(d) { return [d[2][0], d[0], d[4]] } %}
                 | plusOp
                   {% id %}
 
@@ -240,10 +230,10 @@
 
 # Functions
 
-          func -> "func" ([\s] _ identifier):? _ (arguments | "(") ")" _ ":" statementList "end"
+          func -> "func" (_+ identifier):? _ (arguments | "(") ")" _ ":" statementList "end"
                   {% function(d) {
                       return ['function',
-                          d[1] ? d[1][2][1] : null,
+                          d[1] ? d[1][1][1] : null,
                           d[3][0] == '(' ? [] : d[3][0],
                           d[7]]
                   } %}
@@ -293,4 +283,4 @@
 
      _ -> [\s]:*        {% function(d) { return null } %}
     __ -> [^\S\n]:*     {% function(d) { return null } %}
-    _+ -> ([\s] _)      {% function(d) { return null } %}
+    _+ -> [\s] _        {% function(d) { return null } %}
