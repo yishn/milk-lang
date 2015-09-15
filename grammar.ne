@@ -18,7 +18,7 @@
                         {% function(d) { return d[0][0] } %}
 
     keywordStatement -> ("break" | "continue" | "pass")
-                        {% function(d) { return d[0][0] } %}
+                        {% function(d) { return ['keyword', d[0][0]] } %}
                       | ("return") (_+ expression):?
                         {% function(d) { return [d[0][0], d[1] ? d[1][1] : null] } %}
                       | ("throw") _+ expression
