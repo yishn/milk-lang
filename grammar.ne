@@ -195,12 +195,12 @@
                   | stringBeg2 "\\" .
                     {% function(d) { return d[0] + d[1] + d[2] } %}
 
-           array -> (arrayList | "[") _ ("," _):? "]"
+           array -> (arrayList | "[") __ ([,\n] _):? "]"
                     {% function(d) { return ['array'].concat(d[0][0] != '[' ? d[0][0] : []) } %}
 
        arrayList -> "[" _ expression
                     {% function(d) { return [d[2]] } %}
-                  | arrayList _ "," _ expression
+                  | arrayList __ [,\n] _ expression
                     {% function(d) { return d[0].concat([d[4]]) } %}
 
            range -> "[" _ (expression _ ("," _):?):? "..." _ ("," _):? (expression _):? "]"
@@ -213,7 +213,7 @@
 
       objectList -> null
                     {% function(d) { return [] } %}
-                  | (_ objectListItem _ ","):* _ objectListItem _ ("," _):?
+                  | (_ objectListItem __ [,\n]):* _ objectListItem __ ([,\n] _):?
                     {% function(d) { return d[0].map(function(x) { return x[1] }).concat([d[2]]) } %}
 
   objectListItem -> expression _ ":" _ expression
