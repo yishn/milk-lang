@@ -179,7 +179,7 @@
       identifier -> [a-zA-Z_$] [0-9a-zA-Z_$]:*
                     {% function(d, _, r) {
                         var keywords = [
-                            '_', 'pass', 'end',
+                            '_', 'pass', 'END', 'DEINDENT',
                             'null', 'undefined', 'and', 'or', 'not', 'true', 'false',
                             'export', 'import', 'void', 'debugger', 'with',
                             'delete', 'var', 'let', 'const', 'typeof',
@@ -251,7 +251,7 @@
 
 # Functions
 
-                func -> "function" (_+ identifier):? _ arguments ")" _ ":" statementList [\s] "end"
+                func -> "function" (_+ identifier):? _ arguments ")" _ ":" statementList [\s] "END"
                         {% function(d) { return ['function', d[1] ? d[1][1][1] : null, d[3], d[7]] } %}
 
            arguments -> (nonemptyArguments | emptyArguments)
@@ -289,7 +289,7 @@
 
 # Classes
 
-        class -> "class" _+ identifier (_+ "extends" _+ expression):? _ ":" functionList [\s] "end"
+        class -> "class" _+ identifier (_+ "extends" _+ expression):? _ ":" functionList [\s] "END"
                  {% function(d) { return ['class', d[2][1], d[3] ? d[3][3] : null, d[6]] } %}
 
 # Conditional statements
@@ -310,7 +310,7 @@
      elifStatement -> "elif" _+ expression _ ":" statementList
                       {% function(d) { return [d[2], d[5]] } %}
 
-     elseStatement -> ("else" _ ":" statementList):? [\s] "end"
+     elseStatement -> ("else" _ ":" statementList):? [\s] "END"
                       {% function(d) { return d[0] ? ['else', d[0][3]] : null } %}
 
 # Try statement
@@ -321,7 +321,7 @@
       catchStatement -> ("catch" (_+ identifier):? _ ":" statementList):? finallyStatement
                         {% function(d) { return [d[0] ? [d[0][1] ? d[0][1][1] : null, d[0][4]] : null, d[1]] } %}
 
-    finallyStatement -> ("finally" _ ":" statementList):? [\s] "end"
+    finallyStatement -> ("finally" _ ":" statementList):? [\s] "END"
                         {% function(d) { return d[0] ? d[0][3] : null } %}
 
 # Loops
@@ -329,13 +329,13 @@
        loop -> (forLoop | whileLoop)
                {% function(d) { return d[0][0] } %}
 
-    forLoop -> forHead _ ":" statementList [\s] "end"
+    forLoop -> forHead _ ":" statementList [\s] "END"
                {% function(d) { return d[0].concat([d[3]]) } %}
 
     forHead -> "for" _+ identifier (_ "," _ identifier):? _+ "in" _+ expression (_+ "if" _ expression):?
                {% function(d) { return ['for', d[2][1], d[3] ? d[3][3] : null, d[7], d[8] ? d[8][3] : null] } %}
 
-  whileLoop -> "while" _+ expression _ ":" statementList [\s] "end"
+  whileLoop -> "while" _+ expression _ ":" statementList [\s] "END"
                {% function(d) { return ['while', d[2], d[5]] } %}
 
 # Whitespace
