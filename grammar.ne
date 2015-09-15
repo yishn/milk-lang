@@ -193,16 +193,16 @@
 
       stringBeg1 -> "\""
                     {% id %}
-                  | stringBeg1 [^"\n]
+                  | stringBeg1 [^"] #"
                     {% function(d) { return d[0] + d[1] } %}
-                  | stringBeg1 "\\" .
+                  | stringBeg1 "\\" [^]
                     {% function(d) { return d[0] + d[1] + d[2] } %}
 
       stringBeg2 -> "'"
                     {% id %}
-                  | stringBeg2 [^'\n]
+                  | stringBeg2 [^'] #'
                     {% function(d) { return d[0] + d[1] } %}
-                  | stringBeg2 "\\" .
+                  | stringBeg2 "\\" [^]
                     {% function(d) { return d[0] + d[1] + d[2] } %}
 
            array -> (arrayList | "[") __ ([,\n] _):? "]"
