@@ -98,8 +98,8 @@
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | comparison _ "!=" _ plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
-                | comparison _+ "in" _+ (plusOp | range)
-                  {% function(d) { return [d[2], d[0], d[4][0]] } %}
+                | comparison _+ "in" _+ plusOp
+                  {% function(d) { return [d[2], d[0], d[4] } %}
                 | comparison _+ "instanceof" _+ plusOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | plusOp
@@ -146,7 +146,7 @@
 
 # Values
 
-         literal -> (bool | number | string | array | object | func)
+         literal -> (bool | number | string | array | range | object | func)
                     {% function(d) { return d[0][0] } %}
 
           entity -> (keywordEntity | identifier | literal)
@@ -222,6 +222,11 @@
                   | arrayList _ "," _ expression
                     {% function(d) { return d[0].concat([d[4]]) } %}
 
+           range -> "[" _ (expression _ ("," _):?):? "..." _ ("," _):? (expression _):? "]"
+                    {% function(d) { return ['range', d[2] ? d[2][0] : null, d[6] ? d[6][0] : null] } %}
+                  | "[" _ expression _ "," _ expression _ ("," _):? "..." _ ("," _):? (expression _):? "]"
+                    {% function(d) { return ['range', d[2], d[6], d[12] ? d[12][0] : null] } %}
+
           object -> "{" objectList "}"
                     {% function(d) { return ['object'].concat(d[1]) } %}
 
@@ -278,13 +283,8 @@
        loop -> (forLoop | whileLoop)
                {% function(d) { return d[0][0] } %}
 
-    forLoop -> "for" _+ identifier _+ "in" _+ (expression | range) _ ":" statementList "end"
-               {% function(d) { return ['for', d[2][1], d[6][0], d[9]] } %}
-
-      range -> "[" _ (expression _):? "..." _ (expression _):? "]"
-               {% function(d) { return ['range', d[2] ? d[2][0] : null, d[5] ? d[5][0] : null] } %}
-             | "[" _ expression _ "," _ expression _ "..." _ (expression _):? "]"
-               {% function(d) { return ['range', d[2], d[6], d[10] ? d[10][0] : null] } %}
+    forLoop -> "for" _+ identifier _+ "in" _+ expression _ ":" statementList "end"
+               {% function(d) { return ['for', d[2][1], d[6], d[9]] } %}
 
   whileLoop -> "while" _+ expression _ ":" statementList "end"
                {% function(d) { return ['while', d[2], d[5]] } %}
