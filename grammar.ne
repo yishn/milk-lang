@@ -7,10 +7,11 @@
                       | statementList [;\n] __ statement __
                         {% function(d) { return d[0].concat([d[3]]) } %}
 
-           statement -> (expression | keywordStatement | condStatement | loop)
+           statement -> (expression | keywordStatement | condStatement | tryStatement | loop)
                         {% function(d) { return d[0][0] } %}
 
     keywordStatement -> ("break" | "continue" | "pass")
+                        {% function(d) { return d[0][0] } %}
                       | ("return") (_+ expression):?
                         {% function(d) { return [d[0][0], d[1] ? d[1][1] : null] } %}
                       | ("throw") _+ expression
@@ -264,15 +265,26 @@
        ifStatement -> "if" _+ expression _ ":" statementList elifStatements
                       {% function(d) { return ['if', [d[2], d[5]]].concat(d[6]) } %}
 
-    elifStatements -> (_ "elif" _+ expression _ ":" statementList):* elseStatement
+    elifStatements -> ("elif" _+ expression _ ":" statementList):* elseStatement
                       {% function(d) {
                           return d[0].map(function(x) {
-                              return [x[3], x[6]]
+                              return [x[2], x[5]]
                           }).concat(d[1] ? [d[1]] : [])
                       } %}
 
-     elseStatement -> (_ "else" _ ":" statementList):? "end"
-                      {% function(d) { return d[0] ? ['else', d[0][4]] : null } %}
+     elseStatement -> ("else" _ ":" statementList):? "end"
+                      {% function(d) { return d[0] ? ['else', d[0][3]] : null } %}
+
+# Try statement
+
+        tryStatement -> "try" _ ":" statementList catchStatement
+                        {% function(d) { return ['try', d[3]].concat(d[4]) } %}
+
+      catchStatement -> ("catch" (_+ identifier):? _ ":" statementList):? finallyStatement
+                        {% function(d) { return [d[0] ? [d[0][1] ? d[0][1][1] : null, d[0][4]] : null, d[1]] } %}
+
+    finallyStatement -> ("finally" _ ":" statementList):? "end"
+                        {% function(d) { return d[0] ? d[0][3] : null } %}
 
 # Loops
 
