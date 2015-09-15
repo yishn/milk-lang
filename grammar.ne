@@ -29,7 +29,7 @@
        passStatement -> "pass"
                         {% function(d) { return ['keyword', d[0]] } %}
 
-   compilerStatement -> ("#INDENT" | "#DEINDENT")
+   compilerStatement -> "#" [A-Z] [A-Z0-9]:*
                         {% function(d) { return null } %}
 
 # Expressions
