@@ -300,12 +300,15 @@
        ifStatement -> "if" _+ expression _ ":" statementList elifStatements
                       {% function(d) { return ['if', [d[2], d[5]]].concat(d[6]) } %}
 
-    elifStatements -> ("elif" _+ expression _ ":" statementList):* elseStatement
+    elifStatements -> (elifStatement):* elseStatement
                       {% function(d) {
-                          return d[0].map(function(x) {
-                              return [x[2], x[5]]
-                          }).concat(d[1] ? [d[1]] : [])
+                          var r = d[0].map(function(x) { return x[0] })
+                          if (d[1] !== null) r.push(d[1])
+                          return r
                       } %}
+
+     elifStatement -> "elif" _+ expression _ ":" statementList
+                      {% function(d) { return [d[2], d[5]] } %}
 
      elseStatement -> ("else" _ ":" statementList):? [\s] "end"
                       {% function(d) { return d[0] ? ['else', d[0][3]] : null } %}
