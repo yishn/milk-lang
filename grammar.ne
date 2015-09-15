@@ -7,7 +7,14 @@
                       | statementList [;\n] __ statement __
                         {% function(d) { return d[0].concat([d[3]]) } %}
 
-           statement -> (expression | keywordStatement | condStatement | tryStatement | loop)
+        functionList -> _ func __
+                        {% function(d) { return ['functions', d[1]] } %}
+                      | functionList [;\n] __
+                        {% id %}
+                      | functionList [;\n] __ func __
+                        {% function(d) { return d[0].concat([d[3]]) } %}
+
+           statement -> (expression | class | keywordStatement | condStatement | tryStatement | loop)
                         {% function(d) { return d[0][0] } %}
 
     keywordStatement -> ("break" | "continue" | "pass")
@@ -230,7 +237,7 @@
 
           func -> "func" (_+ identifier):? _ (arguments | "(") ")" _ ":" statementList "end"
                   {% function(d) {
-                      return ['function',
+                      return ['func',
                           d[1] ? d[1][1][1] : null,
                           d[3][0] == '(' ? [] : d[3][0],
                           d[7]]
@@ -256,6 +263,11 @@
                   {% function(d) { return [d[0]].concat(d[4]) } %}
                 | "_" _ "," _ callList
                   {% function(d) { return [['keyword', '_']].concat(d[4]) } %}
+
+# Classes
+
+        class -> "class" _+ identifier (_+ "extends" _+ expression):? _ ":" functionList "end"
+                 {% function(d) { return ['class', d[2][1], d[3] ? d[3][3] : null, d[6]] } %}
 
 # Conditional statements
 
