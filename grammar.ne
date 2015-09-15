@@ -51,10 +51,10 @@
                   {% function(d) { return ['[]', d[0], d[1]] } %}
                 | memberAccess "?" range
                   {% function(d) { return ['?[]', d[0], d[2]] } %}
-                | memberAccess "(" _ (callList | ")")
-                  {% function(d) { return ['()', d[0], d[3][0] != ')' ? d[3][0] : []] } %}
-                | memberAccess "?(" _ (callList | ")")
-                  {% function(d) { return ['?()', d[0], d[3][0] != ')' ? d[3][0] : []] } %}
+                | memberAccess callList ")"
+                  {% function(d) { return ['()', d[0], d[1]] } %}
+                | memberAccess "?" callList ")"
+                  {% function(d) { return ['?()', d[0], d[2]] } %}
                 | parenthesis
                   {% id %}
 
@@ -253,34 +253,40 @@
 
 # Functions
 
-          func -> "function" (_+ identifier):? _ (arguments | "(") ")" _ ":" statementList [\s] "end"
-                  {% function(d) {
-                      return ['function',
-                          d[1] ? d[1][1][1] : null,
-                          d[3][0] == '(' ? [] : d[3][0],
-                          d[7]]
-                  } %}
+                func -> "function" (_+ identifier):? _ (arguments | "(") ")" _ ":" statementList [\s] "end"
+                        {% function(d) {
+                            return ['function',
+                                d[1] ? d[1][1][1] : null,
+                                d[3][0] == '(' ? [] : d[3][0],
+                                d[7]]
+                        } %}
 
-     arguments -> "(" _ argument _
-                  {% function(d) { return [d[2]] } %}
-                | arguments "," _ argument _
-                  {% function(d) { return d[0].concat([d[3]]) } %}
+           arguments -> "(" _ argument _
+                        {% function(d) { return [d[2]] } %}
+                      | arguments "," _ argument _
+                        {% function(d) { return d[0].concat([d[3]]) } %}
 
-      argument -> identifier
-                  {% function(d) { return [d[0][1], null] } %}
-                | identifier _ "=" _ expression
-                  {% function(d) { return [d[0][1], d[4]] } %}
-                | "*" identifier
-                  {% function(d) { return [d[1][1], '*'] } %}
+            argument -> identifier
+                        {% function(d) { return [d[0][1], null] } %}
+                      | identifier _ "=" _ expression
+                        {% function(d) { return [d[0][1], d[4]] } %}
+                      | "*" identifier
+                        {% function(d) { return [d[1][1], '*'] } %}
 
-      callList -> expression _ ")"
-                  {% function(d) { return [d[0]] } %}
-                | "_" _ ")"
-                  {% function(d) { return [['keyword', '_']] } %}
-                | expression _ "," _ callList
-                  {% function(d) { return [d[0]].concat(d[4]) } %}
-                | "_" _ "," _ callList
-                  {% function(d) { return [['keyword', '_']].concat(d[4]) } %}
+            callList -> (nonemptyCallList | emptyCallList)
+                        {% function(d) { return d[0][0] } %}
+
+       emptyCallList -> "(" _
+                        {% function(d) { return [] } %}
+
+    nonemptyCallList -> "(" _ expression
+                        {% function(d) { return [d[2]] } %}
+                      | "(" _ "_"
+                        {% function(d) { return [['keyword', '_']] } %}
+                      | callList _ "," _ expression
+                        {% function(d) { return d[0].concat([d[4]]) } %}
+                      | callList _ "," _ "_"
+                        {% function(d) { return d[0].concat([['keyword', '_']]) } %}
 
 # Classes
 
