@@ -157,7 +157,7 @@
           entity -> (keywordEntity | identifier | literal)
                     {% function(d) { return d[0][0] } %}
 
-   keywordEntity -> ("null" | "this" | "self" | "super")
+   keywordEntity -> ("null" | "this" | "self" | "super" | "debugger")
                     {% function(d) { return ['keyword', d[0][0]] } %}
 
             bool -> ("true" | "false")
@@ -187,7 +187,6 @@
                             'do', 'while', 'break', 'continue',
                             'for', 'in', 'of', 'instanceof',
                             'try', 'catch', 'finally', 'throw',
-                            'await', 'defer',
 
                             'enum', 'implements', 'static', 'public', 'package',
                             'interface', 'protected', 'private', 'abstract', 'final',
