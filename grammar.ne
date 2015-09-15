@@ -116,7 +116,7 @@
                 | identifier _ "=>" _ lambda
                   {% function(d) { return ['lambda', [[d[0][1], null]], d[4]] } %}
                 | "(" _ ")" _ "=>" _ lambda
-                  {% function(d) { return ['lambda', [], d[4]] } %}
+                  {% function(d) { return ['lambda', [], d[6]] } %}
                 | inlineIf
                   {% id %}
 
