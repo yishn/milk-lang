@@ -186,7 +186,7 @@
                             'export', 'import', 'void', 'debugger', 'with',
                             'delete', 'var', 'let', 'const', 'typeof',
                             'new', 'class', 'extends', 'this', 'self', 'super',
-                            'func', 'return', 'yield', 'function',
+                            'return', 'yield', 'function',
                             'if', 'else', 'elif',
                             'switch', 'case', 'default',
                             'do', 'while', 'break', 'continue',
@@ -263,9 +263,9 @@
 
 # Functions
 
-          func -> "func" (_+ identifier):? _ (arguments | "(") ")" _ ":" statementList [\s] "end"
+          func -> "function" (_+ identifier):? _ (arguments | "(") ")" _ ":" statementList [\s] "end"
                   {% function(d) {
-                      return ['func',
+                      return ['function',
                           d[1] ? d[1][1][1] : null,
                           d[3][0] == '(' ? [] : d[3][0],
                           d[7]]
