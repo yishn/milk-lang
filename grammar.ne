@@ -142,8 +142,6 @@
                   {% function(d) { return ['lambda', d[0], d[5]] } %}
                 | identifier _ "=>" _ lambda
                   {% function(d) { return ['lambda', [[d[0][1], null]], d[4]] } %}
-                | "(" _ ")" _ "=>" _ lambda
-                  {% function(d) { return ['lambda', [], d[6]] } %}
                 | inlineIf
                   {% id %}
 
@@ -253,15 +251,16 @@
 
 # Functions
 
-                func -> "function" (_+ identifier):? _ (arguments | "(") ")" _ ":" statementList [\s] "end"
-                        {% function(d) {
-                            return ['function',
-                                d[1] ? d[1][1][1] : null,
-                                d[3][0] == '(' ? [] : d[3][0],
-                                d[7]]
-                        } %}
+                func -> "function" (_+ identifier):? _ arguments ")" _ ":" statementList [\s] "end"
+                        {% function(d) { return ['function', d[1] ? d[1][1][1] : null, d[3], d[7]] } %}
 
-           arguments -> "(" _ argument _
+           arguments -> (nonemptyArguments | emptyArguments)
+                        {% function(d) { return d[0][0] } %}
+
+      emptyArguments -> emptyCallList
+                        {% id %}
+
+   nonemptyArguments -> "(" _ argument _
                         {% function(d) { return [d[2]] } %}
                       | arguments "," _ argument _
                         {% function(d) { return d[0].concat([d[3]]) } %}
