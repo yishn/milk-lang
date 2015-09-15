@@ -87,10 +87,18 @@
                 | starOp
                   {% id %}
 
-    comparison -> comparison _ ("<=" | ">=" | [<>] | "==" | "!=") _ plusOp
+    comparison -> plusOp _ ("<=" | ">=" | [<>] | "==" | "!=") _ plusOp
                   {% function(d) { return [d[2][0], d[0], d[4]] } %}
-                | comparison _+ ("in" | "instanceof") _+ plusOp
+                | plusOp _+ ("in" | "instanceof") _+ plusOp
                   {% function(d) { return [d[2][0], d[0], d[4]] } %}
+                | plusOp _ ("<=" | ">=" | [<>]) _ plusOp _ ("<=" | ">=" | [<>]) _ plusOp
+                  {% function(d) {
+                      return ['and', [
+                          d[2][0], d[0], d[4]
+                      ], [
+                          d[6][0], d[4], d[8]
+                      ]]
+                  } %}
                 | plusOp
                   {% id %}
 
