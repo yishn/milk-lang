@@ -91,7 +91,12 @@
                   {% function(d) { return [d[2][0], d[0], d[4]] } %}
                 | plusOp _+ ("in" | "instanceof") _+ plusOp
                   {% function(d) { return [d[2][0], d[0], d[4]] } %}
-                | plusOp _ ("<=" | ">=" | [<>]) _ plusOp _ ("<=" | ">=" | [<>]) _ plusOp
+                | chainedCmp
+                  {% id %}
+                | plusOp
+                  {% id %}
+
+    chainedCmp -> plusOp _ ("<=" | ">=" | [<>]) _ plusOp _ ("<=" | ">=" | [<>]) _ plusOp
                   {% function(d) {
                       return ['and', [
                           d[2][0], d[0], d[4]
@@ -99,8 +104,10 @@
                           d[6][0], d[4], d[8]
                       ]]
                   } %}
-                | plusOp
-                  {% id %}
+                | chainedCmp _ ("<=" | ">=" | [<>]) _ plusOp
+                  {% function(d) {
+                      return ['and', d[0], [d[2], d[0][2][2], d[4]]]
+                  } %}
 
        boolNot -> "not" _+ comparison
                   {% function(d) { return ['not', d[2]] } %}
