@@ -17,8 +17,10 @@ data = data.replace(/\r\n/g, '\n').replace(/\r/g, '')
 console.error('Remove comments...')
 
 var removed = helper.removeStringComments(data)
-var stringCommentsRemoved = removed[1]
+var pureCode = removed[1]
+var comments = removed[2]
 data = removed[0]
+console.log(comments)
 
 // Get indent length
 
@@ -35,7 +37,7 @@ try {
 // Indentifizer
 
 console.error('Indentifizer...')
-data = helper.indentifizer(data, stringCommentsRemoved, indentLength)
+data = helper.indentifizer(data, pureCode, indentLength)
 
 // Invoke nearley
 
@@ -45,11 +47,15 @@ var p = new nearley.Parser(grammar.ParserRules, grammar.ParserStart)
 try {
     var result = p.feed(data)
 
-    if (!result || !result.results || !result.results.length)
-        throw { offset: data.length - 1 }
+    if (!result || !result.results || !result.results.length) {
+        throw { message: 'Unexpected end', offset: data.length - 1 }
+    }
 } catch(e) {
     var pos = helper.offsetToLinePos(e.offset, data)
-    console.error('Parse error @' + pos[0] + ':' + pos[1])
+    var message = e.message
+    if (message.indexOf('nearley') != -1) message = 'Parse error'
+
+    console.error(message + ' @' + pos[0] + ':' + pos[1])
     return
 }
 
