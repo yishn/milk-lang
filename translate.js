@@ -74,8 +74,17 @@ function expression(tree) {
         return '!' + paren(expression(tree[1]))
     } else if (tree[0] == 'chaincmp') {
         return chainCmp(tree)
-    } else if (['<=', '>=', '<', '>', '==', '!=', '+', '-', '*', '/', '%', '^', 'instanceof'].indexOf(tree[0]) != -1) {
+    } else if (['<=', '>=', '<', '>', '==', '!=', '+', '-', '*', '/', 'instanceof'].indexOf(tree[0]) != -1) {
         return [paren(expression(tree[1])), tree[0], paren(expression(tree[2]))].join(' ')
+    } else if (tree[0] == '%') {
+        exports.flags.modulo = true
+        return '_.modulo(' + expression(tree[1]) + ', ' + expression(tree[2]) + ')'
+    } else if (tree[0] == '^') {
+        return 'Math.pow(' + expression(tree[1]) + ', ' + expression(tree[2]) + ')'
+    } else if (tree[0] == 'in' || tree[0] == 'not in') {
+        exports.flags.inOperator = true
+        var output = '_.inOp(' + expression(tree[1]) + ', ' + expression(tree[2]) + ')'
+        return tree[0] == 'in' ? output : '!' + output
     }
 
     return '/* ... */'
