@@ -182,7 +182,7 @@
                     {% function(d, _, r) {
                         var keywords = [
                             '_', 'pass',
-                            'null', 'undefined', 'and', 'or', 'not', 'true', 'false',
+                            'null', 'undefined', 'and', 'or', 'not', 'true', 'false', 'arguments',
                             'export', 'import', 'void', 'debugger', 'with',
                             'delete', 'var', 'let', 'const', 'typeof',
                             'new', 'class', 'extends', 'this', 'self', 'super',
