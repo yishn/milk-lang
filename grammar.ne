@@ -234,7 +234,7 @@
                     {% function(d) { return d[0].concat([d[4]]) } %}
 
            range -> "[" _ (expression _ ("," _):?):? "..." _ ("," _):? (expression _):? "]"
-                    {% function(d) { return ['range', d[2] ? d[2][0] : null, d[6] ? d[6][0] : null] } %}
+                    {% function(d) { return ['range', d[2] ? d[2][0] : null, null, d[6] ? d[6][0] : null] } %}
                   | "[" _ expression _ "," _ expression _ ("," _):? "..." _ ("," _):? (expression _):? "]"
                     {% function(d) { return ['range', d[2], d[6], d[12] ? d[12][0] : null] } %}
 
