@@ -130,7 +130,7 @@
                 | boolAnd
                   {% id %}
 
-   existential -> boolOr _ "??" _ existential
+   existential -> memberAccess _ "??" _ existential
                   {% function(d, l) { return ['??', d[0], d[4]] } %}
                 | boolOr
                   {% id %}
