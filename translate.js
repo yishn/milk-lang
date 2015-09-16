@@ -108,19 +108,27 @@ function object(tree) {
 function func(tree) {
     var identifier = tree[1]
     var funcargs = tree[2]
+    var hasOptionalArgs = funcargs.some(function(x) {
+        return x[1] !== null
+    })
     var spreadindex = funcargs.map(function(x) { return x[1] }).indexOf('*')
+    if (spreadindex == -1) spreadindex = funcargs.length
 
     var output = (identifier ? identifier + ' = ' : '') + 'function('
 
-    if (spreadindex == -1) output += funcargs.map(function(x) {
+    if (!hasOptionalArgs) output += funcargs.map(function(x) {
         return x[0]
     }).join(', ')
 
     output += ') {\n'
 
-    if (spreadindex != -1) {
+    if (hasOptionalArgs) {
         for (var i = 0; i < spreadindex; i++) {
-            output += exports.indent + 'var ' + funcargs[i][0] + ' = arguments[' + i + '];\n'
+            output += exports.indent + 'var ' + funcargs[i][0] + ' = '
+            if (!funcargs[i][1])
+                output += 'arguments[' + i + '];\n'
+            else
+                output += 'typeof arguments[' + i + '] === "undefined" ? ' + expression(funcargs[i][1]) + ' : arguments[' + i + '];\n'
         }
 
         if (spreadindex == funcargs.length - 1) {
@@ -128,7 +136,7 @@ function func(tree) {
                 + 'var ' + funcargs[spreadindex][0] + ' = '
                 + spreadindex + ' >= arguments.length ? [] : '
                 + 'arguments.slice(' + spreadindex + ');\n'
-        } else {
+        } else if (spreadindex < funcargs.length - 1) {
             var afterspreadcount = funcargs.length - 1 - spreadindex
 
             output += exports.indent
@@ -138,7 +146,11 @@ function func(tree) {
         }
 
         for (var i = funcargs.length - 1; i > spreadindex; i--) {
-            output += exports.indent + 'var ' + funcargs[i][0] + ' = arguments[arguments.length - ' + (funcargs.length - i) + '];\n'
+            output += exports.indent + 'var ' + funcargs[i][0] + ' = '
+            if (!funcargs[i][1])
+                output += 'arguments[arguments.length - ' + (funcargs.length - i) + '];\n'
+            else
+                output += 'typeof arguments[arguments.length - ' + (funcargs.length - i) + '] === "undefined" ? ' + expression(funcargs[i][1]) + ' : arguments[arguments.length - ' + (funcargs.length - i) + '];\n'
         }
     }
 
