@@ -226,7 +226,7 @@
            array -> (arrayList | "[") __ ([,\n] _):? "]"
                     {% function(d) { return ['array'].concat(d[0][0] != '[' ? d[0][0] : []) } %}
                   | "[" _ expression _+ forHead _ "]"
-                    {% function(d) { return ['array', d[4].concat([d[2]])] } %}
+                    {% function(d) { return ['arrayfor', d[4].concat([d[2]])] } %}
 
        arrayList -> "[" _ expression
                     {% function(d) { return [d[2]] } %}
@@ -241,7 +241,7 @@
           object -> "{" objectList "}"
                     {% function(d) { return ['object'].concat(d[1]) } %}
                   | "{" _ objectListItem _+ forHead _ "}"
-                    {% function(d) { return ['object', d[4].concat([d[2]])] } %}
+                    {% function(d) { return ['objectfor', d[4].concat([d[2]])] } %}
 
       objectList -> null
                     {% function(d) { return [] } %}
