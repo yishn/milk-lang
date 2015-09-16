@@ -51,22 +51,14 @@
                 | entity
                   {% id %}
 
-  memberAccess -> memberAccess _ "." identifier
-                  {% function(d) { return [d[2], d[0], d[3]] } %}
-                | memberAccess _ "?." identifier
-                  {% function(d) { return [d[2], d[0], d[3]] } %}
-                | memberAccess "[" _ expression _ "]"
-                  {% function(d) { return ['[]', d[0], d[3]] } %}
-                | memberAccess "?[" _ expression _ "]"
-                  {% function(d) { return ['?[]', d[0], d[3]] } %}
-                | memberAccess range
-                  {% function(d) { return ['[]', d[0], d[1]] } %}
-                | memberAccess "?" range
-                  {% function(d) { return ['?[]', d[0], d[2]] } %}
-                | memberAccess callList ")"
-                  {% function(d) { return ['()', d[0], d[1]] } %}
-                | memberAccess "?" callList ")"
-                  {% function(d) { return ['?()', d[0], d[2]] } %}
+  memberAccess -> memberAccess _ ("." | "?.") identifier
+                  {% function(d) { return [d[2][0], d[0], d[3]] } %}
+                | memberAccess ("[" | "?[") _ expression _ "]"
+                  {% function(d) { return [d[1][0] + ']', d[0], d[3]] } %}
+                | memberAccess "?":? range
+                  {% function(d) { return [d[1] ? '?[]' : '[]', d[0], d[2]] } %}
+                | memberAccess "?":? callList ")"
+                  {% function(d) { return [d[1] ? '?()' : '()', d[0], d[2]] } %}
                 | parenthesis
                   {% id %}
 
