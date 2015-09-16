@@ -55,7 +55,9 @@ exports.getIndent = function(input) {
 
 exports.removeStringComments = function(input) {
     var commentsRemoved = ''
-    var stringCommentsRemoved = ''
+    var pureCode = ''
+    var comments = []
+    var offset = 0
 
     var rules = {
         doublestring: /^"("|[^]*?[^\\]")/,
@@ -66,56 +68,61 @@ exports.removeStringComments = function(input) {
     }
 
     while (input.length > 0) {
-        var token = null
+        var type = ''
+        var value = ' '
         var length = 1
 
-        for (var type in rules) {
-            var matches = rules[type].exec(input)
+        for (var t in rules) {
+            var matches = rules[t].exec(input)
             if (!matches) continue
 
-            var value = matches[0]
+            type = t
+            value = matches[0]
             length = value.length
-
-            if (type.indexOf('string') != -1 || type.indexOf('comment') != -1) {
-                var diff = ''
-                for (var i = 0; i < value.length; i++)
-                    diff += value[i] == '\n' ? '\n' : ' '
-
-                if (type.indexOf('comment') != -1)
-                    commentsRemoved += diff
-                stringCommentsRemoved += diff
-            } else {
-                stringCommentsRemoved += value
-            }
-
-            if (type.indexOf('comment') == -1) {
-                commentsRemoved += value
-            }
-
             break
         }
 
+        if (type.indexOf('string') != -1 || type.indexOf('comment') != -1) {
+            var diff = ''
+            for (var i = 0; i < value.length; i++)
+                diff += value[i] == '\n' ? '\n' : ' '
+
+            if (type.indexOf('comment') != -1)
+                commentsRemoved += diff
+            pureCode += diff
+        } else {
+            pureCode += value
+        }
+
+        if (type.indexOf('comment') == -1) {
+            commentsRemoved += value
+        } else {
+            // Add comment to comments
+            comments.push([value, offset])
+        }
+
         input = input.substr(length)
+        offset += length
     }
 
-    return [commentsRemoved, stringCommentsRemoved]
+    return [commentsRemoved, pureCode, comments]
 }
 
-exports.indentifizer = function(input, stringCommentsRemoved, indentLength) {
+exports.indentifizer = function(input, pureCode, indentLength) {
     input = input.split('\n')
-    stringCommentsRemoved = stringCommentsRemoved.split('\n')
+    pureCode = pureCode.split('\n')
 
     var depth = 0
     var lastIndex = 0
     var indentDepths = []
 
     for (var i = 0; i < input.length; i++) {
-        if (stringCommentsRemoved[i].trim() == '') continue
+        if (pureCode[i].trim() == '') continue
         var linedepth = /^\s*/.exec(input[i])[0].length / indentLength
 
         if (i != 0) {
             if (linedepth > depth) {
-                var trimmed = stringCommentsRemoved[lastIndex].trim()
+                var trimmed = pureCode[lastIndex].trim()
 
                 if (trimmed[trimmed.length - 1] == ':') {
                     input[lastIndex] += ' #INDENT'
