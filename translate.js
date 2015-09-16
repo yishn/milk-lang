@@ -77,8 +77,32 @@ function array(tree) {
             ], '})()'
         ])
     }
+}
 
-    return '/* ... */'
+function object(tree) {
+    if (tree[0] != 'objectfor') {
+        return formatCode([
+            '{',
+            tree.slice(1).map(function(x, i) {
+                return expression(x[0]) + ': ' + expression(x[1])
+                    + (i == tree.length - 2 ? '' : ',')
+            }),
+            '}'
+        ])
+    } else {
+        var key = expression(tree[1][4][0])
+        var value = expression(tree[1][4][1])
+
+        return formatCode([
+            '(function() {', [
+                '_.r = {};',
+                forHead(tree[1]), [
+                    '_.r[' + key + '] = ' + value + ';'
+                ], '}',
+                'return _.r;'
+            ], '})()'
+        ])
+    }
 }
 
 function func(tree) {
