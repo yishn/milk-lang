@@ -58,22 +58,24 @@ exports.removeStringComments = function(input) {
     var pureCode = ''
     var comments = []
     var offset = 0
+    var residue = input
+    var lineCounter = 1
 
     var rules = {
         doublestring: /^"("|[^]*?[^\\]")/,
         singlestring: /^'('|[^]*?[^\\]')/,
         singlecomment: /^\/\/.*/,
         blockcomment: /^\/\*[^]*?\*\//,
-        others: /^([^"'\/]+|\/[^\/\*][^"'\/]*)+/
+        purecode: /^([^"'\/]+|\/[^\/\*][^"'\/]*)+/
     }
 
-    while (input.length > 0) {
+    while (residue.length > 0) {
         var type = ''
         var value = ' '
         var length = 1
 
         for (var t in rules) {
-            var matches = rules[t].exec(input)
+            var matches = rules[t].exec(residue)
             if (!matches) continue
 
             type = t
@@ -82,26 +84,26 @@ exports.removeStringComments = function(input) {
             break
         }
 
-        if (type.indexOf('string') != -1 || type.indexOf('comment') != -1) {
-            var diff = ''
-            for (var i = 0; i < value.length; i++)
-                diff += value[i] == '\n' ? '\n' : ' '
-
-            if (type.indexOf('comment') != -1)
-                commentsRemoved += diff
-            pureCode += diff
-        } else {
-            pureCode += value
-        }
-
-        if (type.indexOf('comment') == -1) {
-            commentsRemoved += value
-        } else {
+        if (type.indexOf('comment') != -1) {
             // Add comment to comments
-            comments.push([value, offset])
+            comments.push([value, lineCounter])
         }
 
-        input = input.substr(length)
+        for (var i = 0; i < value.length; i++) {
+            var space = ' '
+            if (value[i] == '\n') {
+                space = '\n'
+                lineCounter++
+            }
+
+            if (type.indexOf('comment') != -1) commentsRemoved += space
+            else commentsRemoved += value[i]
+
+            if (type == 'purecode') pureCode += value[i]
+            else pureCode += space
+        }
+
+        residue = residue.substr(length)
         offset += length
     }
 

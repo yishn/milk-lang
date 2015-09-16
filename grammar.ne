@@ -24,7 +24,7 @@
            statement -> (expression | class | keywordStatement | condStatement | tryStatement | loop)
                         {% function(d, l) {
                             var r = d[0][0]
-                            r.location = l
+                            r.offset = l
                             return r
                         } %}
 
