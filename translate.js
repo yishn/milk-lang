@@ -1,8 +1,23 @@
 module.exports = function(tree, indent) {
     if (!indent) indent = '    '
     exports.indent = indent
+    exports.underscoreKeys = []
     exports.flags = {}
     return statements(tree, 0)
+}
+
+function getVarName(base) {
+    if (exports.underscoreKeys.indexOf(base) == -1) {
+        exports.underscoreKeys.push(base)
+        return base
+    }
+
+    var counter = 1
+    while (exports.underscoreKeys.indexOf(base + counter) != -1)
+        counter++
+
+    exports.underscoreKeys.push(base + counter)
+    return base + counter
 }
 
 function formatCode(input) {
@@ -95,12 +110,13 @@ function expression(tree) {
     } else if (tree[0] == '.') {
         return expression(tree[1]) + '.' + expression(tree[2])
     } else if (tree[0] == '?.') {
+        var temp = '_.' + getVarName('r')
         return formatCode([
             '(function() {', [
-                'var _.r = ' + expression(tree[1]) + ';',
-                'if (typeof _.r === "undefined" || _.r === null)', [
+                temp + ' = ' + expression(tree[1]) + ';',
+                'if (typeof ' + temp + ' === "undefined" || ' + temp + ' === null)', [
                     'return null;'
-                ], 'else return _.r.' + expression(tree[1]) + ';'
+                ], 'else return ' + temp + '.' + expression(tree[1]) + ';'
             ], '})()'
         ])
     }
@@ -109,26 +125,30 @@ function expression(tree) {
 }
 
 function existentialOp(tree) {
+    var temp = '_.' + getVarName('r')
     return formatCode([
         '(function() {', [
-            'var _.r = ' + expression(tree[1]) + ';',
-            'if (typeof _.r === "undefined" || _.r === null)', [
+            temp + ' = ' + expression(tree[1]) + ';',
+            'if (typeof ' + temp +' === "undefined" || ' + temp +' === null)', [
                 'return ' + expression(tree[2]) + ';'
-            ], 'else return _.r;'
+            ], 'else return ' + temp + ';'
         ], '})()'
     ])
 }
 
 function chainCmp(tree) {
+    var temps = []
     var varDeclaration = tree.filter(function(x, i) {
         return i % 2 != 0
     }).map(function(x, i) {
-        return 'var _.r' + (i + 1) + ' = ' + expression(x) + ';'
+        var temp = '_.' + getVarName('r' + (i + 1))
+        temps.push(temp)
+        return temp + ' = ' + expression(x) + ';'
     })
 
-    chained = []
+    var chained = []
     for (var i = 3; i < tree.length; i += 2) {
-        chained.push('_.r' + ((i - 1) / 2) + ' ' + tree[i - 1] + ' ' + '_.r' + ((i + 1) / 2))
+        chained.push(temps[(i - 1) / 2 - 1] + ' ' + tree[i - 1] + ' ' + temps[(i + 1) / 2 - 1])
     }
 
     return formatCode([
@@ -140,6 +160,8 @@ function chainCmp(tree) {
 }
 
 function array(tree) {
+    var temp = '_.' + getVarName('r')
+
     if (tree[0] != 'arrayfor') {
         return '[' + tree.slice(1).map(function(x) {
             return expression(x)
@@ -147,11 +169,11 @@ function array(tree) {
     } else {
         return formatCode([
             '(function() {', [
-                '_.r = [];',
+                temp + ' = [];',
                 forHead(tree[1]), [
-                    '_.r.push(' + expression(tree[1][4]) + ');'
+                    temp + '.push(' + expression(tree[1][4]) + ');'
                 ], '}',
-                'return _.r;'
+                'return ' + temp + ';'
             ], '})()'
         ])
     }
@@ -170,14 +192,15 @@ function object(tree) {
     } else {
         var key = expression(tree[1][4][0])
         var value = expression(tree[1][4][1])
+        var temp = '_.' + getVarName('r')
 
         return formatCode([
             '(function() {', [
-                '_.r = {};',
+                temp + ' = {};',
                 forHead(tree[1]), [
-                    '_.r[' + key + '] = ' + value + ';'
+                    temp + '[' + key + '] = ' + value + ';'
                 ], '}',
-                'return _.r;'
+                'return ' + temp + ';'
             ], '})()'
         ])
     }
@@ -260,35 +283,43 @@ function forHead(tree) {
             if (end) return 'Math.sign(_.end - _.start)'
             return '1'
         })()
+        var starttemp = '_.' + getVarName('start')
+        var endtemp = '_.' + getVarName('end')
+        var steptemp = '_.' + getVarName('step')
 
         output = formatCode([
-            '_.start = ' + start + ';',
-            end ? '_.end = ' + end + ';' : null,
-            '_.step = ' + step + ';',
-            'for (var ' + firstIdentifier + ' = _.start' + '; '
-            + (end ? firstIdentifier + ' <= _.end' : 'true') + '; '
-            + firstIdentifier + ' += _.step) {', [
+            starttemp + ' = ' + start + ';',
+            end ? endtemp + ' = ' + end + ';' : null,
+            steptemp + ' = ' + step + ';',
+            'for (var ' + firstIdentifier + ' = ' + starttemp + '; '
+            + (end ? firstIdentifier + ' <= ' + endtemp : 'true') + '; '
+            + firstIdentifier + ' += ' + steptemp + ') {', [
                 secondIdentifier ? secondIdentifier + ' = ' + firstIdentifier : null
             ]
         ])
     } else if (identifierCount == 1) {
         exports.flags.forHead = true
+        var listtemp = '_.' + getVarName('list')
+        var itemp = '_.' + getVarName('i')
 
         output = formatCode([
-            '_.list = _.enumerate(' + expression(tree[2]) + ')',
-            'for (_.i = 0; _.i < _.list.length; _.i++) {', [
-                'var ' + firstIdentifier + ' = _.list.get(_.i);'
+            listtemp + ' = _.enumerate(' + expression(tree[2]) + ')',
+            'for (' + itemp + ' = 0; ' + itemp + ' < ' + listtemp + '.length; ' + itemp + '++) {', [
+                'var ' + firstIdentifier + ' = ' + listtemp + '.get(' + itemp + ');'
             ]
         ])
     } else {
         exports.flags.forHead = true
+        var listtemp = '_.' + getVarName('list')
+        var keystemp = '_.' + getVarName('keys')
+        var itemp = '_.' + getVarName('i')
 
         output = formatCode([
-            '_.list = ' + expression(tree[2]) + ';',
-            '_.keys = _.enumerateKeys(_.list)',
-            'for (_.i = 0; _.i < _.keys.length; _.i++) {', [
-                'var ' + firstIdentifier + ' = _.keys.get(_.i);',
-                'var ' + secondIdentifier + ' = _.list[' + firstIdentifier + '];'
+            listtemp + ' = ' + expression(tree[2]) + ';',
+            keystemp + ' = _.enumerateKeys(' + listtemp + ')',
+            'for (' + itemp + ' = 0; ' + itemp + ' < ' + keystemp + '.length; ' + itemp + '++) {', [
+                'var ' + firstIdentifier + ' = ' + keystemp + '.get(' + itemp + ');',
+                'var ' + secondIdentifier + ' = ' + listtemp + '[' + firstIdentifier + '];'
             ]
         ])
     }
