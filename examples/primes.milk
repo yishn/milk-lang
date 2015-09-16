@@ -1,24 +1,24 @@
 /**
  * Gets all the primes below a certain integer
+ * Naive implementation of the sieve of Eratosthenes
  * @param  int   limit    the limit
  * @return array          the list of all primes below limit
  */
 function getPrimes(limit):
     // Initialize checklist
-    l = [true for i in [0...limit]]
-    l[0] = false
-    l[1] = false
+    l = [false for i in [0...limit]]
+    l[0] = l[1] = true
 
-    for i in [0...limit] if l[i]:
+    for i, checked in l if not checked:
         x = 2
         // Check all multiples of i
         while i * x <= limit:
-            l[i * x] = false
+            l[i * x] = true
             x++
 
     // Accumulate unchecked items
     primes = []
-    for i in [0...limit] if l[i]:
+    for i, checked in l if not checked:
         primes.push(i)
 
     return primes
