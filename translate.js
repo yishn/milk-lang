@@ -316,7 +316,7 @@ function forHead(tree) {
 
         output = formatCode([
             listtemp + ' = ' + expression(tree[2]) + ';',
-            keystemp + ' = _.enumerateKeys(' + listtemp + ')',
+            keystemp + ' = _.enumerateKeys(' + listtemp + ');',
             'for (' + itemp + ' = 0; ' + itemp + ' < ' + keystemp + '.length; ' + itemp + '++) {', [
                 'var ' + firstIdentifier + ' = ' + keystemp + '.get(' + itemp + ');',
                 'var ' + secondIdentifier + ' = ' + listtemp + '[' + firstIdentifier + '];'
