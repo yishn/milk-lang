@@ -70,7 +70,7 @@
                 | keywordExpr
                   {% id %}
 
-       wedgeOp -> wedgeOp _ "^" _ postfixIncr
+       wedgeOp -> postfixIncr _ "^" _ wedgeOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | postfixIncr
                   {% id %}
