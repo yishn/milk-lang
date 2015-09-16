@@ -75,9 +75,31 @@ function expression(tree) {
         return '(' + expression(tree[1]) + ') && (' + expression(tree[2]) + ')'
     } else if (tree[0] == 'not') {
         return '!(' + expression(tree[1]) + ')'
+    } else if (tree[0] == 'chaincmp') {
+        return chainCmp(tree)
     }
 
     return '/* ... */'
+}
+
+function chainCmp(tree) {
+    var varDeclaration = tree.filter(function(x, i) {
+        return i % 2 != 0
+    }).map(function(x, i) {
+        return 'var _.r' + (i + 1) + ' = ' + expression(x) + ';'
+    })
+
+    chained = []
+    for (var i = 3; i < tree.length; i += 2) {
+        chained.push('_.r' + ((i - 1) / 2) + ' ' + tree[i - 1] + ' ' + '_.r' + ((i + 1) / 2))
+    }
+
+    return formatCode([
+        '(function() {',
+            varDeclaration, [
+            'return ' + chained.join(' && ') + ';'
+        ], '})()'
+    ])
 }
 
 function array(tree) {
