@@ -97,7 +97,7 @@ function expression(tree) {
     } else if (tree[0] == '?.') {
         return formatCode([
             '(function() {', [
-                'var _.r = ' + expression(tree[1]) + ';'
+                'var _.r = ' + expression(tree[1]) + ';',
                 'if (typeof _.r === "undefined" || _.r === null)', [
                     'return null;'
                 ], 'else return _.r.' + expression(tree[1]) + ';'
