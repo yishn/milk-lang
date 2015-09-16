@@ -18,8 +18,10 @@ function formatCode(input) {
     }).join('\n')
 }
 
-function paren(input) {
-    return '(' + input + ')'
+function paren(tree) {
+    if (['.', '?.', '()', '?()', '[]', '?[]', 'bool', 'number', 'number', 'keyword', 'identifier', 'array', 'object', 'string', '^', '%', 'chaincmp', '??'].indexOf(tree[0]) != -1)
+        return expression(tree)
+    return '(' + expression(tree) + ')'
 }
 
 function statements(tree, depth) {
@@ -63,19 +65,19 @@ function expression(tree) {
     } else if (tree[0] == 'lambda') {
         return lambda(tree)
     } else if (tree[0] == '?') {
-        return paren(expression(tree[1])) + ' ? ' + paren(expression(tree[2])) + ' : ' + paren(expression(tree[3]))
+        return paren(tree[1]) + ' ? ' + paren(tree[2]) + ' : ' + paren(tree[3])
     } else if (tree[0] == '??') {
         return existentialOp(tree)
     } else if (tree[0] == 'or') {
-        return paren(expression(tree[1])) + ' || ' + paren(expression(tree[2]))
+        return paren(tree[1]) + ' || ' + paren(tree[2])
     } else if (tree[0] == 'and') {
-        return paren(expression(tree[1])) + ' && ' + paren(expression(tree[2]))
+        return paren(tree[1]) + ' && ' + paren(tree[2])
     } else if (tree[0] == 'not') {
-        return '!' + paren(expression(tree[1]))
+        return '!' + paren(tree[1])
     } else if (tree[0] == 'chaincmp') {
         return chainCmp(tree)
-    } else if (['<=', '>=', '<', '>', '==', '!=', '+', '-', '*', '/', 'instanceof'].indexOf(tree[0]) != -1) {
-        return [paren(expression(tree[1])), tree[0], paren(expression(tree[2]))].join(' ')
+    } else if (['<=', '>=', '<', '>', '==', '!=', '+', '-', '*', '/', 'instanceof'].indexOf(tree[0]) != -1 && tree.length == 3) {
+        return [paren(tree[1]), tree[0], paren(tree[2])].join(' ')
     } else if (tree[0] == '%') {
         exports.flags.modulo = true
         return '_.modulo(' + expression(tree[1]) + ', ' + expression(tree[2]) + ')'
@@ -87,9 +89,9 @@ function expression(tree) {
         return tree[0] == 'in' ? output : '!' + output
     } else if (['+', '-', '++_', '--_', 'typeof', 'new'].indexOf(tree[0]) != -1) {
         var op = ['new', 'typeof'].indexOf(tree[0]) != -1 ? tree[0] + ' ' : tree[0].replace('_', '')
-        return op + paren(expression(tree[1]))
+        return op + paren(tree[1])
     } else if (tree[0] == '_++' || tree[0] == '_--') {
-        return paren(expression(tree[1])) + tree[0].substr(1)
+        return paren(tree[1]) + tree[0].substr(1)
     } else if (tree[0] == '.') {
         return expression(tree[1]) + '.' + expression(tree[2])
     }
@@ -231,7 +233,7 @@ function funcHead(tree) {
 }
 
 function lambda(tree) {
-    return '(' + funcHead(tree) + exports.indent + 'return ' + expression(tree[3]) + ';\n})'
+    return funcHead(tree) + exports.indent + 'return ' + expression(tree[3]) + ';\n}'
 }
 
 function forHead(tree) {
