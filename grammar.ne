@@ -102,7 +102,7 @@
 
     comparison -> plusOp _ cmpOperator _ plusOp
                   {% function(d) { return [d[2][0], d[0], d[4]] } %}
-                | plusOp _+ ("in" | "instanceof" | "not in") _+ plusOp
+                | plusOp _+ ("in" | "instanceof" | "not in") _+ memberAccess
                   {% function(d) { return [d[2][0], d[0], d[4]] } %}
                 | chainedCmp
                   {% id %}
@@ -340,7 +340,7 @@
     forLoop -> forHead _ block
                {% function(d) { return d[0].concat([d[2]]) } %}
 
-    forHead -> "for" _+ identifier (_ "," _ identifier):? _+ "in" _+ expression (_+ "if" _ expression):?
+    forHead -> "for" _+ identifier (_ "," _ identifier):? _+ "in" _+ memberAccess (_+ "if" _ expression):?
                {% function(d) { return ['for', [d[2][1], d[3] ? d[3][3][1] : null], d[7], d[8] ? d[8][3] : null] } %}
 
   whileLoop -> "while" _+ expression _ block
