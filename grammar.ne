@@ -22,7 +22,11 @@
                         {% function(d) { return d[0].concat([d[3][0]]) } %}
 
            statement -> (expression | class | keywordStatement | condStatement | tryStatement | loop)
-                        {% function(d) { return d[0][0] } %}
+                        {% function(d, l) {
+                            var r = d[0][0]
+                            r.location = l
+                            return r
+                        } %}
 
     keywordStatement -> ("break" | "continue")
                         {% function(d) { return ['keyword', d[0][0]] } %}
