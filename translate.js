@@ -18,6 +18,10 @@ function formatCode(input) {
     }).join('\n')
 }
 
+function paren(input) {
+    return '(' + input + ')'
+}
+
 function statements(tree, depth) {
     var statements = []
 
@@ -59,17 +63,19 @@ function expression(tree) {
     } else if (tree[0] == 'lambda') {
         return lambda(tree)
     } else if (tree[0] == '?') {
-        return '(' + expression(tree[1]) + ') ? (' + expression(tree[2]) + ') : (' + expression(tree[3]) + ')'
+        return paren(expression(tree[1])) + ' ? ' + paren(expression(tree[2])) + ' : ' + paren(expression(tree[3]))
     } else if (tree[0] == '??') {
         return existentialOp(tree)
     } else if (tree[0] == 'or') {
-        return '(' + expression(tree[1]) + ') || (' + expression(tree[2]) + ')'
+        return paren(expression(tree[1])) + ' || ' + paren(expression(tree[2]))
     } else if (tree[0] == 'and') {
-        return '(' + expression(tree[1]) + ') && (' + expression(tree[2]) + ')'
+        return paren(expression(tree[1])) + ' && ' + paren(expression(tree[2]))
     } else if (tree[0] == 'not') {
-        return '!(' + expression(tree[1]) + ')'
+        return '!' + paren(expression(tree[1]))
     } else if (tree[0] == 'chaincmp') {
         return chainCmp(tree)
+    } else if (['<=', '>=', '<', '>', '==', '!='].indexOf(tree[0]) != -1) {
+        return [paren(expression(tree[1])), tree[0], paren(expression(tree[2]))].join(' ')
     }
 
     return '/* ... */'
