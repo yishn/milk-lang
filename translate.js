@@ -99,27 +99,26 @@ function func(tree) {
             output += exports.indent + 'var ' + funcargs[i][0] + ' = arguments[' + i + '];\n'
         }
 
-        for (var i = funcargs.length - 1; i > spreadindex; i--) {
-            output += exports.indent + 'var ' + funcargs[i][0] + ' = arguments[arguments.length - ' + (funcargs.length - i) + '];\n'
-        }
-
         if (spreadindex == funcargs.length - 1) {
             output += exports.indent
                 + 'var ' + funcargs[spreadindex][0] + ' = '
                 + spreadindex + ' >= arguments.length ? [] : '
-                + 'arguments.slice(' + spreadindex + ');'
+                + 'arguments.slice(' + spreadindex + ');\n'
         } else {
             var afterspreadcount = funcargs.length - 1 - spreadindex
 
             output += exports.indent
                 + 'var ' + funcargs[spreadindex][0] + ' = '
                 + spreadindex + ' >= arguments.length - ' + afterspreadcount + ' ? [] : '
-                + 'arguments.slice(' + spreadindex + ', -' + afterspreadcount + ');'
+                + 'arguments.slice(' + spreadindex + ', -' + afterspreadcount + ');\n'
+        }
+
+        for (var i = funcargs.length - 1; i > spreadindex; i--) {
+            output += exports.indent + 'var ' + funcargs[i][0] + ' = arguments[arguments.length - ' + (funcargs.length - i) + '];\n'
         }
     }
 
-    output += '\n' + statements(tree[3], 1) + '\n}'
-
+    output += statements(tree[3], 1) + '\n}'
     return output
 }
 
