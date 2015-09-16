@@ -125,6 +125,12 @@ function object(tree) {
 }
 
 function func(tree) {
+    var output = funcHead(tree)
+    output += statements(tree[3], 1) + '\n}'
+    return output
+}
+
+function funcHead(tree) {
     var identifier = tree[1]
     var funcargs = tree[2]
     var hasOptionalArgs = funcargs.some(function(x) {
@@ -173,8 +179,11 @@ function func(tree) {
         }
     }
 
-    output += statements(tree[3], 1) + '\n}'
     return output
+}
+
+function lambda(tree) {
+    return '(' + funcHead(tree) + exports.indent + 'return ' + expression(tree[3]) + ';\n})'
 }
 
 function forHead(tree) {
