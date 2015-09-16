@@ -3,6 +3,7 @@ var fs = require('fs')
 var nearley = require('nearley')
 var grammar = require('./grammar')
 var helper = require('./helper')
+var translate = require('./translate')
 
 var filename = process.argv[2]
 var data = fs.readFileSync(filename, 'utf8')
@@ -20,7 +21,6 @@ var removed = helper.removeStringComments(data)
 var pureCode = removed[1]
 var comments = removed[2]
 data = removed[0]
-console.log(comments)
 
 // Get indent length
 
@@ -60,4 +60,11 @@ try {
 
 console.error('Compiled.')
 console.error(p.results.length == 1 ? 'No ambiguity detected.' : 'Ambiguity detected.')
-console.dir(p.results, { depth: null })
+
+var tree = p.results[0]
+console.dir(tree, { depth: null })
+
+// Translating
+
+console.error('Translating...')
+console.log(translate(tree))
