@@ -74,7 +74,7 @@ function expression(tree) {
         return '!' + paren(expression(tree[1]))
     } else if (tree[0] == 'chaincmp') {
         return chainCmp(tree)
-    } else if (['<=', '>=', '<', '>', '==', '!='].indexOf(tree[0]) != -1) {
+    } else if (['<=', '>=', '<', '>', '==', '!=', '+', '-', '*', '/', '%', '^', 'instanceof'].indexOf(tree[0]) != -1) {
         return [paren(expression(tree[1])), tree[0], paren(expression(tree[2]))].join(' ')
     }
 
