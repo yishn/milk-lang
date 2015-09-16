@@ -94,6 +94,15 @@ function expression(tree) {
         return paren(tree[1]) + tree[0].substr(1)
     } else if (tree[0] == '.') {
         return expression(tree[1]) + '.' + expression(tree[2])
+    } else if (tree[0] == '?.') {
+        return formatCode([
+            '(function() {', [
+                'var _.r = ' + expression(tree[1]) + ';'
+                'if (typeof _.r === "undefined" || _.r === null)', [
+                    'return null;'
+                ], 'else return _.r.' + expression(tree[1]) + ';'
+            ], '})()'
+        ])
     }
 
     return '/* ... */'
