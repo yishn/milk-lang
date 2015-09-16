@@ -309,12 +309,12 @@
      condStatement -> ifStatement
                       {% id %}
 
-       ifStatement -> "if" _+ expression _ block _ elifStatements
-                      {% function(d) { return ['if', [d[2], d[4]]].concat(d[6]) } %}
+       ifStatement -> "if" _+ expression _ block elifStatements
+                      {% function(d) { return ['if', [d[2], d[4]]].concat(d[5]) } %}
 
-    elifStatements -> (elifStatement _+):* elseStatement
+    elifStatements -> (_ elifStatement):* elseStatement
                       {% function(d) {
-                          var r = d[0].map(function(x) { return x[0] })
+                          var r = d[0].map(function(x) { return x[1] })
                           if (d[1] !== null) r.push(d[1])
                           return r
                       } %}
@@ -322,19 +322,19 @@
      elifStatement -> "elif" _+ expression _ block
                       {% function(d) { return [d[2], d[4]] } %}
 
-     elseStatement -> ("else" _ block):?
-                      {% function(d) { return d[0] ? ['else', d[0][2]] : null } %}
+     elseStatement -> (_ "else" _ block):?
+                      {% function(d) { return d[0] ? ['else', d[0][3]] : null } %}
 
 # Try statement
 
-        tryStatement -> "try" _ block _ catchStatement
+        tryStatement -> "try" _ block catchStatement
                         {% function(d) { return ['try', d[2]].concat(d[3]) } %}
 
-      catchStatement -> ("catch" (_+ identifier):? _ block _):? finallyStatement
-                        {% function(d) { return [d[0] ? [d[0][1] ? d[0][1][1] : null, d[0][3]] : null, d[1]] } %}
+      catchStatement -> (_ "catch" (_+ identifier):? _ block):? finallyStatement
+                        {% function(d) { return [d[0] ? [d[0][2] ? d[0][2][1] : null, d[0][4]] : null, d[1]] } %}
 
-    finallyStatement -> ("finally" _ block):?
-                        {% function(d) { return d[0] ? d[0][2] : null } %}
+    finallyStatement -> (_ "finally" _ block):?
+                        {% function(d) { return d[0] ? d[0][3] : null } %}
 
 # Loops
 

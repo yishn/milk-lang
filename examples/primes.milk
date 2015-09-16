@@ -32,8 +32,7 @@ function getPrimes(limit):
  *                         of number
  */
 function factorization(number):
-    if number <= 1:
-        return []
+    if number <= 1: return []
 
     // Get primes
     primes = getPrimes(number)
