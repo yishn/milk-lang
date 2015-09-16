@@ -345,7 +345,7 @@
                {% function(d) { return d[0].concat([d[2]]) } %}
 
     forHead -> "for" _+ identifier (_ "," _ identifier):? _+ "in" _+ expression (_+ "if" _ expression):?
-               {% function(d) { return ['for', d[2][1], d[3] ? d[3][3] : null, d[7], d[8] ? d[8][3] : null] } %}
+               {% function(d) { return ['for', [d[2][1], d[3] ? d[3][3][1] : null], d[7], d[8] ? d[8][3] : null] } %}
 
   whileLoop -> "while" _+ expression _ block
                {% function(d) { return ['while', d[2], d[4]] } %}
