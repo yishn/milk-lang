@@ -61,14 +61,7 @@ function expression(tree) {
     } else if (tree[0] == '?') {
         return '(' + expression(tree[1]) + ') ? (' + expression(tree[2]) + ') : (' + expression(tree[3]) + ')'
     } else if (tree[0] == '??') {
-        return formatCode([
-            '(function() {', [
-                'var _.r = ' + expression(tree[1]) + ';',
-                'if (typeof _.r === "undefined" || _.r === null)', [
-                    'return ' + expression(tree[2]) + ';'
-                ], 'else return _.r;'
-            ], '})()'
-        ])
+        return existentialOp(tree)
     } else if (tree[0] == 'or') {
         return '(' + expression(tree[1]) + ') || (' + expression(tree[2]) + ')'
     } else if (tree[0] == 'and') {
@@ -80,6 +73,17 @@ function expression(tree) {
     }
 
     return '/* ... */'
+}
+
+function existentialOp(tree) {
+    return formatCode([
+        '(function() {', [
+            'var _.r = ' + expression(tree[1]) + ';',
+            'if (typeof _.r === "undefined" || _.r === null)', [
+                'return ' + expression(tree[2]) + ';'
+            ], 'else return _.r;'
+        ], '})()'
+    ])
 }
 
 function chainCmp(tree) {
