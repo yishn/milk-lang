@@ -85,6 +85,13 @@ function expression(tree) {
         exports.flags.inOperator = true
         var output = '_.inOp(' + expression(tree[1]) + ', ' + expression(tree[2]) + ')'
         return tree[0] == 'in' ? output : '!' + output
+    } else if (['+', '-', '++_', '--_', 'typeof', 'new'].indexOf(tree[0]) != -1) {
+        var op = ['new', 'typeof'].indexOf(tree[0]) != -1 ? tree[0] + ' ' : tree[0].replace('_', '')
+        return op + paren(expression(tree[1]))
+    } else if (tree[0] == '_++' || tree[0] == '_--') {
+        return paren(expression(tree[1])) + tree[0].substr(1)
+    } else if (tree[0] == '.') {
+        return expression(tree[1]) + '.' + expression(tree[2])
     }
 
     return '/* ... */'
