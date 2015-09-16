@@ -45,11 +45,10 @@ console.error('Parsing...')
 var p = new nearley.Parser(grammar.ParserRules, grammar.ParserStart)
 
 try {
-    var result = p.feed(data)
+    p.feed(data)
 
-    if (!result || !result.results || !result.results.length) {
+    if (!p.results || !p.results.length)
         throw { message: 'Unexpected end', offset: data.length - 1 }
-    }
 } catch(e) {
     var pos = helper.offsetToLinePos(e.offset, data)
     var message = e.message
@@ -60,5 +59,5 @@ try {
 }
 
 console.error('Compiled.')
-console.error(result.results.length == 1 ? 'No ambiguity detected.' : 'Ambiguity detected.')
-console.dir(result.results, { depth: null })
+console.error(p.results.length == 1 ? 'No ambiguity detected.' : 'Ambiguity detected.')
+console.dir(p.results, { depth: null })
