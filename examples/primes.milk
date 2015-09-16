@@ -6,22 +6,18 @@
  */
 function getPrimes(limit):
     // Initialize checklist
-    l = [false for i in [0...limit]]
-    l[0] = l[1] = true
+    checklist = [false for i in [0...limit]]
+    checklist[0] = checklist[1] = true
 
-    for i, checked in l if not checked:
-        x = 2
+    for i, checked in checklist if not checked:
+        x = i
         // Check all multiples of i
         while i * x <= limit:
-            l[i * x] = true
+            checklist[i * x] = true
             x++
 
     // Accumulate unchecked items
-    primes = []
-    for i, checked in l if not checked:
-        primes.push(i)
-
-    return primes
+    return [i for i, checked in checklist if not checked]
 
 /**
  * Factorizes a given number in its unique prime
