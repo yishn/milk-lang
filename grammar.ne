@@ -145,8 +145,8 @@
                 | boolOr
                   {% id %}
 
-      inlineIf -> existential _ "?" _ inlineIf _ ":" _ inlineIf
-                  {% function(d) { return ['?', d[0], d[4], d[8]] } %}
+      inlineIf -> existential _ "?" _ inlineIf _ ":" (_ "#INDENT"):? _ inlineIf (_ "#DEINDENT"):?
+                  {% function(d) { return ['?', d[0], d[4], d[9]] } %}
                 | existential
                   {% id %}
 
@@ -258,8 +258,8 @@
                   | (_ objectListItem __ [,\n]):* _ objectListItem __ ([,\n] _):?
                     {% function(d) { return d[0].map(function(x) { return x[1] }).concat([d[2]]) } %}
 
-  objectListItem -> expression _ ":" _ expression
-                    {% function(d) { return [d[0], d[4]] } %}
+  objectListItem -> expression _ ":" (_ "#INDENT"):? _ expression (_ "#DEINDENT"):?
+                    {% function(d) { return [d[0], d[5]] } %}
 
 # Functions
 
