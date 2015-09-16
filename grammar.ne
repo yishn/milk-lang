@@ -7,6 +7,13 @@
                       | statementList [;\n] __ statement __
                         {% function(d) { return d[3] ? d[0].concat([d[3]]) : d[0] } %}
 
+      flatStatements -> __ statement __
+                        {% function(d) { return ['statements', d[1]] } %}
+                      | flatStatements ";" __
+                        {% id %}
+                      | flatStatements ";" __ statement __
+                        {% function(d) { return d[3] ? d[0].concat([d[3]]) : d[0] } %}
+
         functionList -> _ (func | passStatement) __
                         {% function(d) { return ['functions', d[1][0]] } %}
                       | functionList [;\n] __
@@ -300,10 +307,10 @@
      condStatement -> ifStatement
                       {% id %}
 
-       ifStatement -> "if" _+ expression _ ":" statementList elifStatements "#END"
-                      {% function(d) { return ['if', [d[2], d[5]]].concat(d[6]) } %}
+       ifStatement -> "if" _+ expression _ ":" statementList "#END" _+ elifStatements
+                      {% function(d) { return ['if', [d[2], d[5]]].concat(d[8]) } %}
 
-    elifStatements -> (elifStatement):* elseStatement
+    elifStatements -> (elifStatement _+):* elseStatement
                       {% function(d) {
                           var r = d[0].map(function(x) { return x[0] })
                           if (d[1] !== null) r.push(d[1])
@@ -318,10 +325,10 @@
 
 # Try statement
 
-        tryStatement -> "try" _ ":" statementList catchStatement "#END"
-                        {% function(d) { return ['try', d[3]].concat(d[4]) } %}
+        tryStatement -> "try" _ ":" statementList "#END" _+ catchStatement
+                        {% function(d) { return ['try', d[3]].concat(d[6]) } %}
 
-      catchStatement -> ("catch" (_+ identifier):? _ ":" statementList "#END"):? finallyStatement
+      catchStatement -> ("catch" (_+ identifier):? _ ":" statementList "#END" _+):? finallyStatement
                         {% function(d) { return [d[0] ? [d[0][1] ? d[0][1][1] : null, d[0][4]] : null, d[1]] } %}
 
     finallyStatement -> ("finally" _ ":" statementList "#END"):?
