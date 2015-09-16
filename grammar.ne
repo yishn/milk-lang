@@ -70,23 +70,23 @@
                 | keywordExpr
                   {% id %}
 
-         unary -> [+-] postfixIncr
-                  {% function(d) { return [d[0], d[1]] } %}
-                | ("++" | "--") _ postfixIncr
-                  {% function(d) { return [d[0][0] + '_', d[2]] } %}
-                | "typeof" _+ postfixIncr
-                  {% function(d) { return [d[0], d[2]] } %}
+       wedgeOp -> wedgeOp _ "^" _ postfixIncr
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
                 | postfixIncr
                   {% id %}
 
-       wedgeOp -> wedgeOp _ "^" _ unary
-                  {% function(d) { return [d[2], d[0], d[4]] } %}
-                | unary
+         unary -> [+-] wedgeOp
+                  {% function(d) { return [d[0], d[1]] } %}
+                | ("++" | "--") _ wedgeOp
+                  {% function(d) { return [d[0][0] + '_', d[2]] } %}
+                | "typeof" _+ wedgeOp
+                  {% function(d) { return [d[0], d[2]] } %}
+                | wedgeOp
                   {% id %}
 
-        starOp -> starOp _ [*/%] _ wedgeOp
+        starOp -> starOp _ [*/%] _ unary
                   {% function(d) { return [d[2], d[0], d[4]] } %}
-                | wedgeOp
+                | unary
                   {% id %}
 
         plusOp -> plusOp __ [+-] _ starOp
