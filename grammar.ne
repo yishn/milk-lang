@@ -14,31 +14,25 @@
                       | flatStatements ";" __ statement __
                         {% function(d) { return d[3] ? d[0].concat([d[3]]) : d[0] } %}
 
-        functionList -> _ (func | passStatement) __
-                        {% function(d) { return ['functions', d[1][0]] } %}
-                      | functionList [;\n] __
-                        {% id %}
-                      | functionList [;\n] __ (func | passStatement) __
-                        {% function(d) { return d[0].concat([d[3][0]]) } %}
-
-           statement -> (expression | class | keywordStatement | condStatement | tryStatement | loop)
+           statement -> (class | keywordStatement | condStatement | tryStatement | loop)
                         {% function(d, l) {
                             var r = d[0][0]
                             r.offset = l
                             return r
                         } %}
+                      | expression
+                        {% function(d, l) {
+                            var r = ['expression', d[0]]
+                            r.offset = l
+                            return r
+                        } %}
 
-    keywordStatement -> ("break" | "continue")
+    keywordStatement -> ("break" | "continue" | "pass")
                         {% function(d) { return ['keyword', d[0][0]] } %}
-                      | passStatement
-                        {% id %}
                       | ("return") (_+ expression):?
-                        {% function(d) { return [d[0][0], d[1] ? d[1][1] : null] } %}
+                        {% function(d) { return ['keyword', d[0][0], d[1] ? d[1][1] : null] } %}
                       | ("throw") _+ expression
-                        {% function(d) { return [d[0][0], d[2]] } %}
-
-       passStatement -> "pass"
-                        {% function(d) { return ['keyword', d[0]] } %}
+                        {% function(d) { return ['keyword', d[0][0], d[2]] } %}
 
                block -> ":" _ "#INDENT" __ "\n" statementList "#DEINDENT"
                         {% function(d) { return d[5] } %}
