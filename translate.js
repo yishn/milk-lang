@@ -157,7 +157,7 @@ function expression(tree) {
     } else if (tree[0] == '^') {
         return 'Math.pow(' + expression(tree[1]) + ', ' + expression(tree[2]) + ')'
     } else if (tree[0] == 'in' || tree[0] == 'not in') {
-        exports.flags.inOperator = true
+        exports.flags.inOp = true
         var output = '_.inOp(' + expression(tree[1]) + ', ' + expression(tree[2]) + ')'
         return tree[0] == 'in' ? output : '!' + output
     } else if (['+', '-', '++_', '--_', 'typeof', 'new'].indexOf(tree[0]) != -1) {
@@ -182,19 +182,31 @@ function assignment(tree) {
 
     if (assignRange) {
         var range = tree[1][2]
-        var rtemp = getVarName('r')
-        var starttemp = getVarName('start')
-        var counttemp = getVarName('count')
+        var rtemp = ['identifier', getVarName('r')]
+        var starttemp = ['identifier', getVarName('start')]
+        var counttemp = ['identifier', getVarName('count')]
 
-        return formatCode([
-            '(function() {', [
-                'var ' + rtemp + ' = ' + expression(tree[1][1]) + ';',
-                'var ' + starttemp + ' = ' + expression(range[1]) + ';',
-                'var ' + counttemp + ' = ' + (range[3] ? paren(range[3]) + ' + 1 - ' + starttemp : rtemp + '.length') + ';',
-                '[].splice.apply(' + rtemp + ', [' + starttemp + ', ' + counttemp + '].concat(' + expression(tree[2]) + '));',
-                'return ' + rtemp
-            ], '})()'
-        ])
+        return expression(['()', ['function', null, [], ['statements',
+            ['=', rtemp, tree[1][1]],
+            ['=', starttemp, range[1]],
+            ['=', counttemp, range[3]
+                ? ['-', ['+', range[3], ['number', 1]], starttemp]
+                : ['.', rtemp, ['identifier', 'length']]
+            ],
+            ['()',
+                ['.',
+                    ['.', ['array'], ['identifier', 'splice']],
+                    ['identifier', 'apply']
+                ], [
+                    rtemp,
+                    ['()', ['.',
+                        ['array', starttemp, counttemp],
+                        ['identifier', 'concat']
+                    ], [tree[2]]]
+                ]
+            ],
+            ['keyword', 'return', rtemp]
+        ]], []])
     }
 
     return [paren(tree[1]), '=', expression(tree[2])].join(' ')
@@ -496,7 +508,7 @@ function forHead(tree) {
             ]
         ])
     } else if (identifierCount == 1) {
-        exports.flags.forHead = true
+        exports.flags.enumerate = true
         var listtemp = getVarName('list')
         var itemp = getVarName('i')
 
@@ -507,7 +519,7 @@ function forHead(tree) {
             ]
         ])
     } else {
-        exports.flags.forHead = true
+        exports.flags.enumerateKeys = true
         var listtemp = getVarName('list')
         var keystemp = getVarName('keys')
         var itemp = getVarName('i')
