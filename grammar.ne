@@ -22,7 +22,7 @@
                         } %}
                       | expression
                         {% function(d, l) {
-                            var r = ['expression', d[0]]
+                            var r = d[0]
                             r.offset = l
                             return r
                         } %}
@@ -162,7 +162,7 @@
           entity -> (keywordEntity | identifier | literal)
                     {% function(d) { return d[0][0] } %}
 
-   keywordEntity -> ("null" | "this" | "self" | "super" | "debugger")
+   keywordEntity -> ("null" | "this" | "self" | "super" | "debugger" | "void")
                     {% function(d) { return ['keyword', d[0][0]] } %}
 
             bool -> ("true" | "false")

@@ -40,6 +40,30 @@ function getVarName(base) {
     return base + counter
 }
 
+function getCheckExistenceWrapper(token) {
+    var needTempVar = token[0] != 'identifier' && token[0] != 'keyword'
+    var temp = needTempVar ? ['identifier', getVarName('r')] : token
+
+    var output = function(tree) {
+        var s = ['statements']
+        if (needTempVar) s.push(['=', temp, token])
+        s.push(['if',
+            [
+                ['or',
+                    ['==', ['typeof', temp], ['string', "'undefined'"]],
+                    ['==', temp, ['keyword', 'null']]
+                ],
+                ['statements', ['keyword', 'return', ['keyword', 'null']]]
+            ]
+        ])
+        s.push(['keyword', 'return', tree])
+
+        return expression(['()', ['function', null, [], s], []])
+    }
+
+    return [output, temp]
+}
+
 function formatCode(input) {
     return input.filter(function(x) {
         return x !== null
@@ -81,8 +105,6 @@ function statement(tree) {
     } else if (tree[0] == 'keyword') {
         if (tree[1] == 'pass') return ''
         return tree[1] + (tree[2] ? ' ' + expression(tree[2]) : '')
-    } else if (tree[0] == 'expression') {
-        return expression(tree[1])
     } else if (tree[0] == 'for') {
         return forStatement(tree)
     } else if (tree[0] == 'while') {
@@ -93,7 +115,7 @@ function statement(tree) {
         return tryStatement(tree)
     }
 
-    return '/* ... */'
+    return expression(tree)
 }
 
 function expression(tree) {
@@ -151,6 +173,7 @@ function expression(tree) {
         return index(tree)
     }
 
+    console.log(tree)
     return '/* ... */'
 }
 
@@ -181,22 +204,29 @@ function dotOp(tree) {
     if (tree[0][0] != '?') {
         return paren(tree[1]) + '.' + expression(tree[2])
     } else {
-        return wrapCheckExistence(tree[1], '#VAR.' + expression(tree[2]))
+        var r = getCheckExistenceWrapper(tree[1])
+        return r[0](['.', r[1], tree[2]])
     }
 }
 
 function existentialOp(tree) {
     var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
-    var temp = needTempVar ? getVarName('r') : paren(tree[1])
+    var temp = needTempVar ? ['identifier', getVarName('r')] : tree[1]
+    var s = ['statements']
 
-    return formatCode([
-        '(function() {', [
-            needTempVar ? 'var ' + temp + ' = ' + expression(tree[1]) + ';' : null,
-            'if (typeof ' + temp +' === "undefined" || ' + temp +' === null)', [
-                'return ' + expression(tree[2]) + ';'
-            ], 'else return ' + temp + ';'
-        ], '})()'
+    if (needTempVar) s.push(['=', temp, tree[1]])
+    s.push(['if',
+        [
+            ['or',
+                ['==', ['typeof', temp], ['string', "'undefined'"]],
+                ['==', temp, ['keyword', 'null']]
+            ],
+            ['statements', ['keyword', 'return', tree[2]]]
+        ]
     ])
+    s.push(['keyword', 'return', temp])
+    console.dir(s)
+    return expression(['()', ['function', null, [], s], []])
 }
 
 function chainCmp(tree) {
@@ -342,79 +372,97 @@ function funcCall(tree) {
         return x[0] == 'keyword' && x[1] == '_'
     }).length
 
-    if (placeholderCount == 0) {
-        output = '#VAR(' + tree[2].map(function(x) {
+    if (placeholderCount == 0 && tree[0][0] != '?') {
+        return paren(tree[1]) + '(' + tree[2].map(function(x) {
             return expression(x)
         }).join(', ') + ')'
+    }
+
+    if (placeholderCount == 0) {
+        output = function(token) {
+            return ['()', token, tree[2]]
+        }
     } else {
         var temps = []
         for (var i = 0; i < placeholderCount; i++)
             temps.push(getVarName('x'))
 
-        output = formatCode([
-            'function(' + temps.join(', ') + ') {', [
-                'return #VAR(' + tree[2].map(function(x) {
-                    if (x[0] == 'keyword' && x[1] == '_') {
-                        var temp = temps[0]
-                        temps.splice(0, 1)
-                        return temp
-                    } else {
-                        return expression(x)
-                    }
-                }).join(', ') + ')'
-            ], '}'
-        ])
+        output = function(token) {
+            return ['lambda', null, temps.map(function(x) {
+                return [['identifier', x], null]
+            }), ['()', token, tree[2].map(function(x) {
+                if (x[0] == 'keyword' && x[1] == '_') {
+                    var temp = temps.splice(0, 1)
+                    return ['identifier', temp[0]]
+                } else {
+                    return x
+                }
+            })]]
+        }
     }
 
-    if (tree[0][0] == '?')
-        return wrapCheckExistence(tree[1], output)
-    return output.replace('#VAR', paren(tree[1]))
+    if (tree[0][0] == '?') {
+        var r = getCheckExistenceWrapper(tree[1])
+        return r[0](output(r[1]))
+    }
+
+    return expression(output(tree[1]))
 }
 
 function index(tree) {
-    var output = ''
+    var output
+
+    if (tree[0][0] != '?' && tree[2][0] != 'range') {
+        return paren(tree[1]) + '[' + expression(tree[2]) + ']'
+    }
 
     if (tree[2][0] != 'range') {
-        output = '#VAR[' + expression(tree[2]) + ']'
+        output = function(token) {
+            return ['[]', token, tree[2]]
+        }
     } else {
-        var start = expression(tree[2][1])
+        var start = tree[2][1]
 
         if (tree[2][3] == null) {
-            output = '#VAR.slice(' + start + ')'
+            output = function(token) {
+                return ['()',
+                    ['.', token, ['identifier', 'slice']],
+                    [start]
+                ]
+            }
         } else {
-            var end = paren(tree[2][3])
-            output = '#VAR.slice(' + start + ', ' + end + ' + 1)'
+            var end = tree[2][3]
+            output = function(token) {
+                var t = ['()',
+                    ['.', token, ['identifier', 'slice']],
+                    [start, ['+', end, ['number', 1]]]
+                ]
 
-            if (tree[2][2] != null) {
-                var modulo = paren(tree[2][2]) + ' - ' + paren(tree[2][1])
-                var temp = getVarName('i')
-                output += formatCode([
-                    '.filter(function(' + getVarName('x') + ', ' + temp + ') {', [
-                        'return ' + temp + ' % (' + modulo + ') === 0;'
-                    ], '})'
-                ])
+                if (tree[2][2] == null) return t
+
+                var modulo = ['-', tree[2][2], tree[2][1]]
+                var xtemp = ['identifier', getVarName('x')]
+                var itemp = ['identifier', getVarName('i')]
+
+                return ['()',
+                    ['.', t, ['identifier', 'filter']],
+                    [['lambda', null, [[xtemp, null], [itemp, null]],
+                        ['==',
+                            ['%', itemp, modulo],
+                            ['number', 0]
+                        ]
+                    ]]
+                ]
             }
         }
     }
 
-    if (tree[0][0] == '?')
-        return wrapCheckExistence(tree[1], output)
-    return output.replace('#VAR', paren(tree[1]))
-}
+    if (tree[0][0] == '?') {
+        var r = getCheckExistenceWrapper(tree[1])
+        return r[0](output(r[1]))
+    }
 
-function wrapCheckExistence(token, code) {
-    var needTempVar = token[0] != 'identifier' && token[0] != 'keyword'
-    var temp = needTempVar ? getVarName('r') : paren(token)
-
-    return formatCode([
-        '(function() {', [
-            needTempVar ? 'var ' + temp + ' = ' + expression(token) + ';' : null,
-            'if (typeof ' + temp +' === "undefined" || ' + temp +' === null)', [
-                'return null;'
-            ],
-            'else return ' + code.replace('#VAR', temp) + ';'
-        ], '})'
-    ])
+    return expression(output(tree[1]))
 }
 
 function forHead(tree) {
