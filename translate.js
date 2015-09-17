@@ -336,7 +336,51 @@ function funcCall(tree) {
 
     if (tree[0][0] == '?') {
         var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
-        var temp = needTempVar ? getVarName('r') : expression(tree[1])
+        var temp = needTempVar ? getVarName('r') : paren(tree[1])
+
+        output = formatCode([
+            '(function() {', [
+                needTempVar ? 'var ' + temp + ' = ' + expression(tree[1]) + ';' : null,
+                'if (typeof ' + temp +' === "undefined" || ' + temp +' === null)', [
+                    'return null;'
+                ],
+                'else return ' + output + ';'
+            ], '})'
+        ])
+    }
+
+    return output
+}
+
+function index(tree) {
+    var output = ''
+
+    if (tree[2][0] != 'range') {
+        output = paren(tree[1]) + '[' + expression(tree[2]) + ']'
+    } else {
+        var start = expression(tree[2][1])
+
+        if (tree[2][3] == null) {
+            output = paren(tree[1]) + '.slice(' + start + ')'
+        } else {
+            var end = paren(tree[2][3])
+            var output = paren(tree[1]) + '.slice(' + start + ', ' + end + ' + 1)'
+
+            if (tree[2][2] != null) {
+                var modulo = paren(tree[2][2]) + ' - ' + paren(tree[2][1])
+                var temp = getVarName('i')
+                output += formatCode([
+                    '.filter(function(' + getVarName('x') + ', ' + temp + ') {', [
+                        'return ' + temp + ' % (' + modulo + ') === 0;'
+                    ], '})'
+                ])
+            }
+        }
+    }
+
+    if (tree[0][0] == '?') {
+        var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
+        var temp = needTempVar ? getVarName('r') : paren(tree[1])
 
         output = formatCode([
             '(function() {', [
