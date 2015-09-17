@@ -290,7 +290,7 @@ function array(tree) {
     } else {
         return formatCode([
             '(function() {', [
-                expression(['=', ['identifier', temp], ['array']]),
+                expression(['=', ['identifier', temp], ['array']]) + ';',
                 forHead(tree[1]), [
                     temp + '.push(' + expression(tree[1][4]) + ');'
                 ], '}',
@@ -317,7 +317,7 @@ function object(tree) {
 
         return formatCode([
             '(function() {', [
-                expression(['=', ['identifier', temp], ['object']]),
+                expression(['=', ['identifier', temp], ['object']]) + ';',
                 forHead(tree[1]), [
                     temp + '[' + key + '] = ' + value + ';'
                 ], '}',

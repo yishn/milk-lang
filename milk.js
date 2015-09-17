@@ -68,5 +68,7 @@ console.dir(tree, { depth: null })
 // Translating
 
 console.error('Translating...')
+console.log()
 console.log(translate(tree))
+console.log()
 console.timeEnd('timer')
