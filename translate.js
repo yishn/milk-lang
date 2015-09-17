@@ -131,6 +131,8 @@ function expression(tree) {
         return dotOp(tree)
     } else if (tree[0] == '()' || tree[0] == '?()') {
         return funcCall(tree)
+    } else if (tree[0] == '[]' || tree[0] == '?[]') {
+        return index(tree)
     }
 
     return '/* ... */'
@@ -141,7 +143,7 @@ function dotOp(tree) {
         return paren(tree[1]) + '.' + expression(tree[2])
     } else {
         var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
-        var temp = needTempVar ? getVarName('r') : expression(tree[1])
+        var temp = needTempVar ? getVarName('r') : paren(tree[1])
 
         return formatCode([
             '(function() {', [
@@ -156,7 +158,7 @@ function dotOp(tree) {
 
 function existentialOp(tree) {
     var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
-    var temp = needTempVar ? getVarName('r') : expression(tree[1])
+    var temp = needTempVar ? getVarName('r') : paren(tree[1])
 
     return formatCode([
         '(function() {', [
@@ -309,7 +311,7 @@ function funcCall(tree) {
     }).length
 
     if (placeholderCount == 0) {
-        output = expression(tree[1]) + '(' + tree[2].map(function(x) {
+        output = paren(tree[1]) + '(' + tree[2].map(function(x) {
             return expression(x)
         }).join(', ') + ')'
     } else {
@@ -319,7 +321,7 @@ function funcCall(tree) {
 
         output = formatCode([
             'function(' + temps.join(', ') + ') {', [
-                expression(tree[1]) + '(' + tree[2].map(function(x) {
+                paren(tree[1]) + '(' + tree[2].map(function(x) {
                     if (x[0] == 'keyword' && x[1] == '_') {
                         var temp = temps[0]
                         temps.splice(0, 1)
