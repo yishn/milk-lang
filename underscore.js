@@ -24,3 +24,10 @@ _.enumerateKeys = function(list) {
         length: list.length
     };
 };
+
+_.inOp = function(el, list) {
+    if (!Array.isArray(list) && typeof list !== 'string')
+        return el in list
+
+    return list.indexOf(el) != -1
+}
