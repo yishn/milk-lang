@@ -420,6 +420,13 @@ function funcCall(tree) {
         return x[0] == 'keyword' && x[1] == '_'
     }).length
 
+    var callsuper = (tree[1][0] == '.' || tree[1][0] == '?.') && tree[1][1][0] == 'keyword' && tree[1][1][1] == 'super'
+    if (callsuper) {
+        tree[1][1] = ['.', ['keyword', 'self'], ['identifier', '__super__']]
+        tree[1] = [tree[1][0], tree[1][1], ['identifier', 'call']]
+        tree[2].splice(0, 0, ['keyword', 'self'])
+    }
+
     if (placeholderCount == 0 && tree[0][0] != '?') {
         return paren(tree[1]) + '(' + tree[2].map(function(x) {
             return expression(x)
