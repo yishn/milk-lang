@@ -1,4 +1,4 @@
-var _ = {}
+var _ = {};
 
 _.modulo = function(a, b) {
     var c = a % b;
