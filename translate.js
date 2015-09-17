@@ -497,16 +497,27 @@ function forHead(tree) {
             return '1'
         })()
 
-        output = formatCode([
+        var code = formatCode([
             'var ' + starttemp + ' = ' + start + ';',
             end ? 'var ' + endtemp + ' = ' + end + ';' : null,
-            'var ' + steptemp + ' = ' + step + ';',
-            'for (var ' + firstIdentifier + ' = ' + starttemp + '; '
-            + (end ? firstIdentifier + ' <= ' + endtemp : 'true') + '; '
-            + firstIdentifier + ' += ' + steptemp + ') {', [
-                secondIdentifier ? 'var ' + secondIdentifier + ' = ' + firstIdentifier : null
-            ]
+            'var ' + steptemp + ' = ' + step + ';'
         ])
+
+        if (!secondIdentifier) {
+            output = formatCode([
+                code,
+                'for (var ' + firstIdentifier + ' = ' + starttemp + '; '
+                    + (end ? firstIdentifier + ' <= ' + endtemp : 'true') + '; '
+                    + firstIdentifier + ' += ' + steptemp + ') {'
+            ])
+        } else {
+            output = formatCode([
+                code,
+                'for (var ' + secondIdentifier + ' = ' + starttemp + ', ' + firstIdentifier + ' = 0; '
+                    + (end ? secondIdentifier + ' <= ' + endtemp : 'true') + '; '
+                    + secondIdentifier + ' += ' + steptemp + ', ' + firstIdentifier + '++) {'
+            ])
+        }
     } else if (identifierCount == 1) {
         exports.flags.enumerate = true
         var listtemp = getVarName('list')
