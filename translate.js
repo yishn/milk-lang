@@ -109,8 +109,10 @@ function expression(tree) {
         return '!' + paren(tree[1])
     } else if (tree[0] == 'chaincmp') {
         return chainCmp(tree)
-    } else if (['<=', '>=', '<', '>', '==', '!=', '+', '-', '*', '/', 'instanceof'].indexOf(tree[0]) != -1 && tree.length == 3) {
+    } else if (['<=', '>=', '<', '>', '+', '-', '*', '/', 'instanceof'].indexOf(tree[0]) != -1 && tree.length == 3) {
         return [paren(tree[1]), tree[0], paren(tree[2])].join(' ')
+    } else if (tree[0] == '==' || tree[0] == '!=') {
+        return [paren(tree[1]), tree[0] + '=', paren(tree[2])].join(' ')
     } else if (tree[0] == '%') {
         exports.flags.modulo = true
         return '_.modulo(' + expression(tree[1]) + ', ' + expression(tree[2]) + ')'
@@ -363,8 +365,8 @@ function forHead(tree) {
         var start = expression(r[1])
         var end = r[3] ? expression(r[3]) : null
         var step = (function() {
-            if (r[2]) return '(' + expression(r[2]) + ') - ' + starttemp
-            if (end) return 'Math.sign(' + endtemp + ' - ' + starttemp + ')'
+            if (r[2]) return paren(r[2]) + ' - ' + starttemp
+            if (end) return endtemp + ' === ' + starttemp + ' ? 1 : ' + 'Math.sign(' + endtemp + ' - ' + starttemp + ')'
             return '1'
         })()
 
