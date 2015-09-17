@@ -143,7 +143,7 @@
         lambda -> arguments ")" _ "=>" _ lambda
                   {% function(d) { return ['lambda', null, d[0], d[5]] } %}
                 | identifier _ "=>" _ lambda
-                  {% function(d) { return ['lambda', null, [[d[0][1], null]], d[4]] } %}
+                  {% function(d) { return ['lambda', null, [[d[0], null]], d[4]] } %}
                 | inlineIf
                   {% id %}
 
@@ -254,7 +254,7 @@
 # Functions
 
                 func -> "function" (_+ identifier):? _ arguments ")" _ block
-                        {% function(d) { return ['function', d[1] ? d[1][1][1] : null, d[3], d[6]] } %}
+                        {% function(d) { return ['function', d[1] ? d[1][1] : null, d[3], d[6]] } %}
 
            arguments -> (nonemptyArguments | emptyArguments)
                         {% function(d) { return d[0][0] } %}
@@ -268,11 +268,11 @@
                         {% function(d) { return d[0].concat([d[3]]) } %}
 
             argument -> identifier
-                        {% function(d) { return [d[0][1], null] } %}
+                        {% function(d) { return [d[0], null] } %}
                       | identifier _ "=" _ expression
-                        {% function(d) { return [d[0][1], d[4]] } %}
+                        {% function(d) { return [d[0], d[4]] } %}
                       | "*" identifier
-                        {% function(d) { return [d[1][1], '*'] } %}
+                        {% function(d) { return [d[1], '*'] } %}
 
             callList -> (nonemptyCallList | emptyCallList)
                         {% function(d) { return d[0][0] } %}
@@ -292,7 +292,7 @@
 # Classes
 
         class -> "class" _+ identifier (_+ "extends" _+ expression):? _ block
-                 {% function(d) { return ['class', d[2][1], d[3] ? d[3][3] : null, d[4]] } %}
+                 {% function(d) { return ['class', d[2], d[3] ? d[3][3] : null, d[4]] } %}
 
 # Conditional statements
 
@@ -335,7 +335,7 @@
                {% function(d) { return d[0].concat([d[2]]) } %}
 
     forHead -> "for" _+ identifier (_ "," _ identifier):? _+ "in" _+ memberAccess (_+ "if" _ expression):?
-               {% function(d) { return ['for', [d[2][1], d[3] ? d[3][3][1] : null], d[7], d[8] ? d[8][3] : null] } %}
+               {% function(d) { return ['for', [d[2], d[3] ? d[3][3] : null], d[7], d[8] ? d[8][3] : null] } %}
 
   whileLoop -> "while" _+ expression _ block
                {% function(d) { return ['while', d[2], d[4]] } %}
