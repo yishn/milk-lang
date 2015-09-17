@@ -402,7 +402,7 @@ function index(tree) {
 }
 
 function wrapCheckExistence(token, code) {
-    var needTempVar = token[1] != 'identifier' && token[1] != 'keyword'
+    var needTempVar = token[0] != 'identifier' && token[0] != 'keyword'
     var temp = needTempVar ? getVarName('r') : paren(token)
 
     return formatCode([
