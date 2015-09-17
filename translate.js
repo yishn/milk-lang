@@ -180,7 +180,7 @@ function expression(tree) {
 function assignment(tree) {
     var assignRange = tree[1][0] == '[]' && tree[1][2][0] == 'range'
 
-    if (assignRange) {
+    if (assignRange && tree[1][2][2] == null) {
         var range = tree[1][2]
         var rtemp = ['identifier', getVarName('r')]
         var starttemp = ['identifier', getVarName('start')]
@@ -205,6 +205,21 @@ function assignment(tree) {
                     ], [tree[2]]]
                 ]
             ],
+            ['keyword', 'return', rtemp]
+        ]], []])
+    } else if (assignRange) {
+        var range = tree[1][2]
+        var rtemp = ['identifier', getVarName('r')]
+        var listtemp = ['identifier', getVarName('list')]
+        var itemp = ['identifier', getVarName('i')]
+        var jtemp = ['identifier', getVarName('j')]
+
+        return expression(['()', ['function', null, [], ['statements',
+            ['=', rtemp, tree[1][1]],
+            ['=', listtemp, tree[2]],
+            ['for', [itemp, jtemp], range, null, ['statements',
+                ['=', ['[]', rtemp, jtemp], ['[]', listtemp, itemp]]
+            ]],
             ['keyword', 'return', rtemp]
         ]], []])
     }
