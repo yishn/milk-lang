@@ -326,7 +326,7 @@ function funcCall(tree) {
 
     if (tree[0][0] == '?')
         return wrapCheckExistence(tree[1], output)
-    return output
+    return output.replace('#VAR', paren(tree[1]))
 }
 
 function index(tree) {
@@ -357,7 +357,7 @@ function index(tree) {
 
     if (tree[0][0] == '?')
         return wrapCheckExistence(tree[1], output)
-    return output
+    return output.replace('#VAR', paren(tree[1]))
 }
 
 function wrapCheckExistence(token, code) {
