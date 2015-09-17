@@ -93,8 +93,10 @@ function expression(tree) {
         return object(tree)
     } else if (tree[0] == 'function') {
         return func(tree)
-    } else if (tree[0] == '=' || tree[0].length == 2 && tree[0][1] == '=') {
-        return expression(tree[1]) + ' ' + tree[0] + ' ' + expression(tree[2])
+    } else if (tree[0] == '=') {
+        return assignment(tree)
+    } else if (tree[0].length == 2 && tree[0][1] == '=') {
+        return paren(tree[1]) + ' ' + tree[0] + ' ' + paren(tree[2])
     } else if (tree[0] == 'lambda') {
         return lambda(tree)
     } else if (tree[0] == '?') {
@@ -291,7 +293,11 @@ function funcHead(tree) {
 }
 
 function lambda(tree) {
-    return funcHead(tree) + exports.indent + 'return ' + expression(tree[3]) + ';\n}'
+    return formatCode([
+        funcHead(tree), [
+            'return ' + expression(tree[3]) + ';',
+        ], '}'
+    ])
 }
 
 function funcCall(tree) {
@@ -311,7 +317,7 @@ function funcCall(tree) {
 
         output = formatCode([
             'function(' + temps.join(', ') + ') {', [
-                '#VAR(' + tree[2].map(function(x) {
+                'return #VAR(' + tree[2].map(function(x) {
                     if (x[0] == 'keyword' && x[1] == '_') {
                         var temp = temps[0]
                         temps.splice(0, 1)
