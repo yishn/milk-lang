@@ -359,7 +359,7 @@ function funcHead(tree) {
 
     if (hasOptionalArgs) {
         for (var i = 0; i < spreadindex; i++) {
-            output += exports.indent + 'var ' + funcargs[i][0] + ' = '
+            output += exports.indent + funcargs[i][0] + ' = '
             if (!funcargs[i][1])
                 output += 'arguments[' + i + '];\n'
             else
@@ -368,20 +368,20 @@ function funcHead(tree) {
 
         if (spreadindex == funcargs.length - 1) {
             output += exports.indent
-                + 'var ' + funcargs[spreadindex][0] + ' = '
+                + funcargs[spreadindex][0] + ' = '
                 + spreadindex + ' >= arguments.length ? [] : '
                 + 'arguments.slice(' + spreadindex + ');\n'
         } else if (spreadindex < funcargs.length - 1) {
             var afterspreadcount = funcargs.length - 1 - spreadindex
 
             output += exports.indent
-                + 'var ' + funcargs[spreadindex][0] + ' = '
+                + funcargs[spreadindex][0] + ' = '
                 + spreadindex + ' >= arguments.length - ' + afterspreadcount + ' ? [] : '
                 + 'arguments.slice(' + spreadindex + ', -' + afterspreadcount + ');\n'
         }
 
         for (var i = funcargs.length - 1; i > spreadindex; i--) {
-            output += exports.indent + 'var ' + funcargs[i][0] + ' = '
+            output += exports.indent + funcargs[i][0] + ' = '
             if (!funcargs[i][1])
                 output += 'arguments[arguments.length - ' + (funcargs.length - i) + '];\n'
             else
@@ -519,22 +519,22 @@ function forHead(tree) {
         })()
 
         var code = formatCode([
-            'var ' + starttemp + ' = ' + start + ';',
-            end ? 'var ' + endtemp + ' = ' + end + ';' : null,
-            'var ' + steptemp + ' = ' + step + ';'
+            starttemp + ' = ' + start + ';',
+            end ? endtemp + ' = ' + end + ';' : null,
+            steptemp + ' = ' + step + ';'
         ])
 
         if (!secondIdentifier) {
             output = formatCode([
                 code,
-                'for (var ' + firstIdentifier + ' = ' + starttemp + '; '
+                'for (' + firstIdentifier + ' = ' + starttemp + '; '
                     + (end ? firstIdentifier + ' <= ' + endtemp : 'true') + '; '
                     + firstIdentifier + ' += ' + steptemp + ') {'
             ])
         } else {
             output = formatCode([
                 code,
-                'for (var ' + secondIdentifier + ' = ' + starttemp + ', ' + firstIdentifier + ' = 0; '
+                'for (' + secondIdentifier + ' = ' + starttemp + ', ' + firstIdentifier + ' = 0; '
                     + (end ? secondIdentifier + ' <= ' + endtemp : 'true') + '; '
                     + secondIdentifier + ' += ' + steptemp + ', ' + firstIdentifier + '++) {'
             ])
@@ -545,9 +545,9 @@ function forHead(tree) {
         var itemp = getVarName('i')
 
         output = formatCode([
-            'var ' + listtemp + ' = _.enumerate(' + expression(tree[2]) + ')',
-            'for (var ' + itemp + ' = 0; ' + itemp + ' < ' + listtemp + '.length; ' + itemp + '++) {', [
-                'var ' + firstIdentifier + ' = ' + listtemp + '.get(' + itemp + ');'
+            listtemp + ' = _.enumerate(' + expression(tree[2]) + ')',
+            'for (' + itemp + ' = 0; ' + itemp + ' < ' + listtemp + '.length; ' + itemp + '++) {', [
+                firstIdentifier + ' = ' + listtemp + '.get(' + itemp + ');'
             ]
         ])
     } else {
@@ -557,11 +557,11 @@ function forHead(tree) {
         var itemp = getVarName('i')
 
         output = formatCode([
-            'var ' + listtemp + ' = ' + expression(tree[2]) + ';',
-            'var ' + keystemp + ' = _.enumerateKeys(' + listtemp + ');',
-            'for (var ' + itemp + ' = 0; ' + itemp + ' < ' + keystemp + '.length; ' + itemp + '++) {', [
-                'var ' + firstIdentifier + ' = ' + keystemp + '.get(' + itemp + ');',
-                'var ' + secondIdentifier + ' = ' + listtemp + '[' + firstIdentifier + '];'
+            listtemp + ' = ' + expression(tree[2]) + ';',
+            keystemp + ' = _.enumerateKeys(' + listtemp + ');',
+            'for (' + itemp + ' = 0; ' + itemp + ' < ' + keystemp + '.length; ' + itemp + '++) {', [
+                firstIdentifier + ' = ' + keystemp + '.get(' + itemp + ');',
+                secondIdentifier + ' = ' + listtemp + '[' + firstIdentifier + '];'
             ]
         ])
     }
