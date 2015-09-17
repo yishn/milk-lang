@@ -137,6 +137,8 @@ function expression(tree) {
                 ], 'else return ' + temp + '.' + expression(tree[1]) + ';'
             ], '})()'
         ])
+    } else if (tree[0] == '()') {
+        return funcCall(tree)
     }
 
     return '/* ... */'
@@ -286,6 +288,36 @@ function funcHead(tree) {
 
 function lambda(tree) {
     return funcHead(tree) + exports.indent + 'return ' + expression(tree[3]) + ';\n}'
+}
+
+function funcCall(tree) {
+    var placeholderCount = tree[2].filter(function(x) {
+        return x[0] == 'keyword' && x[1] == '_'
+    }).length
+
+    if (placeholderCount == 0) {
+        return expression(tree[1]) + '(' + tree[2].map(function(x) {
+            return expression(x)
+        }).join(', ') + ')'
+    } else {
+        var temps = []
+        for (var i = 0; i < placeholderCount; i++)
+            temps.push(getVarName('x'))
+
+        return formatCode([
+            'function(' + temps.join(', ') + ') {', [
+                expression(tree[1]) + '(' + tree[2].map(function(x) {
+                    if (x[0] == 'keyword' && x[1] == '_') {
+                        var temp = temps[0]
+                        temps.splice(0, 1)
+                        return temp
+                    } else {
+                        return expression(x)
+                    }
+                }).join(', ') + ')'
+            ], '}'
+        ])
+    }
 }
 
 function forHead(tree) {
