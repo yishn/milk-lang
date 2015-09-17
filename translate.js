@@ -140,6 +140,29 @@ function expression(tree) {
     return '/* ... */'
 }
 
+function assignment(tree) {
+    var assignRange = tree[1][0] == '[]' && tree[1][2][0] == 'range'
+
+    if (assignRange) {
+        var range = tree[1][2]
+        var rtemp = getVarName('r')
+        var starttemp = getVarName('start')
+        var counttemp = getVarName('count')
+
+        return formatCode([
+            '(function() {', [
+                'var ' + rtemp + ' = ' + expression(tree[1][1]) + ';',
+                'var ' + starttemp + ' = ' + expression(range[1]) + ';',
+                'var ' + counttemp + ' = ' + (range[3] ? paren(range[3]) + ' + 1 - ' + starttemp : rtemp + '.length') + ';',
+                '[].splice.apply(' + rtemp + ', [' + starttemp + ', ' + counttemp + '].concat(' + expression(tree[2]) + '));',
+                'return ' + rtemp
+            ], '})()'
+        ])
+    }
+
+    return [paren(tree[1]), '=', expression(tree[2])].join(' ')
+}
+
 function dotOp(tree) {
     if (tree[0][0] != '?') {
         return paren(tree[1]) + '.' + expression(tree[2])
