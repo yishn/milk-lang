@@ -142,17 +142,7 @@ function dotOp(tree) {
     if (tree[0][0] != '?') {
         return paren(tree[1]) + '.' + expression(tree[2])
     } else {
-        var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
-        var temp = needTempVar ? getVarName('r') : paren(tree[1])
-
-        return formatCode([
-            '(function() {', [
-                needTempVar ? 'var ' + temp + ' = ' + expression(tree[1]) + ';' : null,
-                'if (typeof ' + temp + ' === "undefined" || ' + temp + ' === null)', [
-                    'return null;'
-                ], 'else return ' + temp + '.' + expression(tree[2]) + ';'
-            ], '})()'
-        ])
+        return wrapCheckExistence(tree[1], '#VAR.' + expression(tree[2]))
     }
 }
 
@@ -311,7 +301,7 @@ function funcCall(tree) {
     }).length
 
     if (placeholderCount == 0) {
-        output = paren(tree[1]) + '(' + tree[2].map(function(x) {
+        output = '#VAR(' + tree[2].map(function(x) {
             return expression(x)
         }).join(', ') + ')'
     } else {
@@ -321,7 +311,7 @@ function funcCall(tree) {
 
         output = formatCode([
             'function(' + temps.join(', ') + ') {', [
-                paren(tree[1]) + '(' + tree[2].map(function(x) {
+                '#VAR(' + tree[2].map(function(x) {
                     if (x[0] == 'keyword' && x[1] == '_') {
                         var temp = temps[0]
                         temps.splice(0, 1)
@@ -334,21 +324,8 @@ function funcCall(tree) {
         ])
     }
 
-    if (tree[0][0] == '?') {
-        var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
-        var temp = needTempVar ? getVarName('r') : paren(tree[1])
-
-        output = formatCode([
-            '(function() {', [
-                needTempVar ? 'var ' + temp + ' = ' + expression(tree[1]) + ';' : null,
-                'if (typeof ' + temp +' === "undefined" || ' + temp +' === null)', [
-                    'return null;'
-                ],
-                'else return ' + output + ';'
-            ], '})'
-        ])
-    }
-
+    if (tree[0][0] == '?')
+        return wrapCheckExistence(tree[1], output)
     return output
 }
 
@@ -356,15 +333,15 @@ function index(tree) {
     var output = ''
 
     if (tree[2][0] != 'range') {
-        output = paren(tree[1]) + '[' + expression(tree[2]) + ']'
+        output = '#VAR[' + expression(tree[2]) + ']'
     } else {
         var start = expression(tree[2][1])
 
         if (tree[2][3] == null) {
-            output = paren(tree[1]) + '.slice(' + start + ')'
+            output = '#VAR.slice(' + start + ')'
         } else {
             var end = paren(tree[2][3])
-            var output = paren(tree[1]) + '.slice(' + start + ', ' + end + ' + 1)'
+            output = '#VAR.slice(' + start + ', ' + end + ' + 1)'
 
             if (tree[2][2] != null) {
                 var modulo = paren(tree[2][2]) + ' - ' + paren(tree[2][1])
@@ -378,22 +355,24 @@ function index(tree) {
         }
     }
 
-    if (tree[0][0] == '?') {
-        var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
-        var temp = needTempVar ? getVarName('r') : paren(tree[1])
-
-        output = formatCode([
-            '(function() {', [
-                needTempVar ? 'var ' + temp + ' = ' + expression(tree[1]) + ';' : null,
-                'if (typeof ' + temp +' === "undefined" || ' + temp +' === null)', [
-                    'return null;'
-                ],
-                'else return ' + output + ';'
-            ], '})'
-        ])
-    }
-
+    if (tree[0][0] == '?')
+        return wrapCheckExistence(tree[1], output)
     return output
+}
+
+function wrapCheckExistence(token, code) {
+    var needTempVar = token[1] != 'identifier' && token[1] != 'keyword'
+    var temp = needTempVar ? getVarName('r') : paren(token)
+
+    return formatCode([
+        '(function() {', [
+            needTempVar ? 'var ' + temp + ' = ' + expression(token) + ';' : null,
+            'if (typeof ' + temp +' === "undefined" || ' + temp +' === null)', [
+                'return null;'
+            ],
+            'else return ' + code.replace('#VAR', temp) + ';'
+        ], '})'
+    ])
 }
 
 function forHead(tree) {
