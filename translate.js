@@ -171,6 +171,8 @@ function expression(tree) {
         return funcCall(tree)
     } else if (tree[0] == '[]' || tree[0] == '?[]') {
         return index(tree)
+    } else if (tree[0] == 'range') {
+        return range(tree)
     }
 
     console.log(tree)
@@ -288,7 +290,7 @@ function array(tree) {
     } else {
         return formatCode([
             '(function() {', [
-                'var ' + temp + ' = [];',
+                expression(['=', ['identifier', temp], ['array']]),
                 forHead(tree[1]), [
                     temp + '.push(' + expression(tree[1][4]) + ');'
                 ], '}',
@@ -315,7 +317,7 @@ function object(tree) {
 
         return formatCode([
             '(function() {', [
-                'var ' + temp + ' = {};',
+                expression(['=', ['identifier', temp], ['object']]),
                 forHead(tree[1]), [
                     temp + '[' + key + '] = ' + value + ';'
                 ], '}',
@@ -323,6 +325,11 @@ function object(tree) {
             ], '})()'
         ])
     }
+}
+
+function range(tree) {
+    var temp = ['identifier', getVarName('i')]
+    return array(['arrayfor', ['for', [temp, null], tree, null, temp]])
 }
 
 function func(tree) {
