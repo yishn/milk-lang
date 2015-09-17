@@ -125,30 +125,40 @@ function expression(tree) {
         return op + paren(tree[1])
     } else if (tree[0] == '_++' || tree[0] == '_--') {
         return paren(tree[1]) + tree[0].substr(1)
-    } else if (tree[0] == '.') {
-        return expression(tree[1]) + '.' + expression(tree[2])
-    } else if (tree[0] == '?.') {
-        var temp = getVarName('r')
-        return formatCode([
-            '(function() {', [
-                'var ' + temp + ' = ' + expression(tree[1]) + ';',
-                'if (typeof ' + temp + ' === "undefined" || ' + temp + ' === null)', [
-                    'return null;'
-                ], 'else return ' + temp + '.' + expression(tree[1]) + ';'
-            ], '})()'
-        ])
-    } else if (tree[0] == '()') {
+    } else if (tree[0] == '.' || tree[0] == '?.') {
+        return dotOp(tree)
+    } else if (tree[0] == '()' || tree[0] == '?()') {
         return funcCall(tree)
     }
 
     return '/* ... */'
 }
 
+function dotOp(tree) {
+    if (tree[0][0] != '?') {
+        return paren(tree[1]) + '.' + expression(tree[2])
+    } else {
+        var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
+        var temp = needTempVar ? getVarName('r') : expression(tree[1])
+
+        return formatCode([
+            '(function() {', [
+                needTempVar ? 'var ' + temp + ' = ' + expression(tree[1]) + ';' : null,
+                'if (typeof ' + temp + ' === "undefined" || ' + temp + ' === null)', [
+                    'return null;'
+                ], 'else return ' + temp + '.' + expression(tree[2]) + ';'
+            ], '})()'
+        ])
+    }
+}
+
 function existentialOp(tree) {
-    var temp = getVarName('r')
+    var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
+    var temp = needTempVar ? getVarName('r') : expression(tree[1])
+
     return formatCode([
         '(function() {', [
-            'var ' + temp + ' = ' + expression(tree[1]) + ';',
+            needTempVar ? 'var ' + temp + ' = ' + expression(tree[1]) + ';' : null,
             'if (typeof ' + temp +' === "undefined" || ' + temp +' === null)', [
                 'return ' + expression(tree[2]) + ';'
             ], 'else return ' + temp + ';'
@@ -291,12 +301,13 @@ function lambda(tree) {
 }
 
 function funcCall(tree) {
+    var output = ''
     var placeholderCount = tree[2].filter(function(x) {
         return x[0] == 'keyword' && x[1] == '_'
     }).length
 
     if (placeholderCount == 0) {
-        return expression(tree[1]) + '(' + tree[2].map(function(x) {
+        output = expression(tree[1]) + '(' + tree[2].map(function(x) {
             return expression(x)
         }).join(', ') + ')'
     } else {
@@ -304,7 +315,7 @@ function funcCall(tree) {
         for (var i = 0; i < placeholderCount; i++)
             temps.push(getVarName('x'))
 
-        return formatCode([
+        output = formatCode([
             'function(' + temps.join(', ') + ') {', [
                 expression(tree[1]) + '(' + tree[2].map(function(x) {
                     if (x[0] == 'keyword' && x[1] == '_') {
@@ -318,6 +329,23 @@ function funcCall(tree) {
             ], '}'
         ])
     }
+
+    if (tree[0][0] == '?') {
+        var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
+        var temp = needTempVar ? getVarName('r') : expression(tree[1])
+
+        output = formatCode([
+            '(function() {', [
+                needTempVar ? 'var ' + temp + ' = ' + expression(tree[1]) + ';' : null,
+                'if (typeof ' + temp +' === "undefined" || ' + temp +' === null)', [
+                    'return null;'
+                ],
+                'else return ' + output + ';'
+            ], '})'
+        ])
+    }
+
+    return output
 }
 
 function forHead(tree) {
