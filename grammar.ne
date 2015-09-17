@@ -292,7 +292,7 @@
 # Classes
 
         class -> "class" _+ identifier (_+ "extends" _+ expression):? _ block
-                 {% function(d) { return ['class', d[2], d[3] ? d[3][3] : null, d[4]] } %}
+                 {% function(d) { return ['class', d[2], d[3] ? d[3][3] : null, d[5]] } %}
 
 # Conditional statements
 
