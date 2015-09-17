@@ -330,10 +330,9 @@ function funcHead(tree) {
 }
 
 function lambda(tree) {
-    return formatCode([
-        funcHead(tree), [
-            'return ' + expression(tree[3]) + ';',
-        ], '}'
+    return func([
+        'function', null, tree[2],
+        ['statements', ['keyword', 'return', tree[3]]]
     ])
 }
 
