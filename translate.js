@@ -61,14 +61,14 @@ function statements(tree, depth) {
     var statements = []
 
     for (var i = 1; i < tree.length; i++) {
-        statements.push(statement(tree[i]).split('\n').map(function(y) {
-            for (var i = 0; i < depth; i++)
-                y = exports.indent + y
-            return y
-        }).join('\n'))
+        statements.push(statement(tree[i]) + ';')
     }
 
-    return statements.join(';\n') + ';'
+    return formatCode(statements).split('\n').map(function(x) {
+        for (var i = 0; i < depth; i++)
+            x = exports.indent + x
+        return x
+    }).join('\n')
 }
 
 function statement(tree) {
