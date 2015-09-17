@@ -1,11 +1,12 @@
-module.exports = function(tree, indent) {
+exports.translate = function(tree, indent) {
     if (!indent) indent = '    '
 
     exports.indent = indent
     exports.identifiers = getIdentifiers(tree)
+    exports.generatedIdentifiers = []
     exports.flags = {}
 
-    return statements(tree, 0)
+    return statements(tree)
 }
 
 // Helper functions
@@ -29,6 +30,7 @@ function getIdentifiers(tree, list) {
 function getVarName(base) {
     if (exports.identifiers.indexOf(base) == -1) {
         exports.identifiers.push(base)
+        exports.generatedIdentifiers.push(base)
         return base
     }
 
@@ -37,6 +39,7 @@ function getVarName(base) {
         counter++
 
     exports.identifiers.push(base + counter)
+    exports.generatedIdentifiers.push(base + counter)
     return base + counter
 }
 

@@ -3,7 +3,7 @@ var fs = require('fs')
 var nearley = require('nearley')
 var grammar = require('./grammar')
 var helper = require('./helper')
-var translate = require('./translate')
+var translator = require('./translator')
 
 var filename = process.argv[2]
 var data = fs.readFileSync(filename, 'utf8')
@@ -69,6 +69,6 @@ console.dir(tree, { depth: null })
 
 console.error('Translating...')
 console.log()
-console.log(translate(tree))
+console.log(translator.translate(tree))
 console.log()
 console.timeEnd('timer')
