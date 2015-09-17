@@ -8,23 +8,20 @@ module.exports = function(tree, indent) {
     return statements(tree, 0)
 }
 
-function getIdentifiers(tree) {
-    if (tree[0] == 'identifier')
-        return [tree[1]]
-
-    var r = []
+function getIdentifiers(tree, list) {
+    if (!list) list = []
+    if (tree[0] == 'identifier') {
+        if (list.indexOf(tree[1]) == -1)
+            list.push(tree[1])
+    }
 
     tree.filter(function(x) {
         return x !== null && typeof x == 'object'
-    }).map(function(x) {
-        return getIdentifiers(x)
     }).forEach(function(x) {
-        r = r.concat(x.filter(function(x) {
-            return x != null
-        }))
+        getIdentifiers(x, list)
     })
 
-    return r
+    return list
 }
 
 function getVarName(base) {
