@@ -31,7 +31,7 @@
                         {% function(d) { return ['keyword', d[0][0]] } %}
                       | ("return") (_+ expression):?
                         {% function(d) { return ['keyword', d[0][0], d[1] ? d[1][1] : null] } %}
-                      | ("throw") _+ expression
+                      | ("throw" | "delete") _+ memberAccess
                         {% function(d) { return ['keyword', d[0][0], d[2]] } %}
 
                block -> ":" _ "#INDENT" __ "\n" statementList "#DEINDENT"
