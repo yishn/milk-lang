@@ -95,7 +95,7 @@
                   {% id %}
 
     comparison -> plusOp _ cmpOperator _ plusOp
-                  {% function(d) { return [d[2][0], d[0], d[4]] } %}
+                  {% function(d) { return [d[2], d[0], d[4]] } %}
                 | plusOp _+ ("in" | "instanceof" | "not in") _+ memberAccess
                   {% function(d) { return [d[2][0], d[0], d[4]] } %}
                 | chainedCmp

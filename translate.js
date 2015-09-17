@@ -8,6 +8,8 @@ module.exports = function(tree, indent) {
     return statements(tree, 0)
 }
 
+// Helper functions
+
 function getIdentifiers(tree, list) {
     if (!list) list = []
     if (tree[0] == 'identifier') {
@@ -57,6 +59,8 @@ function paren(tree) {
     return '(' + expression(tree) + ')'
 }
 
+// Translator functions
+
 function statements(tree, depth) {
     var statements = []
 
@@ -95,8 +99,10 @@ function expression(tree) {
         return func(tree)
     } else if (tree[0] == '=') {
         return assignment(tree)
+    } else if (tree[0] == '==' || tree[0] == '!=') {
+        return [paren(tree[1]), tree[0] + '=', paren(tree[2])].join(' ')
     } else if (tree[0].length == 2 && tree[0][1] == '=') {
-        return paren(tree[1]) + ' ' + tree[0] + ' ' + paren(tree[2])
+        return [paren(tree[1]), tree[0], paren(tree[2])].join(' ')
     } else if (tree[0] == 'lambda') {
         return lambda(tree)
     } else if (tree[0] == '?') {
@@ -111,10 +117,8 @@ function expression(tree) {
         return '!' + paren(tree[1])
     } else if (tree[0] == 'chaincmp') {
         return chainCmp(tree)
-    } else if (['<=', '>=', '<', '>', '+', '-', '*', '/', 'instanceof'].indexOf(tree[0]) != -1 && tree.length == 3) {
+    } else if (['<', '>', '+', '-', '*', '/', 'instanceof'].indexOf(tree[0]) != -1 && tree.length == 3) {
         return [paren(tree[1]), tree[0], paren(tree[2])].join(' ')
-    } else if (tree[0] == '==' || tree[0] == '!=') {
-        return [paren(tree[1]), tree[0] + '=', paren(tree[2])].join(' ')
     } else if (tree[0] == '%') {
         exports.flags.modulo = true
         return '_.modulo(' + expression(tree[1]) + ', ' + expression(tree[2]) + ')'
