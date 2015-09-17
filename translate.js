@@ -180,7 +180,9 @@ function expression(tree) {
 function assignment(tree) {
     var assignRange = tree[1][0] == '[]' && tree[1][2][0] == 'range'
 
-    if (assignRange && tree[1][2][2] == null) {
+    if (!assignRange) {
+        return [paren(tree[1]), '=', expression(tree[2])].join(' ')
+    } else if (assignRange && tree[1][2][2] == null) {
         var range = tree[1][2]
         var rtemp = ['identifier', getVarName('r')]
         var starttemp = ['identifier', getVarName('start')]
@@ -223,8 +225,6 @@ function assignment(tree) {
             ['keyword', 'return', rtemp]
         ]], []])
     }
-
-    return [paren(tree[1]), '=', expression(tree[2])].join(' ')
 }
 
 function dotOp(tree) {
@@ -258,25 +258,24 @@ function existentialOp(tree) {
 
 function chainCmp(tree) {
     var temps = []
+    var s = ['statements']
+
     var varDeclaration = tree.filter(function(x, i) {
         return i % 2 != 0
-    }).map(function(x, i) {
-        var temp = getVarName('r')
+    }).forEach(function(x) {
+        var temp = ['identifier', getVarName('r')]
         temps.push(temp)
-        return 'var ' + temp + ' = ' + expression(x) + ';'
+        s.push(['=', temp, x])
     })
 
-    var chained = []
+    var expr = temps[0]
     for (var i = 3; i < tree.length; i += 2) {
-        chained.push(temps[(i - 1) / 2 - 1] + ' ' + tree[i - 1] + ' ' + temps[(i + 1) / 2 - 1])
+        if (i == 3) expr = [tree[i - 1], expr, temps[(i + 1) / 2 - 1]]
+        else expr = ['and', expr, [tree[i - 1], temps[(i - 1) / 2 - 1], temps[(i + 1) / 2 - 1]]]
     }
 
-    return formatCode([
-        '(function() {',
-            varDeclaration, [
-            'return ' + chained.join(' && ') + ';'
-        ], '})()'
-    ])
+    s.push(['keyword', 'return', expr])
+    return expression(['()', ['function', null, [], s], []])
 }
 
 function array(tree) {
