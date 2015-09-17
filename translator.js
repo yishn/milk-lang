@@ -3,7 +3,7 @@ exports.translate = function(tree, indent) {
 
     exports.indent = indent
     exports.identifiers = getIdentifiers(tree)
-    exports.generatedIdentifiers = []
+    exports.generatedIdentifiers = ['_']
     exports.flags = {}
 
     var code = statements(tree)
@@ -126,6 +126,8 @@ function statement(tree) {
         return ifStatement(tree)
     } else if (tree[0] == 'try') {
         return tryStatement(tree)
+    } else if (tree[0] == 'class') {
+        return classStatement(tree)
     }
 
     return expression(tree)
@@ -672,4 +674,36 @@ function deleteStatement(tree) {
             ]
         ])
     }
+}
+
+function classStatement(tree) {
+    var classname = tree[1][1]
+    var superclass = tree[2] ? expression(tree[2]) : null
+    if (superclass != null) exports.flags.extends = true
+
+    var functionList = tree[3].filter(function(x) {
+        return x[0] == 'function'
+    }).map(function(f) {
+        f[3].splice(1, 0, ['=', ['keyword', 'self'], ['keyword', 'this']])
+        return f
+    })
+    var constructor = functionList.filter(function(x) {
+        return x[1][1] == 'init'
+    })[0]
+
+    if (constructor == null)
+        constructor = ['function', ['identifier', classname], [], ['statements']]
+    else constructor[1][1] = classname
+
+    return formatCode([
+        classname + ' = (function() {', [
+            'var ' + func(constructor) + ';',
+            superclass ? '_.extends(' + classname + ', ' + superclass + ');' : null,
+            functionList.map(function(f) {
+                if (f[1][1] == classname) return ''
+                return classname + '.prototype.' + func(f) + ';'
+            }).join('\n'),
+            'return ' + classname + ';'
+        ], '})()'
+    ])
 }
