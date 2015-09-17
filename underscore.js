@@ -31,3 +31,15 @@ _.inOp = function(el, list) {
 
     return list.indexOf(el) != -1
 }
+
+_.extends = function(child, parent) {
+    for (var key in parent) {
+        if ({}.hasOwnProperty.call(parent, key))
+            child[key] = parent[key];
+    }
+    var ctor = function() { this.constructor = child; };
+    ctor.prototype = parent.prototype;
+    child.prototype = new ctor();
+    child.__super__ = parent.prototype;
+    return child;
+}
