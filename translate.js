@@ -76,7 +76,9 @@ function statements(tree, depth) {
 }
 
 function statement(tree) {
-    if (tree[0] == 'keyword') {
+    if (tree[1] == 'delete') {
+        return deleteStatement(tree)
+    } else if (tree[0] == 'keyword') {
         if (tree[1] == 'pass') return ''
         return tree[1] + (tree[2] ? ' ' + expression(tree[2]) : '')
     } else if (tree[0] == 'expression') {
@@ -544,4 +546,26 @@ function tryStatement(tree) {
     }
 
     return output
+}
+
+function deleteStatement(tree) {
+    if (tree[2][0] != '[]' || tree[2][2][0] != 'range') {
+        return 'delete ' + expression(tree[2])
+    } else {
+        var temp = getVarName('i')
+        var indexer = tree[2]
+        var range = tree[2][2]
+
+        return forStatement([
+            'for',
+            [['identifier', temp], null],
+            range,
+            null,
+            ['statements',
+                ['keyword', 'delete',
+                    ['[]', indexer[1], ['identifier', temp]]
+                ]
+            ]
+        ])
+    }
 }
