@@ -81,6 +81,14 @@ function statement(tree) {
         return tree[1] + (tree[2] ? ' ' + expression(tree[2]) : '')
     } else if (tree[0] == 'expression') {
         return expression(tree[1])
+    } else if (tree[0] == 'for') {
+        return forStatement(tree)
+    } else if (tree[0] == 'while') {
+        return whileStatement(tree)
+    } else if (tree[0] == 'if') {
+        return ifStatement(tree)
+    } else if (tree[0] == 'try') {
+        return tryStatement(tree)
     }
 
     return '/* ... */'
@@ -468,6 +476,71 @@ function forHead(tree) {
     if (tree[3]) {
         output += '\n' + exports.indent
             + 'if (!(' + expression(tree[3]) + ')) continue;'
+    }
+
+    return output
+}
+
+function forStatement(tree) {
+    return formatCode([
+        forHead(tree), [
+            statements(tree[4])
+        ], '}'
+    ])
+}
+
+function whileStatement(tree) {
+    return formatCode([
+        'while (' + expression(tree[1]) + ') {', [
+            statements(tree[2])
+        ], '}'
+    ])
+}
+
+function ifStatement(tree) {
+    var output = formatCode([
+        'if (' + expression(tree[1][0]) + ') {', [
+            statements(tree[1][1])
+        ], '}'
+    ])
+
+    for (var i = 2; i < tree.length; i++) {
+        output += formatCode([
+            tree[i][0] == 'else'
+            ? ' else {'
+            : ' else if (' + expression(tree[i][0]) + ') {', [
+                statements(tree[i][1])
+            ], '}'
+        ])
+    }
+
+    return output
+}
+
+function tryStatement(tree) {
+    var output = formatCode([
+        'try {', [
+            statements(tree[1])
+        ], '}'
+    ])
+
+    if (tree[2] != null) {
+        output += formatCode([
+            ' catch (' + expression(tree[2][0]) + ') {', [
+                statements(tree[2][1])
+            ], '}'
+        ])
+    } else {
+        var temp = getVarName('e')
+        output += ' catch(' + temp + ') {}'
+    }
+
+    if (tree[3] != null) {
+        output += formatCode([
+            ' finally {', [
+                statements(tree[3])
+            ], '}'
+        ])
     }
 
     return output
