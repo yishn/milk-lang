@@ -6,7 +6,17 @@ exports.translate = function(tree, indent) {
     exports.generatedIdentifiers = []
     exports.flags = {}
 
-    return statements(tree)
+    var code = statements(tree)
+
+    return formatCode([
+        '(function() {',
+        '',
+        exports.generatedIdentifiers.length ?
+        'var ' + exports.generatedIdentifiers.join(', ') + ';\n' : null,
+        code,
+        '',
+        '})'
+    ])
 }
 
 // Helper functions
@@ -284,13 +294,13 @@ function chainCmp(tree) {
 }
 
 function array(tree) {
-    var temp = getVarName('r')
-
     if (tree[0] != 'arrayfor') {
         return '[' + tree.slice(1).map(function(x) {
             return expression(x)
         }).join(', ') + ']'
     } else {
+        var temp = getVarName('r')
+
         return formatCode([
             '(function() {', [
                 expression(['=', ['identifier', temp], ['array']]) + ';',
