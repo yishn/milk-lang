@@ -332,7 +332,7 @@ function forHead(tree) {
         var endtemp = getVarName('end')
         var steptemp = getVarName('step')
 
-        var start = r[1] ? expression(r[1]) : '0'
+        var start = expression(r[1])
         var end = r[3] ? expression(r[3]) : null
         var step = (function() {
             if (r[2]) return '(' + expression(r[2]) + ') - ' + starttemp
