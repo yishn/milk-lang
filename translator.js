@@ -433,8 +433,7 @@ function funcCall(tree) {
 
     var callsuper = (tree[1][0] == '.' || tree[1][0] == '?.') && tree[1][1][0] == 'keyword' && tree[1][1][1] == 'super'
     if (callsuper) {
-        tree[1][1] = ['.', ['identifier', 'self'], ['identifier', '__super__']]
-        tree[1] = [tree[1][0], tree[1][1], ['identifier', 'call']]
+        tree[1] = ['.', ['.', ['.', ['identifier', 'self'], ['identifier', '__super__']], tree[1][2]], ['identifier', 'call']]
         tree[2].splice(0, 0, ['identifier', 'self'])
     }
 
