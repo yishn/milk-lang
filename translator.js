@@ -779,8 +779,18 @@ function classStatement(tree) {
         return x[1][1] === 'init'
     })[0]
 
-    if (constructor == null)
+    if (constructor == null) {
         constructor = ['function', ['identifier', 'init'], [], ['statements']]
+        if (superclass != null)
+            constructor[3].push(['=', ['identifier', 'self'], ['keyword', 'this']])
+            constructor[3].push(['()', ['.', ['.', ['.',
+                ['identifier', 'self'],
+                ['identifier', '__super__']],
+                ['identifier', 'init']],
+                ['identifier', 'apply']],
+                [['identifier', 'self'], ['identifier', 'arguments']]
+            ])
+    }
 
     var s = ['statements']
     s.push(constructor)
