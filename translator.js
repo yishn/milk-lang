@@ -15,7 +15,7 @@ exports.translate = function(tree, indent) {
         'var ' + exports.generatedIdentifiers.join(', ') + ';\n' : null,
         code,
         '',
-        '})'
+        '})();'
     ])
 }
 
