@@ -787,7 +787,7 @@ function classStatement(tree) {
     s.push(constructor)
     if (superclass !== null) s.push(['()',
         ['.', ['keyword', '_'], ['identifier', 'extends']],
-        [classname, superclass]
+        [['identifier', 'init'], superclass]
     ])
     s = s.concat(functionList.filter(function(f) {
         return f[1][1] !== 'init'
