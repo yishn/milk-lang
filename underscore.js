@@ -3,7 +3,7 @@ var _ = {};
 _.modulo = function(a, b) {
     var c = a % b;
     return c >= 0 ? c : c + b;
-};
+}
 
 _.enumerate = function(list) {
     if (!Array.isArray(list) && typeof list !== 'string')
@@ -12,8 +12,8 @@ _.enumerate = function(list) {
     return {
         get: function(i) { return list[i] },
         length: list.length
-    };
-};
+    }
+}
 
 _.enumerateKeys = function(list) {
     if (!Array.isArray(list) && typeof list !== 'string')
@@ -22,8 +22,8 @@ _.enumerateKeys = function(list) {
     return {
         get: function(i) { return i },
         length: list.length
-    };
-};
+    }
+}
 
 _.inOp = function(el, list) {
     if (!Array.isArray(list) && typeof list !== 'string')
@@ -37,7 +37,10 @@ _.extends = function(child, parent) {
         if ({}.hasOwnProperty.call(parent, key))
             child[key] = parent[key];
     }
-    var ctor = function() { this.constructor = child; };
+    var ctor = function() {
+        this.constructor = child;
+        this.init = child;
+    }
     ctor.prototype = parent.prototype;
     child.prototype = new ctor();
     child.__super__ = parent.prototype;
