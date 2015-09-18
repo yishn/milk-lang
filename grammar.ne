@@ -7,11 +7,11 @@
                       | statementList [;\n] __ statement __
                         {% function(d) { return d[3] ? d[0].concat([d[3]]) : d[0] } %}
 
-      flatStatements -> __ statement __
+      flatStatements -> __ statement
                         {% function(d) { return ['statements', d[1]] } %}
-                      | flatStatements ";" __
+                      | flatStatements __ ";"
                         {% id %}
-                      | flatStatements ";" __ statement __
+                      | flatStatements __ ";" __ statement
                         {% function(d) { return d[3] ? d[0].concat([d[3]]) : d[0] } %}
 
            statement -> (class | keywordStatement | condStatement | tryStatement | loop)
@@ -36,7 +36,7 @@
 
                block -> ":" _ "#INDENT" __ "\n" statementList "#DEINDENT"
                         {% function(d) { return d[5] } %}
-                      | ":" flatStatements "\n"
+                      | ":" flatStatements
                         {% function(d) { return d[1] } %}
 
 # Expressions
