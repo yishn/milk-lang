@@ -20,16 +20,13 @@ _.inOp = function(el, list) {
 }
 
 _.extends = function(child, parent) {
-    for (var key in parent) {
-        if ({}.hasOwnProperty.call(parent, key))
-            child[key] = parent[key];
-    }
-    var ctor = function() {
-        this.constructor = child;
-        this.init = child;
-    }
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor();
-    child.__super__ = parent.prototype;
+    var copy = function() {}
+    copy.prototype = parent.prototype;
+    var c = new copy();
+    c.constructor = child;
+    child.prototype = c;
+
+    child.prototype.__super__ = parent.prototype;
+    child.prototype.__super__.init = parent.prototype.constructor;
     return child;
 }
