@@ -32,11 +32,19 @@ function pushScope() {
 
     exports.currentScope.children.push(scope)
     exports.currentScope = scope
+    return ''
 }
 
 function popScope() {
     if (!exports.currentScope.parent) throw 'last scope'
     exports.currentScope = exports.currentScope.parent
+    return ''
+}
+
+function registerVariable(varname) {
+    if (!isObservable(varname))
+        exports.currentScope.vars.push(varname)
+    return varname
 }
 
 function isObservable(varname, scope) {
@@ -74,7 +82,7 @@ function getVarName(base) {
     }
 
     exports.identifiers.push(r)
-    if (!isObservable(r)) exports.currentScope.vars.push(r)
+    registerVariable(r)
     return r
 }
 
@@ -245,9 +253,7 @@ function assignment(tree) {
     var assignRange = tree[1][0] == '[]' && tree[1][2][0] == 'range'
 
     if (tree[1][0] == 'identifier') {
-        var varname = tree[1][1]
-        if (!isObservable(varname))
-            exports.currentScope.vars.push(varname)
+        registerVariable(tree[1][1])
     }
 
     if (!assignRange) {
@@ -417,10 +423,60 @@ function index(tree) {
     return expression(output(tree[1]))
 }
 
+function funcCall(tree) {
+    var output = ''
+    var placeholderCount = tree[2].filter(function(x) {
+        return x[0] == 'keyword' && x[1] == '_'
+    }).length
+
+    var callsuper = (tree[1][0] == '.' || tree[1][0] == '?.') && tree[1][1][0] == 'keyword' && tree[1][1][1] == 'super'
+    if (callsuper) {
+        tree[1][1] = ['.', ['keyword', 'self'], ['identifier', '__super__']]
+        tree[1] = [tree[1][0], tree[1][1], ['identifier', 'call']]
+        tree[2].splice(0, 0, ['keyword', 'self'])
+    }
+
+    if (placeholderCount == 0 && tree[0][0] != '?') {
+        return paren(tree[1]) + '(' + tree[2].map(function(x) {
+            return expression(x)
+        }).join(', ') + ')'
+    }
+
+    if (placeholderCount == 0) {
+        output = function(token) {
+            return ['()', token, tree[2]]
+        }
+    } else {
+        var temps = []
+        for (var i = 0; i < placeholderCount; i++)
+            temps.push(getVarName('x'))
+
+        output = function(token) {
+            return ['lambda', null, temps.map(function(x) {
+                return [['identifier', x], null]
+            }), ['()', token, tree[2].map(function(x) {
+                if (x[0] == 'keyword' && x[1] == '_') {
+                    var temp = temps.splice(0, 1)
+                    return ['identifier', temp[0]]
+                } else {
+                    return x
+                }
+            })]]
+        }
+    }
+
+    if (tree[0][0] == '?') {
+        var r = getCheckExistenceWrapper(tree[1])
+        return r[0](output(r[1]))
+    }
+
+    return expression(output(tree[1]))
+}
+
 // Block constructs
 
 function func(tree) {
-    var identifier = tree[1] ? expression(tree[1]) : null
+    var identifier = tree[1] ? registerVariable(expression(tree[1])) : null
     var funcargs = tree[2].map(function(x) {
         return [x[0], x[1]]
     })
@@ -432,8 +488,9 @@ function func(tree) {
 
     var output = (identifier ? identifier + ' = ' : '') + 'function('
 
+    pushScope()
     if (!hasOptionalArgs) output += funcargs.map(function(x) {
-        return expression(x[0])
+        return registerVariable(expression(x[0]))
     }).join(', ')
 
     output += ') {'
@@ -486,63 +543,13 @@ function func(tree) {
         output, [
             s.length >= 1 ? statements(s) : null,
             statements(tree[3])
-        ], '}'
+        ], '}' + popScope()
     ])
 }
 
-function funcCall(tree) {
-    var output = ''
-    var placeholderCount = tree[2].filter(function(x) {
-        return x[0] == 'keyword' && x[1] == '_'
-    }).length
-
-    var callsuper = (tree[1][0] == '.' || tree[1][0] == '?.') && tree[1][1][0] == 'keyword' && tree[1][1][1] == 'super'
-    if (callsuper) {
-        tree[1][1] = ['.', ['keyword', 'self'], ['identifier', '__super__']]
-        tree[1] = [tree[1][0], tree[1][1], ['identifier', 'call']]
-        tree[2].splice(0, 0, ['keyword', 'self'])
-    }
-
-    if (placeholderCount == 0 && tree[0][0] != '?') {
-        return paren(tree[1]) + '(' + tree[2].map(function(x) {
-            return expression(x)
-        }).join(', ') + ')'
-    }
-
-    if (placeholderCount == 0) {
-        output = function(token) {
-            return ['()', token, tree[2]]
-        }
-    } else {
-        var temps = []
-        for (var i = 0; i < placeholderCount; i++)
-            temps.push(getVarName('x'))
-
-        output = function(token) {
-            return ['lambda', null, temps.map(function(x) {
-                return [['identifier', x], null]
-            }), ['()', token, tree[2].map(function(x) {
-                if (x[0] == 'keyword' && x[1] == '_') {
-                    var temp = temps.splice(0, 1)
-                    return ['identifier', temp[0]]
-                } else {
-                    return x
-                }
-            })]]
-        }
-    }
-
-    if (tree[0][0] == '?') {
-        var r = getCheckExistenceWrapper(tree[1])
-        return r[0](output(r[1]))
-    }
-
-    return expression(output(tree[1]))
-}
-
 function forHead(tree) {
-    var firstIdentifier = expression(tree[1][0])
-    var secondIdentifier = tree[1][1] ? expression(tree[1][1]) : null
+    var firstIdentifier = registerVariable(expression(tree[1][0]))
+    var secondIdentifier = tree[1][1] ? registerVariable(expression(tree[1][1])) : null
     var identifierCount = tree[1][1] ? 2 : 1
     var output = ''
 
@@ -581,6 +588,8 @@ function forHead(tree) {
                     + secondIdentifier + ' += ' + steptemp + ', ' + firstIdentifier + '++) {'
             ])
         }
+
+        pushScope()
     } else if (identifierCount == 1) {
         exports.flags.enumerate = true
         var listtemp = getVarName('list')
@@ -589,7 +598,7 @@ function forHead(tree) {
         output = formatCode([
             listtemp + ' = _.enumerate(' + expression(tree[2]) + ')',
             'for (' + itemp + ' = 0; ' + itemp + ' < ' + listtemp + '.length; ' + itemp + '++) {', [
-                firstIdentifier + ' = ' + listtemp + '.get(' + itemp + ');'
+                pushScope() + firstIdentifier + ' = ' + listtemp + '.get(' + itemp + ');'
             ]
         ])
     } else {
@@ -602,6 +611,7 @@ function forHead(tree) {
             listtemp + ' = ' + expression(tree[2]) + ';',
             keystemp + ' = _.enumerateKeys(' + listtemp + ');',
             'for (' + itemp + ' = 0; ' + itemp + ' < ' + keystemp + '.length; ' + itemp + '++) {', [
+                pushScope() +
                 firstIdentifier + ' = ' + keystemp + '.get(' + itemp + ');',
                 secondIdentifier + ' = ' + listtemp + '[' + firstIdentifier + '];'
             ]
@@ -620,32 +630,32 @@ function forStatement(tree) {
     return formatCode([
         forHead(tree), [
             statements(tree[4])
-        ], '}'
+        ], '}' + popScope()
     ])
 }
 
 function whileStatement(tree) {
     return formatCode([
         'while (' + expression(tree[1]) + ') {', [
-            statements(tree[2])
-        ], '}'
+            pushScope() + statements(tree[2])
+        ], '}' + popScope()
     ])
 }
 
 function ifStatement(tree) {
     var output = formatCode([
         'if (' + expression(tree[1][0]) + ') {', [
-            statements(tree[1][1])
-        ], '}'
+            pushScope() + statements(tree[1][1])
+        ], '}' + popScope()
     ])
 
     for (var i = 2; i < tree.length; i++) {
         output += formatCode([
             tree[i][0] == 'else'
-            ? ' else {'
-            : ' else if (' + expression(tree[i][0]) + ') {', [
+            ? ' else {' + pushScope()
+            : ' else if (' + expression(tree[i][0]) + ') {' + pushScope(), [
                 statements(tree[i][1])
-            ], '}'
+            ], '}' + popScope()
         ])
     }
 
@@ -655,15 +665,15 @@ function ifStatement(tree) {
 function tryStatement(tree) {
     var output = formatCode([
         'try {', [
-            statements(tree[1])
-        ], '}'
+            pushScope() + statements(tree[1])
+        ], '}' + popScope()
     ])
 
     if (tree[2] != null) {
         output += formatCode([
             ' catch (' + expression(tree[2][0]) + ') {', [
-                statements(tree[2][1])
-            ], '}'
+                pushScope() + statements(tree[2][1])
+            ], '}' + popScope()
         ])
     } else {
         var temp = getVarName('e')
@@ -673,55 +683,12 @@ function tryStatement(tree) {
     if (tree[3] != null) {
         output += formatCode([
             ' finally {', [
-                statements(tree[3])
-            ], '}'
+                pushScope() + statements(tree[3])
+            ], '}' + popScope()
         ])
     }
 
     return output
-}
-
-function classStatement(tree) {
-    var classname = tree[1]
-    var superclass = tree[2] ? tree[2] : null
-    if (superclass != null) exports.flags.extends = true
-
-    var functionList = tree[3].filter(function(x) {
-        return x[0] == 'function'
-    }).map(function(f) {
-        f[3].splice(1, 0, ['=', ['keyword', 'self'], ['keyword', 'this']])
-        return f
-    })
-    var constructor = functionList.filter(function(x) {
-        return x[1][1] == 'init'
-    })[0]
-
-    if (constructor == null)
-        constructor = ['function', classname, [], ['statements']]
-    else constructor[1] = classname
-
-    var s = ['statements']
-    s.push(constructor)
-    if (superclass !== null) s.push(['()',
-        ['.', ['keyword', '_'], ['identifier', 'extends']],
-        [classname, superclass]
-    ])
-    s = s.concat(functionList.filter(function(f) {
-        return f[1][1] !== classname[1]
-    }).map(function(f) {
-        var name = f[1]
-        f[1] = null
-        return ['=', ['.',
-            ['.', classname, ['identifier', 'prototype']],
-            name
-        ], f]
-    }))
-    s.push(['keyword', 'return', classname])
-
-    return expression(['=',
-        classname,
-        ['()', ['function', null, [], s], []]
-    ])
 }
 
 // Rewriter functions
@@ -777,4 +744,47 @@ function existentialOp(tree) {
     ])
     s.push(['keyword', 'return', temp])
     return expression(['()', ['function', null, [], s], []])
+}
+
+function classStatement(tree) {
+    var classname = tree[1]
+    var superclass = tree[2] ? tree[2] : null
+    if (superclass != null) exports.flags.extends = true
+
+    var functionList = tree[3].filter(function(x) {
+        return x[0] == 'function'
+    }).map(function(f) {
+        f[3].splice(1, 0, ['=', ['keyword', 'self'], ['keyword', 'this']])
+        return f
+    })
+    var constructor = functionList.filter(function(x) {
+        return x[1][1] == 'init'
+    })[0]
+
+    if (constructor == null)
+        constructor = ['function', classname, [], ['statements']]
+    else constructor[1] = classname
+
+    var s = ['statements']
+    s.push(constructor)
+    if (superclass !== null) s.push(['()',
+        ['.', ['keyword', '_'], ['identifier', 'extends']],
+        [classname, superclass]
+    ])
+    s = s.concat(functionList.filter(function(f) {
+        return f[1][1] !== classname[1]
+    }).map(function(f) {
+        var name = f[1]
+        f[1] = null
+        return ['=', ['.',
+            ['.', classname, ['identifier', 'prototype']],
+            name
+        ], f]
+    }))
+    s.push(['keyword', 'return', classname])
+
+    return expression(['=',
+        classname,
+        ['()', ['function', null, [], s], []]
+    ])
 }
