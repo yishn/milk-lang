@@ -91,7 +91,7 @@ function formatCode(input) {
 }
 
 function paren(tree) {
-    if (['.', '?.', '()', '?()', '[]', '?[]', 'bool', 'number', 'number', 'keyword', 'identifier', 'array', 'object', 'string', '^', '%', 'chaincmp', '??'].indexOf(tree[0]) != -1)
+    if (['.', '?.', '()', '?()', '[]', '?[]', 'bool', 'number', 'number', 'keyword', 'identifier', 'array', 'object', 'string', '^', '%', 'chaincmp', '??', 'range'].indexOf(tree[0]) != -1)
         return expression(tree)
     return '(' + expression(tree) + ')'
 }
