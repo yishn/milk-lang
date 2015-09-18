@@ -12,13 +12,13 @@ exports.translate = function(tree, indent) {
 
     var code = statements(tree)
 
-    return formatCode([
+    return [
         '(function() {',
         '',
         code,
         '',
         '})();'
-    ])
+    ].join('\n')
 }
 
 // Helper functions
@@ -111,7 +111,7 @@ function getCheckExistenceWrapper(token) {
 
 function formatCode(input) {
     return input.filter(function(x) {
-        return x !== null
+        return typeof x === 'string' ? x.trim() != '' : x !== null
     }).map(function(x) {
         if (typeof x == 'string')
             return x
@@ -130,18 +130,16 @@ function paren(tree) {
 
 // Translator functions
 
-function statements(tree, depth) {
+function statements(tree) {
     var statements = []
 
     for (var i = 1; i < tree.length; i++) {
-        statements.push(statement(tree[i]) + ';')
+        var s = statement(tree[i])
+        if (s[s.length - 1] != '}') s += ';'
+        statements.push(s)
     }
 
-    return formatCode(statements).split('\n').map(function(x) {
-        for (var i = 0; i < depth; i++)
-            x = exports.indent + x
-        return x
-    }).join('\n')
+    return formatCode(statements)
 }
 
 function statement(tree) {
