@@ -141,6 +141,9 @@ function statements(tree) {
     for (var i = 1; i < tree.length; i++) {
         var s = statement(tree[i])
         if (s[s.length - 1] != '}') s += ';'
+        if ('offset' in tree[i])
+            s = '#OFFSET' + tree[i].offset + '\n' + s
+
         statements.push(s)
     }
 
