@@ -14,12 +14,8 @@ exports.translate = function(tree, indent) {
     var vars = popScope()
 
     return [
-        '(function() {',
-        '',
         varsDefinition(vars),
-        code,
-        '',
-        '})();'
+        code
     ].join('\n')
 }
 
@@ -644,8 +640,6 @@ function forHead(tree) {
         ])
     }
 
-    pushScope()
-
     if (tree[3]) {
         output += '\n' + exports.indent
             + 'if (!(' + expression(tree[3]) + ')) continue;'
@@ -656,7 +650,7 @@ function forHead(tree) {
 
 function forStatement(tree) {
     var code = [forHead(tree), [
-        statements(tree[4])
+        pushScope() + statements(tree[4])
     ], '}'], vars = popScope()
 
     code[1].splice(0, 0, varsDefinition(vars))
