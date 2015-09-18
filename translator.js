@@ -311,22 +311,27 @@ function array(tree) {
             return expression(x)
         }).join(', ') + ']'
     } else {
-        var temp = getVarName('r')
+        var temp = ['identifier', getVarName('r')]
+        var fortree = tree[1]
+        fortree[4] = ['statements', ['()',
+            ['.', temp, ['identifier', 'push']],
+            [fortree[4]]
+        ]]
 
-        return formatCode([
-            '(function() {', [
-                expression(['=', ['identifier', temp], ['array']]) + ';',
-                forHead(tree[1]), [
-                    temp + '.push(' + expression(tree[1][4]) + ');'
-                ], '}',
-                'return ' + temp + ';'
-            ], '})()'
-        ])
+        var s = ['statements',
+            ['=', temp, ['array']],
+            fortree,
+            ['keyword', 'return', temp]
+        ]
+
+        return expression(['()', ['function', null, [], s], []])
     }
 }
 
 function object(tree) {
     if (tree[0] != 'objectfor') {
+        if (tree.length == 1) return '{}'
+
         return formatCode([
             '{',
             tree.slice(1).map(function(x, i) {
@@ -336,19 +341,22 @@ function object(tree) {
             '}'
         ])
     } else {
-        var key = expression(tree[1][4][0])
-        var value = expression(tree[1][4][1])
-        var temp = getVarName('r')
+        var fortree = tree[1]
+        var key = fortree[4][0]
+        var value = fortree[4][1]
+        var temp = ['identifier', getVarName('r')]
 
-        return formatCode([
-            '(function() {', [
-                expression(['=', ['identifier', temp], ['object']]) + ';',
-                forHead(tree[1]), [
-                    temp + '[' + key + '] = ' + value + ';'
-                ], '}',
-                'return ' + temp + ';'
-            ], '})()'
-        ])
+        fortree[4] = ['statements', ['=', ['[]',
+            temp, key
+        ], value]]
+
+        var s = ['statements',
+            ['=', temp, ['object']],
+            fortree,
+            ['keyword', 'return', temp]
+        ]
+
+        return expression(['()', ['function', null, [], s], []])
     }
 }
 
