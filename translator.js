@@ -784,7 +784,7 @@ function classStatement(tree) {
 
     if (constructor == null) {
         constructor = ['function', ['identifier', 'init'], [], ['statements']]
-        if (superclass != null)
+        if (superclass != null) {
             constructor[3].push(['=', ['identifier', 'self'], ['keyword', 'this']])
             constructor[3].push(['()', ['.', ['.', ['.',
                 ['identifier', 'self'],
@@ -793,6 +793,7 @@ function classStatement(tree) {
                 ['identifier', 'apply']],
                 [['identifier', 'self'], ['identifier', 'arguments']]
             ])
+        }
     }
 
     var s = ['statements']
