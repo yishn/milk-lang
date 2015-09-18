@@ -2,17 +2,20 @@ exports.translate = function(tree, indent) {
     if (!indent) indent = '    '
 
     exports.indent = indent
+    exports.flags = {}
     exports.identifiers = getIdentifiers(tree)
     exports.generatedIdentifiers = ['_']
-    exports.flags = {}
+    exports.currentScope = {
+        vars: ['_'],
+        children: [],
+        parent: null
+    }
 
     var code = statements(tree)
 
     return formatCode([
         '(function() {',
         '',
-        exports.generatedIdentifiers.length ?
-        'var ' + exports.generatedIdentifiers.join(', ') + ';\n' : null,
         code,
         '',
         '})();'
@@ -20,6 +23,27 @@ exports.translate = function(tree, indent) {
 }
 
 // Helper functions
+
+function pushScope() {
+    var scope = {
+        vars: [],
+        children: [],
+        parent: exports.currentScope
+    }
+
+    exports.currentScope.children.push(scope)
+    exports.currentScope = scope
+}
+
+function popScope() {
+    if (!exports.currentScope.parent) throw 'last scope'
+    exports.currentScope = exports.currentScope.parent
+}
+
+function isObservable(varname, scope) {
+    if (!scope) scope = exports.currentScope
+    return scope.vars.indexOf(varname) != -1 || isObservable(varname, scope.parent)
+}
 
 function getIdentifiers(tree, list) {
     if (!list) list = []
@@ -273,28 +297,6 @@ function existentialOp(tree) {
     return expression(['()', ['function', null, [], s], []])
 }
 
-function chainCmp(tree) {
-    var temps = []
-    var s = ['statements']
-
-    var varDeclaration = tree.filter(function(x, i) {
-        return i % 2 != 0
-    }).forEach(function(x) {
-        var temp = ['identifier', getVarName('r')]
-        temps.push(temp)
-        s.push(['=', temp, x])
-    })
-
-    var expr = temps[0]
-    for (var i = 3; i < tree.length; i += 2) {
-        if (i == 3) expr = [tree[i - 1], expr, temps[(i + 1) / 2 - 1]]
-        else expr = ['and', expr, [tree[i - 1], temps[(i - 1) / 2 - 1], temps[(i + 1) / 2 - 1]]]
-    }
-
-    s.push(['keyword', 'return', expr])
-    return expression(['()', ['function', null, [], s], []])
-}
-
 function array(tree) {
     if (tree[0] != 'arrayfor') {
         return '[' + tree.slice(1).map(function(x) {
@@ -340,11 +342,6 @@ function object(tree) {
             ], '})()'
         ])
     }
-}
-
-function range(tree) {
-    var temp = ['identifier', getVarName('i')]
-    return array(['arrayfor', ['for', [temp, null], tree, null, temp]])
 }
 
 function func(tree) {
@@ -405,13 +402,6 @@ function func(tree) {
     ])
     return output = statements(tree[3], 1) + '\n}'
 
-}
-
-function lambda(tree) {
-    return func([
-        'function', null, tree[2],
-        ['statements', ['keyword', 'return', tree[3]]]
-    ])
 }
 
 function funcCall(tree) {
@@ -661,28 +651,6 @@ function tryStatement(tree) {
     return output
 }
 
-function deleteStatement(tree) {
-    if (tree[2][0] != '[]' || tree[2][2][0] != 'range') {
-        return 'delete ' + expression(tree[2])
-    } else {
-        var temp = getVarName('i')
-        var indexer = tree[2]
-        var range = tree[2][2]
-
-        return forStatement([
-            'for',
-            [['identifier', temp], null],
-            range,
-            null,
-            ['statements',
-                ['keyword', 'delete',
-                    ['[]', indexer[1], ['identifier', temp]]
-                ]
-            ]
-        ])
-    }
-}
-
 function classStatement(tree) {
     var classname = tree[1][1]
     var superclass = tree[2] ? expression(tree[2]) : null
@@ -713,4 +681,62 @@ function classStatement(tree) {
             'return ' + classname + ';'
         ], '})()'
     ])
+}
+
+// Rewriter functions
+
+function chainCmp(tree) {
+    var temps = []
+    var s = ['statements']
+
+    var varDeclaration = tree.filter(function(x, i) {
+        return i % 2 != 0
+    }).forEach(function(x) {
+        var temp = ['identifier', getVarName('r')]
+        temps.push(temp)
+        s.push(['=', temp, x])
+    })
+
+    var expr = temps[0]
+    for (var i = 3; i < tree.length; i += 2) {
+        if (i == 3) expr = [tree[i - 1], expr, temps[(i + 1) / 2 - 1]]
+        else expr = ['and', expr, [tree[i - 1], temps[(i - 1) / 2 - 1], temps[(i + 1) / 2 - 1]]]
+    }
+
+    s.push(['keyword', 'return', expr])
+    return expression(['()', ['function', null, [], s], []])
+}
+
+function range(tree) {
+    var temp = ['identifier', getVarName('i')]
+    return array(['arrayfor', ['for', [temp, null], tree, null, temp]])
+}
+
+function lambda(tree) {
+    return func([
+        'function', null, tree[2],
+        ['statements', ['keyword', 'return', tree[3]]]
+    ])
+}
+
+function deleteStatement(tree) {
+    if (tree[2][0] != '[]' || tree[2][2][0] != 'range') {
+        return 'delete ' + expression(tree[2])
+    } else {
+        var temp = getVarName('i')
+        var indexer = tree[2]
+        var range = tree[2][2]
+
+        return forStatement([
+            'for',
+            [['identifier', temp], null],
+            range,
+            null,
+            ['statements',
+                ['keyword', 'delete',
+                    ['[]', indexer[1], ['identifier', temp]]
+                ]
+            ]
+        ])
+    }
 }
