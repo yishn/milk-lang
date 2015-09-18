@@ -612,7 +612,7 @@ function forHead(tree) {
         output = formatCode([
             statements(s),
             'for (' + itemp + ' = 0; ' + itemp + ' < ' + listtemp + '.length; ' + itemp + '++) {', [
-                firstIdentifier + ' = ' + listtemp + '.get(' + itemp + ');'
+                firstIdentifier + ' = ' + listtemp + '[' + itemp + '];'
             ]
         ])
     } else {

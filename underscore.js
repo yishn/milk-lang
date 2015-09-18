@@ -7,12 +7,9 @@ _.modulo = function(a, b) {
 
 _.enumerate = function(list) {
     if (!Array.isArray(list) && typeof list !== 'string')
-        list = Object.keys(list);
+        return Object.keys(list);
 
-    return {
-        get: function(i) { return list[i] },
-        length: list.length
-    }
+    return list
 }
 
 _.inOp = function(el, list) {
