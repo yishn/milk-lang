@@ -363,7 +363,7 @@ function object(tree) {
 function func(tree) {
     var identifier = tree[1] ? expression(tree[1]) : null
     var funcargs = tree[2].map(function(x) {
-        return [expression(x[0]), x[1]]
+        return [x[0], x[1]]
     })
     var hasOptionalArgs = funcargs.some(function(x) {
         return x[1] !== null
@@ -374,50 +374,61 @@ function func(tree) {
     var output = (identifier ? identifier + ' = ' : '') + 'function('
 
     if (!hasOptionalArgs) output += funcargs.map(function(x) {
-        return x[0]
+        return expression(x[0])
     }).join(', ')
 
     output += ') {\n'
+    var s = ['statements']
 
     if (hasOptionalArgs) {
         for (var i = 0; i < spreadindex; i++) {
-            output += exports.indent + funcargs[i][0] + ' = '
-            if (!funcargs[i][1])
-                output += 'arguments[' + i + '];\n'
-            else
-                output += 'typeof arguments[' + i + '] === "undefined" ? ' + expression(funcargs[i][1]) + ' : arguments[' + i + '];\n'
+            var value = ['[]', ['identifier', 'arguments'], ['number', i]]
+            if (funcargs[i][1] !== null) {
+                value = ['??', value, funcargs[i][1]]
+            }
+            s.push(['=', funcargs[i][0], value])
         }
 
         if (spreadindex == funcargs.length - 1) {
-            output += exports.indent
-                + funcargs[spreadindex][0] + ' = '
-                + spreadindex + ' >= arguments.length ? [] : '
-                + 'arguments.slice(' + spreadindex + ');\n'
+            s.push(['=', funcargs[spreadindex][0], ['?',
+                ['>=', ['number', spreadindex], ['.',
+                    ['identifier', 'arguments'],
+                    ['identifier', 'length']
+                ]],
+                ['array'],
+                ['()', ['.', ['identifier', 'arguments'], ['identifier', 'slice']], [['number', spreadindex]]]
+            ]])
         } else if (spreadindex < funcargs.length - 1) {
             var afterspreadcount = funcargs.length - 1 - spreadindex
 
-            output += exports.indent
-                + funcargs[spreadindex][0] + ' = '
-                + spreadindex + ' >= arguments.length - ' + afterspreadcount + ' ? [] : '
-                + 'arguments.slice(' + spreadindex + ', -' + afterspreadcount + ');\n'
+            s.push(['=', funcargs[spreadindex][0], ['?',
+                ['>=', ['number', spreadindex], ['-', ['.',
+                    ['identifier', 'arguments'],
+                    ['identifier', 'length']
+                ], ['number', afterspreadcount]]],
+                ['array'],
+                ['()', ['.', ['identifier', 'arguments'], ['identifier', 'slice']], [['number', spreadindex], ['-', ['number', afterspreadcount]]]]
+            ]])
         }
 
         for (var i = funcargs.length - 1; i > spreadindex; i--) {
-            output += exports.indent + funcargs[i][0] + ' = '
-            if (!funcargs[i][1])
-                output += 'arguments[arguments.length - ' + (funcargs.length - i) + '];\n'
-            else
-                output += 'typeof arguments[arguments.length - ' + (funcargs.length - i) + '] === "undefined" ? ' + expression(funcargs[i][1]) + ' : arguments[arguments.length - ' + (funcargs.length - i) + '];\n'
+            var value = ['[]', ['identifier', 'arguments'], ['-',
+                ['.', ['identifier', 'arguments'], ['identifier', 'length']],
+                ['number', funcargs.length - i]
+            ]]
+            if (funcargs[i][1] !== null) {
+                value = ['??', value, funcargs[i][1]]
+            }
+            s.push(['=', funcargs[i][0], value])
         }
     }
 
     return formatCode([
         output, [
+            s.length >= 1 ? statements(s) : null,
             statements(tree[3])
         ], '}'
     ])
-    return output = statements(tree[3], 1) + '\n}'
-
 }
 
 function funcCall(tree) {
@@ -751,6 +762,5 @@ function existentialOp(tree) {
         ]
     ])
     s.push(['keyword', 'return', temp])
-    console.dir(s)
     return expression(['()', ['function', null, [], s], []])
 }
