@@ -15,16 +15,6 @@ _.enumerate = function(list) {
     }
 }
 
-_.enumerateKeys = function(list) {
-    if (!Array.isArray(list) && typeof list !== 'string')
-        return this.enumerate(list);
-
-    return {
-        get: function(i) { return i },
-        length: list.length
-    }
-}
-
 _.inOp = function(el, list) {
     if (!Array.isArray(list) && typeof list !== 'string')
         return el in list

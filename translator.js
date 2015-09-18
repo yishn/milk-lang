@@ -616,25 +616,12 @@ function forHead(tree) {
             ]
         ])
     } else {
-        exports.flags.enumerateKeys = true
         var listtemp = getVarName('list')
-        var keystemp = getVarName('keys')
-        var itemp = register(getVarName('i'))
-
-        var s = ['statements',
-            ['=', ['identifier', listtemp], tree[2]],
-            ['=', ['identifier', keystemp], ['()',
-                ['.',
-                    ['keyword', '_'],
-                    ['identifier', 'enumerateKeys']
-                ], [['identifier', listtemp]]
-            ]]
-        ]
+        var s = ['statements', ['=', ['identifier', listtemp], tree[2]]]
 
         output = formatCode([
             statements(s),
-            'for (' + itemp + ' = 0; ' + itemp + ' < ' + keystemp + '.length; ' + itemp + '++) {', [
-                firstIdentifier + ' = ' + keystemp + '.get(' + itemp + ');',
+            'for (' + firstIdentifier + ' in ' + listtemp + ') {', [
                 secondIdentifier + ' = ' + listtemp + '[' + firstIdentifier + '];'
             ]
         ])
