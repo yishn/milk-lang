@@ -43,10 +43,3 @@ _.extends = function(child, parent) {
     child.__super__ = parent.prototype;
     return child;
 }
-
-_.getIndex = function(list, index) {
-    if (!Array.isArray(list) && typeof list !== 'string')
-        return list[index]
-
-    return list[_.modulo(index, list.length)]
-}
