@@ -4,7 +4,6 @@ exports.translate = function(tree, indent) {
     exports.indent = indent
     exports.flags = {}
     exports.identifiers = getIdentifiers(tree)
-    exports.generatedIdentifiers = ['_']
     exports.currentScope = {
         vars: ['_'],
         children: [],
@@ -42,7 +41,8 @@ function popScope() {
 
 function isObservable(varname, scope) {
     if (!scope) scope = exports.currentScope
-    return scope.vars.indexOf(varname) != -1 || isObservable(varname, scope.parent)
+    return scope.vars.indexOf(varname) != -1 ||
+        scope.parent != null && isObservable(varname, scope.parent)
 }
 
 function getIdentifiers(tree, list) {
@@ -62,19 +62,19 @@ function getIdentifiers(tree, list) {
 }
 
 function getVarName(base) {
+    var r
+
     if (exports.identifiers.indexOf(base) == -1) {
-        exports.identifiers.push(base)
-        exports.generatedIdentifiers.push(base)
-        return base
+        r = base
+    } else {
+        var i = 1
+        r = base + i
+        while (exports.identifiers.indexOf(r) != -1) i++
     }
 
-    var counter = 1
-    while (exports.identifiers.indexOf(base + counter) != -1)
-        counter++
-
-    exports.identifiers.push(base + counter)
-    exports.generatedIdentifiers.push(base + counter)
-    return base + counter
+    exports.identifiers.push(r)
+    if (!isObservable(r)) exports.currentScope.vars.push(r)
+    return r
 }
 
 function getCheckExistenceWrapper(token) {
@@ -157,6 +157,28 @@ function statement(tree) {
     return expression(tree)
 }
 
+function deleteStatement(tree) {
+    if (tree[2][0] != '[]' || tree[2][2][0] != 'range') {
+        return 'delete ' + expression(tree[2])
+    } else {
+        var temp = getVarName('i')
+        var indexer = tree[2]
+        var range = tree[2][2]
+
+        return forStatement([
+            'for',
+            [['identifier', temp], null],
+            range,
+            null,
+            ['statements',
+                ['keyword', 'delete',
+                    ['[]', indexer[1], ['identifier', temp]]
+                ]
+            ]
+        ])
+    }
+}
+
 function expression(tree) {
     if (['number', 'bool', 'keyword', 'identifier'].indexOf(tree[0]) != -1) {
         return tree[1]
@@ -221,6 +243,12 @@ function expression(tree) {
 function assignment(tree) {
     var assignRange = tree[1][0] == '[]' && tree[1][2][0] == 'range'
 
+    if (tree[1][0] == 'identifier') {
+        var varname = tree[1][1]
+        if (!isObservable(varname))
+            exports.currentScope.vars.push(varname)
+    }
+
     if (!assignRange) {
         return [paren(tree[1]), '=', expression(tree[2])].join(' ')
     } else if (assignRange && tree[1][2][2] == null) {
@@ -275,26 +303,6 @@ function dotOp(tree) {
         var r = getCheckExistenceWrapper(tree[1])
         return r[0](['.', r[1], tree[2]])
     }
-}
-
-function existentialOp(tree) {
-    var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
-    var temp = needTempVar ? ['identifier', getVarName('r')] : tree[1]
-    var s = ['statements']
-
-    if (needTempVar) s.push(['=', temp, tree[1]])
-    s.push(['if',
-        [
-            ['or',
-                ['==', ['typeof', temp], ['string', "'undefined'"]],
-                ['==', temp, ['keyword', 'null']]
-            ],
-            ['statements', ['keyword', 'return', tree[2]]]
-        ]
-    ])
-    s.push(['keyword', 'return', temp])
-    console.dir(s)
-    return expression(['()', ['function', null, [], s], []])
 }
 
 function array(tree) {
@@ -719,24 +727,22 @@ function lambda(tree) {
     ])
 }
 
-function deleteStatement(tree) {
-    if (tree[2][0] != '[]' || tree[2][2][0] != 'range') {
-        return 'delete ' + expression(tree[2])
-    } else {
-        var temp = getVarName('i')
-        var indexer = tree[2]
-        var range = tree[2][2]
+function existentialOp(tree) {
+    var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
+    var temp = needTempVar ? ['identifier', getVarName('r')] : tree[1]
+    var s = ['statements']
 
-        return forStatement([
-            'for',
-            [['identifier', temp], null],
-            range,
-            null,
-            ['statements',
-                ['keyword', 'delete',
-                    ['[]', indexer[1], ['identifier', temp]]
-                ]
-            ]
-        ])
-    }
+    if (needTempVar) s.push(['=', temp, tree[1]])
+    s.push(['if',
+        [
+            ['or',
+                ['==', ['typeof', temp], ['string', "'undefined'"]],
+                ['==', temp, ['keyword', 'null']]
+            ],
+            ['statements', ['keyword', 'return', tree[2]]]
+        ]
+    ])
+    s.push(['keyword', 'return', temp])
+    console.dir(s)
+    return expression(['()', ['function', null, [], s], []])
 }
