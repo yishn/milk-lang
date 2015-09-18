@@ -23,7 +23,7 @@ function getPrimes(limit):
  * Factorizes a given number in its unique prime
  * number factorization
  * @param  int   number    the number
- * @return array           a list of ascending numbers,
+ * @return array           a list of descending numbers,
  *                         the unique prime factorization
  *                         of number
  */

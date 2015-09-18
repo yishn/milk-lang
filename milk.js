@@ -8,7 +8,7 @@ var translator = require('./translator')
 var filename = process.argv[2]
 var data = fs.readFileSync(filename, 'utf8')
 
-console.time('timer')
+console.time('//')
 
 // Normalize endings
 
@@ -57,13 +57,11 @@ try {
 console.error(p.results.length == 1 ? 'No ambiguity detected.' : 'Ambiguity detected.')
 
 var tree = p.results[0]
-console.dir(tree, { depth: null })
+// console.dir(tree, { depth: null })
 
 // Translating
 
 console.error('Translating...')
-console.log()
 console.log(translator.translate(tree))
-console.dir(translator.currentScope, { depth: null })
 console.log()
-console.timeEnd('timer')
+console.timeEnd('//')
