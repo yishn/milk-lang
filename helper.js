@@ -20,6 +20,8 @@ exports.offsetToLinePos = function(offset, input) {
             return navigate([line - 1, lines[line - 1].length - 1], char + step + 1)
         } else if (char + step >= lines[line].length && line + 1 < lines.length) {
             return navigate([line + 1, 0], char + step - lines[line].length)
+        } else {
+            return [lines.length - 1, lines[lines.length - 1].length - 1]
         }
     }
 
@@ -150,4 +152,37 @@ exports.indentifizer = function(input, pureCode) {
 
     input = input.join('\n').replace(/\s*$/, '')
     return input
+}
+
+exports.commentator = function(input, src, comments) {
+    var r = exports.removeStringComments(input)
+    var pureCode = r[1]
+    var lastReportedLine = 1
+
+    pureCode = pureCode.split('\n')
+    lines = input.split('\n')
+
+    for (var i = 0; i < lines.length; i++) {
+        var index = pureCode[i].search(/#OFFSET\d+$/)
+        if (index == -1) continue
+
+        var offset = parseInt(pureCode[i].substr(index + 7))
+        var indent = pureCode[i].match(/^\s*/)[0]
+        r = exports.offsetToLinePos(offset, src)
+
+        var row = r[0], col = r[1]
+        lines[i] = null
+
+        if (comments.length > 0 && comments[0][1] <= row) {
+            lines[i] = '\n' + indent + comments[0][0] + '\n'
+            comments.splice(0, 1)
+        } else if (row - lastReportedLine >= 5) {
+            lines[i] = indent + '/*@' + row + ':' + col + '*/'
+            lastReportedLine = row
+        }
+    }
+
+    return lines.filter(function(x) {
+        return x !== null
+    }).join('\n')
 }

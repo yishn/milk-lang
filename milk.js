@@ -15,9 +15,9 @@ console.time('//')
 console.error('Normalize endings...')
 data = data.replace(/\r\n/g, '\n').replace(/\r/g, '')
 
-// Remove comments & strings
+// Extract comments & strings
 
-console.error('Remove comments...')
+console.error('Extract comments...')
 
 var removed = helper.removeStringComments(data)
 var pureCode = removed[1]
@@ -35,8 +35,9 @@ try {
     return
 }
 
-// Invoke nearley
+// Parser
 
+var src = data
 console.error('Parsing...')
 var p = new nearley.Parser(grammar.ParserRules, grammar.ParserStart)
 
@@ -57,11 +58,17 @@ try {
 console.error(p.results.length == 1 ? 'No ambiguity detected.' : 'Ambiguity detected.')
 
 var tree = p.results[0]
-// console.dir(tree, { depth: null })
 
-// Translating
+// Translator
 
 console.error('Translating...')
-console.log(translator.translate(tree))
+data = translator.translate(tree)
+
+// Commentator
+
+console.error('Commenting...')
+data = helper.commentator(data, src, comments)
+
+console.log(data)
 console.log()
 console.timeEnd('//')
