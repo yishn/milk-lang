@@ -144,16 +144,6 @@ exports.indentifizer = function(input, pureCode, indentLength) {
         lastIndex = i
     }
 
-    for (var i = 0; i < input.length; i++) {
-        if (pureCode[i].trim() == '') continue
-        var colonindex = pureCode[i].indexOf(':')
-
-        if (colonindex == -1) continue
-        if (input[i].substr(colonindex, 9) == ': #INDENT') continue
-
-        input[i] = input[i].substring(0, colonindex) + ': #INDENT ' + input[i].substr(colonindex + 1) + ' #DEINDENT' 
-    }
-
     input = input.join('\n')
 
     for (var i = 0; i < indentDepths.length; i++)
