@@ -417,6 +417,8 @@ function index(tree) {
     return expression(output(tree[1]))
 }
 
+// Block constructs
+
 function func(tree) {
     var identifier = tree[1] ? expression(tree[1]) : null
     var funcargs = tree[2].map(function(x) {
