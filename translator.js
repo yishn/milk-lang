@@ -348,12 +348,6 @@ function range(tree) {
 }
 
 function func(tree) {
-    var output = funcHead(tree)
-    output += statements(tree[3], 1) + '\n}'
-    return output
-}
-
-function funcHead(tree) {
     var identifier = tree[1] ? expression(tree[1]) : null
     var funcargs = tree[2].map(function(x) {
         return [expression(x[0]), x[1]]
@@ -404,7 +398,13 @@ function funcHead(tree) {
         }
     }
 
-    return output
+    return formatCode([
+        output, [
+            statements(tree[3])
+        ], '}'
+    ])
+    return output = statements(tree[3], 1) + '\n}'
+
 }
 
 function lambda(tree) {

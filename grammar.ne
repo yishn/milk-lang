@@ -7,13 +7,6 @@
                       | statementList [;\n] __ statement __
                         {% function(d) { return d[3] ? d[0].concat([d[3]]) : d[0] } %}
 
-      flatStatements -> __ statement __
-                        {% function(d) { return ['statements', d[1]] } %}
-                      | flatStatements ";" __
-                        {% id %}
-                      | flatStatements ";" __ statement __
-                        {% function(d) { return d[3] ? d[0].concat([d[3]]) : d[0] } %}
-
            statement -> (class | keywordStatement | condStatement | tryStatement | loop)
                         {% function(d, l) {
                             var r = d[0][0]
@@ -34,10 +27,8 @@
                       | ("throw" | "delete") _+ memberAccess
                         {% function(d) { return ['keyword', d[0][0], d[2]] } %}
 
-               block -> ":" _ "#INDENT" __ "\n" statementList "#DEINDENT"
-                        {% function(d) { return d[5] } %}
-                      | ":" flatStatements "\n"
-                        {% function(d) { return d[1] } %}
+               block -> ":" _ "#INDENT" statementList "#DEINDENT"
+                        {% function(d) { return d[3] } %}
 
 # Expressions
 
