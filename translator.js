@@ -360,6 +360,62 @@ function object(tree) {
     }
 }
 
+function index(tree) {
+    var output
+
+    if (tree[0][0] != '?' && tree[2][0] != 'range') {
+        return paren(tree[1]) + '[' + expression(tree[2]) + ']'
+    }
+
+    if (tree[2][0] != 'range') {
+        output = function(token) {
+            return ['[]', token, tree[2]]
+        }
+    } else {
+        var start = tree[2][1]
+
+        if (tree[2][3] == null) {
+            output = function(token) {
+                return ['()',
+                    ['.', token, ['identifier', 'slice']],
+                    [start]
+                ]
+            }
+        } else {
+            var end = tree[2][3]
+            output = function(token) {
+                var t = ['()',
+                    ['.', token, ['identifier', 'slice']],
+                    [start, ['+', end, ['number', 1]]]
+                ]
+
+                if (tree[2][2] == null) return t
+
+                var modulo = ['-', tree[2][2], tree[2][1]]
+                var xtemp = ['identifier', getVarName('x')]
+                var itemp = ['identifier', getVarName('i')]
+
+                return ['()',
+                    ['.', t, ['identifier', 'filter']],
+                    [['lambda', null, [[xtemp, null], [itemp, null]],
+                        ['==',
+                            ['%', itemp, modulo],
+                            ['number', 0]
+                        ]
+                    ]]
+                ]
+            }
+        }
+    }
+
+    if (tree[0][0] == '?') {
+        var r = getCheckExistenceWrapper(tree[1])
+        return r[0](output(r[1]))
+    }
+
+    return expression(output(tree[1]))
+}
+
 function func(tree) {
     var identifier = tree[1] ? expression(tree[1]) : null
     var funcargs = tree[2].map(function(x) {
@@ -377,7 +433,7 @@ function func(tree) {
         return expression(x[0])
     }).join(', ')
 
-    output += ') {\n'
+    output += ') {'
     var s = ['statements']
 
     if (hasOptionalArgs) {
@@ -470,62 +526,6 @@ function funcCall(tree) {
                     return x
                 }
             })]]
-        }
-    }
-
-    if (tree[0][0] == '?') {
-        var r = getCheckExistenceWrapper(tree[1])
-        return r[0](output(r[1]))
-    }
-
-    return expression(output(tree[1]))
-}
-
-function index(tree) {
-    var output
-
-    if (tree[0][0] != '?' && tree[2][0] != 'range') {
-        return paren(tree[1]) + '[' + expression(tree[2]) + ']'
-    }
-
-    if (tree[2][0] != 'range') {
-        output = function(token) {
-            return ['[]', token, tree[2]]
-        }
-    } else {
-        var start = tree[2][1]
-
-        if (tree[2][3] == null) {
-            output = function(token) {
-                return ['()',
-                    ['.', token, ['identifier', 'slice']],
-                    [start]
-                ]
-            }
-        } else {
-            var end = tree[2][3]
-            output = function(token) {
-                var t = ['()',
-                    ['.', token, ['identifier', 'slice']],
-                    [start, ['+', end, ['number', 1]]]
-                ]
-
-                if (tree[2][2] == null) return t
-
-                var modulo = ['-', tree[2][2], tree[2][1]]
-                var xtemp = ['identifier', getVarName('x')]
-                var itemp = ['identifier', getVarName('i')]
-
-                return ['()',
-                    ['.', t, ['identifier', 'filter']],
-                    [['lambda', null, [[xtemp, null], [itemp, null]],
-                        ['==',
-                            ['%', itemp, modulo],
-                            ['number', 0]
-                        ]
-                    ]]
-                ]
-            }
         }
     }
 
@@ -679,8 +679,8 @@ function tryStatement(tree) {
 }
 
 function classStatement(tree) {
-    var classname = tree[1][1]
-    var superclass = tree[2] ? expression(tree[2]) : null
+    var classname = tree[1]
+    var superclass = tree[2] ? tree[2] : null
     if (superclass != null) exports.flags.extends = true
 
     var functionList = tree[3].filter(function(x) {
@@ -694,19 +694,30 @@ function classStatement(tree) {
     })[0]
 
     if (constructor == null)
-        constructor = ['function', ['identifier', classname], [], ['statements']]
-    else constructor[1][1] = classname
+        constructor = ['function', classname, [], ['statements']]
+    else constructor[1] = classname
 
-    return formatCode([
-        classname + ' = (function() {', [
-            'var ' + func(constructor) + ';',
-            superclass ? '_.extends(' + classname + ', ' + superclass + ');' : null,
-            functionList.map(function(f) {
-                if (f[1][1] == classname) return ''
-                return classname + '.prototype.' + func(f) + ';'
-            }).join('\n'),
-            'return ' + classname + ';'
-        ], '})()'
+    var s = ['statements']
+    s.push(constructor)
+    if (superclass !== null) s.push(['()',
+        ['.', ['keyword', '_'], ['identifier', 'extends']],
+        [classname, superclass]
+    ])
+    s = s.concat(functionList.filter(function(f) {
+        return f[1][1] !== classname[1]
+    }).map(function(f) {
+        var name = f[1]
+        f[1] = null
+        return ['=', ['.',
+            ['.', classname, ['identifier', 'prototype']],
+            name
+        ], f]
+    }))
+    s.push(['keyword', 'return', classname])
+
+    return expression(['=',
+        classname,
+        ['()', ['function', null, [], s], []]
     ])
 }
 
