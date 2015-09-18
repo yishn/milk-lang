@@ -40,5 +40,5 @@ function factorization(number):
         result.push(p)
         return result
 
-console.log('Here is your prime factorization for 1372878:')
-console.log(factorization(1372878))
+console.log('Here is your prime factorization for 8733:')
+console.log(factorization(8733))

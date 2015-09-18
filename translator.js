@@ -11,10 +11,12 @@ exports.translate = function(tree, indent) {
     }
 
     var code = statements(tree)
+    var vars = popScope()
 
     return [
         '(function() {',
         '',
+        varsDefinition(vars),
         code,
         '',
         '})();'
@@ -36,9 +38,10 @@ function pushScope() {
 }
 
 function popScope() {
-    if (!exports.currentScope.parent) throw 'last scope'
+    if (!exports.currentScope) throw 'no scope'
+    var scope = exports.currentScope
     exports.currentScope = exports.currentScope.parent
-    return ''
+    return scope.vars
 }
 
 function register(varname) {
@@ -129,6 +132,12 @@ function paren(tree) {
 }
 
 // Translator functions
+
+function varsDefinition(vars) {
+    if (vars.length != 0)
+        return 'var ' + vars.join(', ') + ';'
+    return ''
+}
 
 function statements(tree) {
     var statements = []
@@ -487,7 +496,7 @@ function func(tree) {
 
     pushScope()
     if (!hasOptionalArgs) output += funcargs.map(function(x) {
-        return register(expression(x[0]))
+        return expression(x[0])
     }).join(', ')
 
     output += ') {'
@@ -536,12 +545,13 @@ function func(tree) {
         }
     }
 
-    return formatCode([
-        output, [
-            s.length >= 1 ? statements(s) : null,
-            statements(tree[3])
-        ], '}' + popScope()
-    ])
+    var code = [output, [
+        statements(s),
+        statements(tree[3])
+    ], '}'], vars = popScope()
+
+    code[1].splice(0, 0, varsDefinition(vars))
+    return formatCode(code)
 }
 
 function forHead(tree) {
@@ -645,65 +655,75 @@ function forHead(tree) {
 }
 
 function forStatement(tree) {
-    return formatCode([
-        forHead(tree), [
-            statements(tree[4])
-        ], '}' + popScope()
-    ])
+    var code = [forHead(tree), [
+        statements(tree[4])
+    ], '}'], vars = popScope()
+
+    code[1].splice(0, 0, varsDefinition(vars))
+    return formatCode(code)
 }
 
 function whileStatement(tree) {
-    return formatCode([
-        'while (' + expression(tree[1]) + ') {', [
-            pushScope() + statements(tree[2])
-        ], '}' + popScope()
-    ])
+    var code = ['while (' + expression(tree[1]) + ') {', [
+        pushScope() + statements(tree[2])
+    ], '}'], vars = popScope()
+
+    code[1].splice(0, 0, varsDefinition(vars))
+    return formatCode(code)
 }
 
 function ifStatement(tree) {
-    var output = formatCode([
-        'if (' + expression(tree[1][0]) + ') {', [
-            pushScope() + statements(tree[1][1])
-        ], '}' + popScope()
-    ])
+    var code = ['if (' + expression(tree[1][0]) + ') {', [
+        pushScope() + statements(tree[1][1])
+    ], '}'], vars = popScope()
+
+    code[1].splice(0, 0, varsDefinition(vars))
+    var output = formatCode(code)
 
     for (var i = 2; i < tree.length; i++) {
-        output += formatCode([
-            tree[i][0] == 'else'
+        code = [tree[i][0] == 'else'
             ? ' else {' + pushScope()
             : ' else if (' + expression(tree[i][0]) + ') {' + pushScope(), [
                 statements(tree[i][1])
-            ], '}' + popScope()
-        ])
+            ], '}'
+        ]
+        vars = popScope()
+        code[1].splice(0, 0, varsDefinition(vars))
+        output += formatCode(code)
     }
 
     return output
 }
 
 function tryStatement(tree) {
-    var output = formatCode([
-        'try {', [
-            pushScope() + statements(tree[1])
-        ], '}' + popScope()
-    ])
+    var code = ['try {', [
+        pushScope() + statements(tree[1])
+    ], '}'], vars = popScope()
+
+    code[1].splice(0, 0, varsDefinition(vars))
+    var output = formatCode(code)
 
     if (tree[2] != null) {
-        output += formatCode([
-            ' catch (' + expression(tree[2][0]) + ') {', [
-                pushScope() + statements(tree[2][1])
-            ], '}' + popScope()
-        ])
+        code = [' catch (' + expression(tree[2][0]) + ') {', [
+            pushScope() + statements(tree[2][1])
+        ], '}']
+        vars = popScope()
+
+        code[1].splice(0, 0, varsDefinition(vars))
+        output += formatCode(code)
     } else {
         var temp = getVarName('e')
         output += ' catch(' + temp + ') {}'
     }
 
     if (tree[3] != null) {
-        output += formatCode([
-            ' finally {', [
-                pushScope() + statements(tree[3])
-            ], '}' + popScope()
-        ])
+        code = [' finally {', [
+            pushScope() + statements(tree[3])
+        ], '}']
+        vars = popScope()
+
+        code[1].splice(0, 0, varsDefinition(vars))
+        output += formatCode(code)
     }
 
     return output
