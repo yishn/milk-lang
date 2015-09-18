@@ -31,7 +31,7 @@ exports.offsetToLinePos = function(offset, input) {
 
 exports.getIndent = function(input) {
     var useTabs = null
-    var indents = input.split('\n').filter(function(x) {
+    var indents = input.filter(function(x) {
         return x.trim() != ''
     }).map(function(x, i) {
         var whitespace = /^\s*/.exec(x)[0]
@@ -110,10 +110,11 @@ exports.removeStringComments = function(input) {
     return [commentsRemoved, pureCode, comments]
 }
 
-exports.indentifizer = function(input, pureCode, indentLength) {
+exports.indentifizer = function(input, pureCode) {
     input = input.split('\n')
     pureCode = pureCode.split('\n')
 
+    var indentLength = exports.getIndent(input)
     var depth = 0
     var lastIndex = 0
     var indentDepths = []
@@ -144,10 +145,9 @@ exports.indentifizer = function(input, pureCode, indentLength) {
         lastIndex = i
     }
 
-    input = input.join('\n')
-
     for (var i = 0; i < indentDepths.length; i++)
-         input += ' #DEINDENT'
+         input[lastIndex] += ' #DEINDENT'
 
+    input = input.join('\n').replace(/\s*$/, '')
     return input
 }

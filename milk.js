@@ -24,22 +24,16 @@ var pureCode = removed[1]
 var comments = removed[2]
 data = removed[0]
 
-// Get indent length
+// Indentifizer
 
-console.error('Determine indent length...')
-var indentLength
+console.error('Indentifizer...')
 
 try {
-    indentLength = helper.getIndent(data)
+    data = helper.indentifizer(data, pureCode)
 } catch(e) {
     console.error('Mixed indentation @' + e.line + ':1')
     return
 }
-
-// Indentifizer
-
-console.error('Indentifizer...')
-data = helper.indentifizer(data, pureCode, indentLength)
 
 // Invoke nearley
 
@@ -70,5 +64,6 @@ console.dir(tree, { depth: null })
 console.error('Translating...')
 console.log()
 console.log(translator.translate(tree))
+console.dir(translator.currentScope, { depth: null })
 console.log()
 console.timeEnd('timer')
