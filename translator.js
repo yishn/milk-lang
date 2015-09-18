@@ -433,9 +433,9 @@ function funcCall(tree) {
 
     var callsuper = (tree[1][0] == '.' || tree[1][0] == '?.') && tree[1][1][0] == 'keyword' && tree[1][1][1] == 'super'
     if (callsuper) {
-        tree[1][1] = ['.', ['keyword', 'self'], ['identifier', '__super__']]
+        tree[1][1] = ['.', ['identifier', 'self'], ['identifier', '__super__']]
         tree[1] = [tree[1][0], tree[1][1], ['identifier', 'call']]
-        tree[2].splice(0, 0, ['keyword', 'self'])
+        tree[2].splice(0, 0, ['identifier', 'self'])
     }
 
     if (placeholderCount == 0 && tree[0][0] != '?') {
@@ -786,16 +786,15 @@ function classStatement(tree) {
     var functionList = tree[3].filter(function(x) {
         return x[0] == 'function'
     }).map(function(f) {
-        f[3].splice(1, 0, ['=', ['keyword', 'self'], ['keyword', 'this']])
+        f[3].splice(1, 0, ['=', ['identifier', 'self'], ['keyword', 'this']])
         return f
     })
     var constructor = functionList.filter(function(x) {
-        return x[1][1] == 'init'
+        return x[1][1] === 'init'
     })[0]
 
     if (constructor == null)
-        constructor = ['function', classname, [], ['statements']]
-    else constructor[1] = classname
+        constructor = ['function', ['identifier', 'init'], [], ['statements']]
 
     var s = ['statements']
     s.push(constructor)
@@ -804,16 +803,16 @@ function classStatement(tree) {
         [classname, superclass]
     ])
     s = s.concat(functionList.filter(function(f) {
-        return f[1][1] !== classname[1]
+        return f[1][1] !== 'init'
     }).map(function(f) {
         var name = f[1]
         f[1] = null
         return ['=', ['.',
-            ['.', classname, ['identifier', 'prototype']],
+            ['.', ['identifier', 'init'], ['identifier', 'prototype']],
             name
         ], f]
     }))
-    s.push(['keyword', 'return', classname])
+    s.push(['keyword', 'return', ['identifier', 'init']])
 
     return expression(['=',
         classname,
