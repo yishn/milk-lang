@@ -69,7 +69,8 @@ function getVarName(base) {
     } else {
         var i = 1
         r = base + i
-        while (exports.identifiers.indexOf(r) != -1) i++
+        while (exports.identifiers.indexOf(r) != -1)
+            r = base + ++i
     }
 
     exports.identifiers.push(r)
