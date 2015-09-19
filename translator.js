@@ -254,7 +254,7 @@ function expression(tree) {
         return range(tree)
     }
 
-    console.log(tree)
+    console.dir(tree, { depth: null })
     return '/* ... */'
 }
 

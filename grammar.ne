@@ -147,12 +147,54 @@
                 | inlineIf
                   {% id %}
 
-    assignment -> memberAccess _ "=" _ assignment
+    assignment -> assignee _ "=" _ assignment
                   {% function(d) { return ['=', d[0], d[4]] } %}
-                | memberAccess _ [+\-*^/%] "=" _ assignment
+                | assignee _ [+\-*^/%] "=" _ assignment
                   {% function(d) { return [d[2] + d[3], d[0], d[5]] } %}
+                | patternmatch
+                  {% id %}
                 | lambda
                   {% id %}
+
+      assignee -> memberAccess
+                  {% function(d, _, r) {
+                      var list = ['number', 'string', 'object',
+                          'array', 'bool', 'range',
+                          'func', 'keyword', '()', '?()']
+                      return list.indexOf(d[0][0]) != -1 ? r : d[0]
+                  } %}
+
+# Pattern matching
+
+        patternmatch -> (arraypattern | objpattern) _ "=" _ assignment
+                        {% function(d) { return ['patternmatch', d[0][0], d[4]] } %}
+
+             pattern -> (assignee | arraypattern | objpattern)
+                        {% function(d) { return d[0][0] } %}
+                      | "_"
+                        {% function(d) { return ['keyword', '_'] } %}
+                      | "..."
+                        {% function(d) { return ['spread', '...'] } %}
+                      | "*" assignee
+                        {% function(d) { return ['spread', assignee] } %}
+
+        arraypattern -> arraypatternList __ ([,\n] _):? "]"
+                        {% id %}
+
+    arraypatternList -> "[" _ pattern
+                        {% function(d) { return ['arraypattern'].concat(d[2]) } %}
+                      | arraypatternList __ [,\n] _ pattern
+                        {% function(d) { return d[0].concat([d[4]]) } %}
+
+          objpattern -> "{" objpatternList "}"
+                        {% function(d) { return ['objpattern'].concat(d[1]) } %}
+
+      objpatternList -> (_ objpatternItem __ [,\n]):* _ objpatternItem __ ([,\n] _):?
+                        {% function(d) { return d[0].map(function(x) { return x[1] }).concat([d[2]]) } %}
+
+      objpatternItem -> expression _ ":" (_ "#INDENT"):? _ pattern (_ "#DEINDENT"):?
+                        {% function(d) { return [d[0], d[5]] } %}
+
 
 # Values
 
