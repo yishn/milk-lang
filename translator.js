@@ -727,20 +727,23 @@ function lambda(tree) {
 function existentialOp(tree) {
     var needTempVar = tree[1][0] != 'identifier' && tree[1][0] != 'keyword'
     var temp = needTempVar ? ['identifier', getVarName('r')] : tree[1]
-    var s = ['statements']
+    var condition = ['or',
+        ['==', ['typeof', temp], ['string', "'undefined'"]],
+        ['==', temp, ['keyword', 'null']]]
 
-    if (needTempVar) s.push(['=', temp, tree[1]])
-    s.push(['if',
-        [
-            ['or',
-                ['==', ['typeof', temp], ['string', "'undefined'"]],
-                ['==', temp, ['keyword', 'null']]
-            ],
-            ['statements', ['keyword', 'return', tree[2]]]
-        ]
-    ])
-    s.push(['keyword', 'return', temp])
-    return expression(['()', ['function', null, [], s], []])
+    if (needTempVar) {
+        var s = ['statements']
+
+        s.push(['=', temp, tree[1]])
+        s.push(['if', [condition, ['statements',
+            ['keyword', 'return', tree[2]]
+        ]]])
+        s.push(['keyword', 'return', temp])
+
+        return expression(['()', ['function', null, [], s], []])
+    } else {
+        return expression(['?', condition, tree[2], temp])
+    }
 }
 
 function classStatement(tree) {
