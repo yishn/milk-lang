@@ -211,7 +211,8 @@ function expression(tree) {
     } else if (tree[0] == '=') {
         return assignment(tree)
     } else if (tree[0] == '==' || tree[0] == '!=') {
-        return [paren(tree[1]), tree[0] + '=', paren(tree[2])].join(' ')
+        var op = tree[2][0] == 'keyword' && tree[2][1] == 'null' ? tree[0] : tree[0] + '='
+        return [paren(tree[1]), op, paren(tree[2])].join(' ')
     } else if (tree[0] == 'equals' || tree[0] == 'not equals') {
         exports.flags.equals = true
         var output = '_.equals(' + expression(tree[1]) + ', ' + expression(tree[2]) + ')'
