@@ -205,7 +205,7 @@
                     } %}
 
           string -> stringBeg1 "\""
-                    {% function(d) { return ['string', d[0] + d[1]] } %}
+                    {% function(d) { return ['blockstring', d[0] + d[1]] } %}
                   | stringBeg2 "'"
                     {% function(d) { return ['string', d[0] + d[1]] } %}
 
@@ -218,9 +218,9 @@
 
       stringBeg2 -> "'"
                     {% id %}
-                  | stringBeg2 [^'] #'
+                  | stringBeg2 [^'\n] #'
                     {% function(d) { return d.join('') } %}
-                  | stringBeg2 "\\" [^]
+                  | stringBeg2 "\\" [.]
                     {% function(d) { return d.join('') } %}
 
            array -> (arrayList | "[") __ ([,\n] _):? "]"

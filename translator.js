@@ -196,7 +196,7 @@ function deleteStatement(tree) {
 function expression(tree) {
     if (['number', 'bool', 'keyword', 'identifier'].indexOf(tree[0]) != -1) {
         return tree[1]
-    } else if (tree[0] == 'string') {
+    } else if (tree[0] == 'string' || tree[0] == 'blockstring') {
         return tree[1].replace(/\n/g, '\\n')
     } else if (tree[0].indexOf('array') == 0) {
         return array(tree)
