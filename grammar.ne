@@ -147,9 +147,7 @@
                 | inlineIf
                   {% id %}
 
-    assignment -> assignee _ "=" _ assignment
-                  {% function(d) { return ['=', d[0], d[4]] } %}
-                | assignee _ [+\-*^/%] "=" _ assignment
+    assignment -> assignee _ [+\-*^/%] "=" _ assignment
                   {% function(d) { return [d[2] + d[3], d[0], d[5]] } %}
                 | patternmatch
                   {% id %}
@@ -182,7 +180,7 @@
                         {% id %}
 
     arraypatternList -> "[" _ pattern
-                        {% function(d) { return ['arraypattern'].concat(d[2]) } %}
+                        {% function(d) { return ['arraypattern'].concat([d[2]]) } %}
                       | arraypatternList __ [,\n] _ pattern
                         {% function(d) { return d[0].concat([d[4]]) } %}
 
