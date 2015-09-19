@@ -166,8 +166,8 @@
 
 # Pattern matching
 
-        patternmatch -> (arraypattern | objpattern) _ "=" _ assignment
-                        {% function(d) { return ['patternmatch', d[0][0], d[4]] } %}
+        patternmatch -> pattern _ "=" _ assignment
+                        {% function(d) { return ['=', d[0], d[4]] } %}
 
              pattern -> (assignee | arraypattern | objpattern)
                         {% function(d) { return d[0][0] } %}

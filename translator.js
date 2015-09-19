@@ -259,7 +259,10 @@ function expression(tree) {
 }
 
 function assignment(tree) {
+    var patternmatch = tree[1][0] == 'arraypattern' || tree[1][0] == 'objpattern'
     var assignRange = tree[1][0] == '[]' && tree[1][2][0] == 'range'
+
+    if (patternmatch) return patternMatch(tree)
 
     if (tree[1][0] == 'identifier') {
         register(tree[1][1])
@@ -822,4 +825,23 @@ function classStatement(tree) {
         classname,
         ['()', ['function', null, [], s], []]
     ])
+}
+
+function patternMatch(tree) {
+    var temp = ['identifier', getVarName('ref')]
+    var s = tree[1][0] == 'arraypattern' ? arraypattern(tree[1]) : objpattern(tree[1])
+    s.push(['keyword', 'return', temp])
+
+    return expression(['()',
+        ['function', null, [temp], s],
+        [tree[2]]
+    ])
+}
+
+function arraypattern(tree) {
+
+}
+
+function objpattern(tree) {
+
 }
