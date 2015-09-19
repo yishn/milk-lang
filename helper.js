@@ -174,7 +174,7 @@ exports.commentator = function(input, src, comments) {
         lines[i] = null
 
         if (comments.length > 0 && comments[0][1] <= row) {
-            lines[i] = '\n' + indent + comments[0][0] + '\n'
+            lines[i] = '\n' + indent + comments[0][0]
             comments.splice(0, 1)
         } else if (i - lastReportedLine >= 5) {
             lines[i] = indent + '/*@' + row + ':' + col + '*/'

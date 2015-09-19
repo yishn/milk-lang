@@ -8,12 +8,10 @@ var _, getPrimes, factorization;
  * @param  int   limit    the limit
  * @return array          the list of all primes below limit
  */
-
 getPrimes = function(limit) {
     var checklist, i, checked, l;
 
     // Initialize checklist
-
     checklist = (function() {
         var r, i, start, end, step;
         r = [];
@@ -36,7 +34,6 @@ getPrimes = function(limit) {
         x = i;
 
         // Check all multiples of i
-
         while ((i * x) <= limit) {
             checklist[i * x] = true;
             /*@17:13*/
@@ -45,7 +42,6 @@ getPrimes = function(limit) {
     }
 
     // Accumulate unchecked items
-
     return (function() {
         var r1, l1;
         r1 = [];
@@ -67,7 +63,6 @@ getPrimes = function(limit) {
  *                         the unique prime factorization
  *                         of number
  */
-
 factorization = function(number) {
     var primes, p, l2, i1;
     /*@31:5*/
@@ -76,11 +71,9 @@ factorization = function(number) {
     }
 
     // Get primes
-
     primes = getPrimes(number);
 
     // Search for divisor
-
     l2 = _.enumerate(primes);
     for (i1 = 0; i1 < l2.length; i1++) {
         p = l2[i1];
@@ -88,7 +81,6 @@ factorization = function(number) {
         var result;
 
         // Recursively get factorization
-
         result = factorization(number / p);
         /*@40:9*/
         result.push(p);
@@ -101,4 +93,4 @@ console.log(factorization(8733));
 
 })();
 
-//: 9017ms
+//: 9258ms
