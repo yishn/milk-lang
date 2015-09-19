@@ -212,6 +212,10 @@ function expression(tree) {
         return assignment(tree)
     } else if (tree[0] == '==' || tree[0] == '!=') {
         return [paren(tree[1]), tree[0] + '=', paren(tree[2])].join(' ')
+    } else if (tree[0] == 'equals' || tree[0] == 'not equals') {
+        exports.flags.equals = true
+        var output = '_.equals(' + expression(tree[1]) + ', ' + expression(tree[2]) + ')'
+        return tree[0] == 'equals' ? output : '!' + output
     } else if (tree[0].length == 2 && tree[0][1] == '=') {
         return [paren(tree[1]), tree[0], paren(tree[2])].join(' ')
     } else if (tree[0] == 'lambda') {

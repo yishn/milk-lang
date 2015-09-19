@@ -105,6 +105,8 @@
 
    cmpOperator -> ("<=" | ">=" | [<>] | "==" | "!=")
                   {% function(d) { return d[0][0] } %}
+                | ([\s] "equals" [\s] | [\s] "not equals" [\s])
+                  {% function(d) { return d[0][1] } %}
 
     chainedCmp -> plusOp _ cmpOperator _ plusOp (_ cmpOperator _ plusOp):+
                   {% function(d) {
@@ -224,7 +226,7 @@
       identifier -> [a-zA-Z_$] [0-9a-zA-Z_$]:*
                     {% function(d, _, r) {
                         var keywords = [
-                            '_', 'pass',
+                            '_', 'pass', "equals",
                             'null', 'undefined', 'and', 'or', 'not', 'true', 'false', 'arguments',
                             'export', 'import', 'void', 'debugger', 'with',
                             'delete', 'var', 'let', 'const', 'typeof',
