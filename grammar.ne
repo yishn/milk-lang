@@ -89,7 +89,7 @@
                 | unary
                   {% id %}
 
-        plusOp -> plusOp __ [+-] _ starOp
+        plusOp -> plusOp _ [+-] _+ starOp
                   {% function(d) { return [d[2], d[0], d[4]] } %}
                 | starOp
                   {% id %}
