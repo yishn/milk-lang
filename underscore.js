@@ -7,7 +7,7 @@ _.modulo = function(a, b) {
 
 _.enumerate = function(list) {
     var classname = toString.call(list);
-    if (classname === '[object Object]')
+    if (classname !== '[object Array]' && classname !== '[object String]')
         return Object.keys(list);
 
     return list;
