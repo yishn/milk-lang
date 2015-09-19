@@ -1,3 +1,5 @@
+(function() {
+
 var _, getPrimes, factorization;
 
 /**
@@ -8,7 +10,7 @@ var _, getPrimes, factorization;
  */
 
 getPrimes = function(limit) {
-    var checklist, i, checked, list;
+    var checklist, i, checked, l;
 
     // Initialize checklist
 
@@ -25,18 +27,19 @@ getPrimes = function(limit) {
     })();
     /*@10:5*/
     checklist[0] = checklist[1] = true;
-    list = checklist;
-    for (i in list) {
-        checked = list[i];
+    l = checklist;
+    for (i in l) {
+        checked = l[i];
         if (!(!checked)) continue;
         var x;
+        /*@13:9*/
         x = i;
 
         // Check all multiples of i
 
         while ((i * x) <= limit) {
-            /*@16:13*/
             checklist[i * x] = true;
+            /*@17:13*/
             x++;
         }
     }
@@ -44,11 +47,11 @@ getPrimes = function(limit) {
     // Accumulate unchecked items
 
     return (function() {
-        var r1, list1;
+        var r1, l1;
         r1 = [];
-        list1 = checklist;
-        for (i in list1) {
-            checked = list1[i];
+        l1 = checklist;
+        for (i in l1) {
+            checked = l1[i];
             if (!(!checked)) continue;
             r1.push(i);
         }
@@ -66,7 +69,7 @@ getPrimes = function(limit) {
  */
 
 factorization = function(number) {
-    var primes, p, list2, i1;
+    var primes, p, l2, i1;
     /*@31:5*/
     if (number <= 1) {
         return [];
@@ -78,9 +81,9 @@ factorization = function(number) {
 
     // Search for divisor
 
-    list2 = _.enumerate(primes);
-    for (i1 = 0; i1 < list2.length; i1++) {
-        p = list2[i1];
+    l2 = _.enumerate(primes);
+    for (i1 = 0; i1 < l2.length; i1++) {
+        p = l2[i1];
         if (!(_.modulo(number, p) === 0)) continue;
         var result;
 
@@ -92,7 +95,10 @@ factorization = function(number) {
         return result;
     }
 }
+/*@43:1*/
 console.log('Here is your prime factorization for 8733:');
 console.log(factorization(8733));
 
-//: 7787ms
+})();
+
+//: 9017ms
