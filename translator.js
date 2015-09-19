@@ -488,9 +488,7 @@ function funcCall(tree) {
 
 function func(tree) {
     var identifier = tree[1] ? register(expression(tree[1])) : null
-    var funcargs = tree[2].map(function(x) {
-        return [x[0], x[1]]
-    })
+    var funcargs = tree[2]
     var hasOptionalArgs = funcargs.some(function(x) {
         return x[1] !== null
     })
@@ -508,46 +506,17 @@ function func(tree) {
     var s = ['statements']
 
     if (hasOptionalArgs) {
-        for (var i = 0; i < spreadindex; i++) {
-            var value = ['[]', ['identifier', 'arguments'], ['number', i]]
-            if (funcargs[i][1] !== null) {
-                value = ['??', value, funcargs[i][1]]
-            }
-            s.push(['=', funcargs[i][0], value])
-        }
+        var pattern = ['arraypattern'].concat(funcargs.map(function(x) {
+            return x[0]
+        }))
+        var itemp = ['identifier', getVarName('i')]
 
-        if (spreadindex == funcargs.length - 1) {
-            s.push(['=', funcargs[spreadindex][0], ['?',
-                ['>=', ['number', spreadindex], ['.',
-                    ['identifier', 'arguments'],
-                    ['identifier', 'length']
-                ]],
-                ['array'],
-                ['()', ['.', ['identifier', 'arguments'], ['identifier', 'slice']], [['number', spreadindex]]]
-            ]])
-        } else if (spreadindex < funcargs.length - 1) {
-            var afterspreadcount = funcargs.length - 1 - spreadindex
+        s.push(['=', pattern, ['keyword', 'arguments']])
 
-            s.push(['=', funcargs[spreadindex][0], ['?',
-                ['>=', ['number', spreadindex], ['-', ['.',
-                    ['identifier', 'arguments'],
-                    ['identifier', 'length']
-                ], ['number', afterspreadcount]]],
-                ['array'],
-                ['()', ['.', ['identifier', 'arguments'], ['identifier', 'slice']], [['number', spreadindex], ['-', ['number', afterspreadcount]]]]
-            ]])
-        }
-
-        for (var i = funcargs.length - 1; i > spreadindex; i--) {
-            var value = ['[]', ['identifier', 'arguments'], ['-',
-                ['.', ['identifier', 'arguments'], ['identifier', 'length']],
-                ['number', funcargs.length - i]
-            ]]
-            if (funcargs[i][1] !== null) {
-                value = ['??', value, funcargs[i][1]]
-            }
-            s.push(['=', funcargs[i][0], value])
-        }
+        funcargs.forEach(function(x) {
+            if (x[1] == null || x[0][0] == 'spread') return
+            s.push(['=', x[0], ['??', x[0], x[1]]])
+        })
     }
 
     var code = [output, [
@@ -861,7 +830,7 @@ function arraypattern(tree, ref) {
                     ['identifier', 'length']
                 ]],
                 ['array'],
-                ['()', ['.', ref, ['identifier', 'slice']], [['number', spreadindex - 1]]]
+                ['()', ['.', ['.', ['array'], ['identifier', 'slice']], ['identifier', 'call']], [ref, ['number', spreadindex - 1]]]
             ]])
         } else if (spreadindex < tree.length - 1) {
             var afterspreadcount = tree.length - 1 - spreadindex
@@ -872,7 +841,7 @@ function arraypattern(tree, ref) {
                     ['identifier', 'length']
                 ], ['number', afterspreadcount]]],
                 ['array'],
-                ['()', ['.', ref, ['identifier', 'slice']], [['number', spreadindex - 1], ['-', ['number', afterspreadcount]]]]
+                ['()', ['.', ['.', ['array'], ['identifier', 'slice']], ['identifier', 'call']], [ref, ['number', spreadindex - 1], ['-', ['number', afterspreadcount]]]]
             ]])
         }
     }

@@ -197,7 +197,6 @@
       objpatternItem -> expression _ ":" (_ "#INDENT"):? _ pattern (_ "#DEINDENT"):?
                         {% function(d) { return [d[0], d[5]] } %}
 
-
 # Values
 
          literal -> (bool | number | string | array | range | object | func)
@@ -206,7 +205,7 @@
           entity -> (keywordEntity | identifier | literal)
                     {% function(d) { return d[0][0] } %}
 
-   keywordEntity -> ("null" | "this" | "self" | "super" | "debugger" | "void")
+   keywordEntity -> ("null" | "this" | "self" | "super" | "debugger" | "void" | "arguments")
                     {% function(d) { return ['keyword', d[0][0]] } %}
 
             bool -> ("true" | "false")
@@ -316,7 +315,7 @@
                       | identifier _ "=" _ expression
                         {% function(d) { return [d[0], d[4]] } %}
                       | "*" identifier
-                        {% function(d) { return [d[1], '*'] } %}
+                        {% function(d) { return [['spread', d[1]], '*'] } %}
 
             callList -> (nonemptyCallList | emptyCallList)
                         {% function(d) { return d[0][0] } %}
