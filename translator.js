@@ -829,19 +829,82 @@ function classStatement(tree) {
 
 function patternMatch(tree) {
     var temp = ['identifier', getVarName('ref')]
-    var s = tree[1][0] == 'arraypattern' ? arraypattern(tree[1]) : objpattern(tree[1])
+    var s = tree[1][0] == 'arraypattern' ? arraypattern(tree[1], temp) : objpattern(tree[1], temp)
     s.push(['keyword', 'return', temp])
 
-    return expression(['()',
-        ['function', null, [temp], s],
-        [tree[2]]
+    return formatCode([
+        '(function(' + expression(temp) + ') {', [
+            statements(s)
+        ], '})(' + expression(tree[2]) + ')'
     ])
 }
 
-function arraypattern(tree) {
+function arraypattern(tree, ref) {
+    var s = ['statements']
+    var spreadindex = tree.map(function(x) { return x[0] }).indexOf('spread')
+    if (spreadindex == -1) spreadindex = tree[i].length
 
+    for (var i = 1; i < spreadindex; i++) {
+        if (tree[i][1] == '_') continue
+
+        s.push(['=',
+            tree[i],
+            ['[]', ref, ['number', i - 1]]
+        ])
+    }
+
+    if (tree[spreadindex][1][1] != '_') {
+        if (spreadindex == tree.length - 1) {
+            s.push(['=', tree[spreadindex][1], ['?',
+                ['>=', ['number', spreadindex - 1], ['.',
+                    ref,
+                    ['identifier', 'length']
+                ]],
+                ['array'],
+                ['()', ['.', ref, ['identifier', 'slice']], [['number', spreadindex - 1]]]
+            ]])
+        } else if (spreadindex < tree.length - 1) {
+            var afterspreadcount = tree.length - 1 - spreadindex
+
+            s.push(['=', tree[spreadindex][1], ['?',
+                ['>=', ['number', spreadindex - 1], ['-', ['.',
+                    ref,
+                    ['identifier', 'length']
+                ], ['number', afterspreadcount]]],
+                ['array'],
+                ['()', ['.', ref, ['identifier', 'slice']], [['number', spreadindex - 1], ['-', ['number', afterspreadcount]]]]
+            ]])
+        }
+    }
+
+    for (var i = tree.length - 1; i > spreadindex; i--) {
+        if (tree[i][1] == '_') continue
+
+        s.push(['=',
+            tree[i],
+            ['[]', ref, ['-',
+                ['.', ref, ['identifier', 'length']],
+                ['number', tree.length - i]
+            ]]
+        ])
+    }
+
+    return s
 }
 
-function objpattern(tree) {
+function objpattern(tree, ref) {
+    var s = ['statements']
 
+    for (var i = 1; i < tree.length; i++) {
+        if (tree[i][1][1] == '_') continue
+
+        s.push(['=',
+            tree[i][1],
+            tree[i][0][0] == 'identifier'
+            ? ['.', ref, tree[i][0]]
+            : ['[]', ref, tree[i][0]]
+        ])
+    }
+
+    return s
 }

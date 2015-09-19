@@ -157,7 +157,7 @@ exports.indentifizer = function(input, pureCode) {
 exports.commentator = function(input, src, comments) {
     var r = exports.removeStringComments(input)
     var pureCode = r[1]
-    var lastReportedLine = 1
+    var lastReportedLine = -5
 
     pureCode = pureCode.split('\n')
     lines = input.split('\n')

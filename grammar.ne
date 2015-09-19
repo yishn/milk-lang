@@ -171,18 +171,22 @@
                         {% function(d) { return d[0][0] } %}
                       | "_"
                         {% function(d) { return ['keyword', '_'] } %}
-                      | "..."
-                        {% function(d) { return ['spread', '...'] } %}
-                      | "*" assignee
-                        {% function(d) { return ['spread', assignee] } %}
 
-        arraypattern -> arraypatternList __ ([,\n] _):? "]"
+        arraypattern -> "[" (_ patternspread __ [,\n]):* _ patternspread __ ([,\n] _):? "]"
+                        {% function(d) {
+                            var r = ['arraypattern'].concat(d[1].map(function(x) {
+                                return x[1]
+                            }))
+                            r.push(d[3])
+                            return r
+                        } %}
+
+       patternspread -> pattern
                         {% id %}
-
-    arraypatternList -> "[" _ pattern
-                        {% function(d) { return ['arraypattern'].concat([d[2]]) } %}
-                      | arraypatternList __ [,\n] _ pattern
-                        {% function(d) { return d[0].concat([d[4]]) } %}
+                      | "*" pattern
+                        {% function(d) { return ['spread', d[1]] } %}
+                      | "..."
+                        {% function(d) { return ['spread', ['keyword', '_']] } %}
 
           objpattern -> "{" objpatternList "}"
                         {% function(d) { return ['objpattern'].concat(d[1]) } %}
