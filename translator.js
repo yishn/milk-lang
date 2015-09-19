@@ -274,12 +274,12 @@ function assignment(tree) {
         var range = tree[1][2]
         var rtemp = ['identifier', getVarName('r')]
         var starttemp = ['identifier', getVarName('start')]
-        var counttemp = ['identifier', getVarName('count')]
+        var lentemp = ['identifier', getVarName('len')]
 
         return expression(['()', ['function', null, [], ['statements',
             ['=', rtemp, tree[1][1]],
             ['=', starttemp, range[1]],
-            ['=', counttemp, range[3]
+            ['=', lentemp, range[3]
                 ? ['-', ['+', range[3], ['number', 1]], starttemp]
                 : ['.', rtemp, ['identifier', 'length']]
             ],
@@ -290,7 +290,7 @@ function assignment(tree) {
                 ], [
                     rtemp,
                     ['()', ['.',
-                        ['array', starttemp, counttemp],
+                        ['array', starttemp, lentemp],
                         ['identifier', 'concat']
                     ], [tree[2]]]
                 ]
@@ -300,7 +300,7 @@ function assignment(tree) {
     } else if (assignRange) {
         var range = tree[1][2]
         var rtemp = ['identifier', getVarName('r')]
-        var listtemp = ['identifier', getVarName('list')]
+        var listtemp = ['identifier', getVarName('l')]
         var itemp = ['identifier', getVarName('i')]
         var jtemp = ['identifier', getVarName('j')]
 
@@ -608,7 +608,7 @@ function forHead(tree) {
         }
     } else if (identifierCount == 1) {
         exports.flags.enumerate = true
-        var listtemp = register(getVarName('list'))
+        var listtemp = register(getVarName('l'))
         var itemp = register(getVarName('i'))
 
         var s = ['statements', ['=', ['identifier', listtemp],
@@ -625,7 +625,7 @@ function forHead(tree) {
             ]
         ])
     } else {
-        var listtemp = getVarName('list')
+        var listtemp = getVarName('l')
         var s = ['statements', ['=', ['identifier', listtemp], tree[2]]]
 
         output = formatCode([
