@@ -14,8 +14,12 @@ exports.translate = function(tree, indent) {
     var vars = popScope()
 
     return [
+        '(function() {',
+        '',
         varsDefinition(vars),
-        code
+        code,
+        '',
+        '})();'
     ].join('\n')
 }
 
