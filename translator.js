@@ -497,35 +497,38 @@ function func(tree) {
     var hasOptionalArgs = funcargs.some(function(x) {
         return x[1] !== null
     })
-    var spreadindex = funcargs.map(function(x) { return x[1] }).indexOf('*')
+    var spreadindex = funcargs.map(function(x) { return x[0][0] }).indexOf('spread')
+    var hasSpread = spreadindex != -1
     if (spreadindex == -1) spreadindex = funcargs.length
 
     var output = (identifier ? identifier + ' = ' : '') + 'function('
 
     pushScope()
-    if (!hasOptionalArgs) output += funcargs.map(function(x) {
+    if (!hasSpread) output += funcargs.map(function(x) {
         return expression(x[0])
     }).join(', ')
 
     output += ') {'
-    var s = ['statements']
+    var insert = []
 
-    if (hasOptionalArgs) {
+    if (hasSpread) {
+        var s = ['statements']
         var pattern = ['arraypattern'].concat(funcargs.map(function(x) {
             return x[0]
         }))
         var itemp = ['identifier', getVarName('i')]
 
         s.push(['=', pattern, ['keyword', 'arguments']])
-
-        funcargs.forEach(function(x) {
-            if (x[1] == null || x[0][0] == 'spread') return
-            s.push(['=', x[0], ['??', x[0], x[1]]])
-        })
+        insert.push(statements(s))
     }
 
+    funcargs.forEach(function(x) {
+        if (x[1] == null) return
+        insert.push(x[0][0] + ' = ' + expression(['??', x[0], x[1]]))
+    })
+
     var code = [output, [
-        statements(s),
+        insert.join('\n'),
         statements(tree[3])
     ], '}'], vars = popScope()
 

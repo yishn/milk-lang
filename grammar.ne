@@ -319,7 +319,7 @@
                       | identifier _ "=" _ expression
                         {% function(d) { return [d[0], d[4]] } %}
                       | "*" identifier
-                        {% function(d) { return [['spread', d[1]], '*'] } %}
+                        {% function(d) { return [['spread', d[1]], null] } %}
 
             callList -> (nonemptyCallList | emptyCallList)
                         {% function(d) { return d[0][0] } %}
