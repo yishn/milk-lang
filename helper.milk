@@ -34,10 +34,7 @@ exports.getIndent = function(input):
         else if useTabs != tabs: throw { line: i }
 
     indents = whitespaces.map(x => x.length)
-    indentDiffs = []
-
-    for i, _ in indents if i > 0:
-        indentDiffs.push(Math.abs(indents[i] - indents[i - 1]))
+    indentDiffs = [Math.abs(indents[i] - indents[i - 1]) for i, _ in indents if i > 0]
 
     return exports.gcd(*indentDiffs)
 
@@ -95,8 +92,8 @@ exports.indentifizer = function(input, pureCode):
     indentLength = exports.getIndent(input)
     [depth, lastIndex, indentDepths] = [0, 0, []]
 
-    for i, _ in input if pureCode[i].trim() != '':
-        linedepth = /^\s*/.exec(input[i])[0].length / indentLength
+    for i, l in input if pureCode[i].trim() != '':
+        linedepth = /^\s*/.exec(l)[0].length / indentLength
 
         if i != 0:
             if linedepth > depth:
