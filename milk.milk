@@ -39,7 +39,7 @@ p = new nearley.Parser(grammar.ParserRules, grammar.ParserStart)
 try:
     p.feed(data)
 
-    if not p.results?.length:
+    if !p.results?.length:
         throw {
             message: 'Unexpected end'
             offset: data.length - 1
@@ -53,7 +53,7 @@ catch e:
     return
 
 if p.results.length == 1:
-    console.error('No ambiguity detected.')
+    console.error('No ambiguities.')
 else:
     console.error('Ambiguity detected.')
 
@@ -62,7 +62,13 @@ tree = p.results[0]
 // Translator
 
 console.error('Translating...')
-data = translator.translate(tree)
+
+try:
+    data = translator.translate(tree)
+catch e:
+    [row, col] = helper.offsetToLinePos(e.offset, data)
+    console.error(e.message + ' @' + row + ':' + col)
+    return
 
 // Commentator
 
