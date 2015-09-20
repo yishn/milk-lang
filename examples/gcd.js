@@ -28,8 +28,7 @@ gcd = function() {
         return gcd.apply(this, r);
     })());
 }
-return gcd;
 
 })();
 
-//: 698ms
+//: 801ms
