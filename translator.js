@@ -198,7 +198,7 @@ function deleteStatement(tree) {
 }
 
 function expression(tree) {
-    if (['number', 'bool', 'keyword', 'identifier'].indexOf(tree[0]) != -1) {
+    if (['number', 'bool', 'keyword', 'identifier', 'regex'].indexOf(tree[0]) != -1) {
         return tree[1]
     } else if (tree[0] == 'string') {
         return tree[1].replace(/\n/g, '\\n')
