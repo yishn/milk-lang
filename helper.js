@@ -66,9 +66,9 @@ exports.removeStringComments = function(input) {
     var rules = {
         doublestring: /^"("|[^]*?[^\\]"|[^]*?\\\\")/,
         singlestring: /^'('|[^]*?[^\\]'|[^]*?\\\\')/,
-        regexstring: /^\/(.*?[^\\]\/|.*?\\\\\/)[gim]*/,
         singlecomment: /^\/\/.*/,
         blockcomment: /^\/\*[^]*?\*\//,
+        regexstring: /^\/(.*?[^\\]\/|.*?\\\\\/)[gim]*/,
         purecode: /^[^"'\/]+/
     }
 
@@ -172,18 +172,20 @@ exports.commentator = function(input, src, comments) {
         r = exports.offsetToLinePos(offset, src)
 
         var row = r[0], col = r[1]
-        lines[i] = null
+        lines[i] = ''
 
-        if (comments.length > 0 && comments[0][1] <= row) {
-            lines[i] = '\n' + indent + comments[0][0]
-            comments.splice(0, 1)
-        } else if (i - lastReportedLine >= 5) {
+        if (comments.length == 0 && i - lastReportedLine >= 5) {
             lines[i] = indent + '/*@' + row + ':' + col + '*/'
             lastReportedLine = i
+        }
+
+        while (comments.length > 0 && comments[0][1] <= row) {
+            lines[i] += '\n' + indent + comments[0][0]
+            comments.splice(0, 1)
         }
     }
 
     return lines.filter(function(x) {
-        return x !== null
+        return x !== ''
     }).join('\n')
 }
