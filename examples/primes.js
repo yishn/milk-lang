@@ -18,7 +18,7 @@ getPrimes = function(limit) {
         start = 0;
         end = limit;
         step = (end === start) ? 1 : Math.sign(end - start);
-        for (i = start; i <= end; i += step) {
+        for (i = start; step > 0 ? i <= end : i >= end; i += step) {
             r.push(false);
         }
         return r;
@@ -29,15 +29,15 @@ getPrimes = function(limit) {
     for (i in l) {
         checked = l[i];
         if (!(!checked)) continue;
-        var x;
-        /*@13:9*/
-        x = i;
+        var j, start1, end1, step1;
 
         // Check all multiples of i
-        while ((i * x) <= limit) {
-            checklist[i * x] = true;
-            /*@17:13*/
-            x++;
+        start1 = i * i;
+        end1 = limit;
+        step1 = ((i + 1) * i) - start1;
+        for (j = start1; step1 > 0 ? j <= end1 : j >= end1; j += step1) {
+            /*@15:13*/
+            checklist[j] = true;
         }
     }
 
@@ -65,7 +65,7 @@ getPrimes = function(limit) {
  */
 factorization = function(number) {
     var primes, p, l2, i1;
-    /*@31:5*/
+    /*@29:5*/
     if (number <= 1) {
         return [];
     }
@@ -82,15 +82,15 @@ factorization = function(number) {
 
         // Recursively get factorization
         result = factorization(number / p);
-        /*@40:9*/
+        /*@38:9*/
         result.push(p);
         return result;
     }
 }
-/*@43:1*/
+/*@41:1*/
 console.log('Here is your prime factorization for 8733:');
 console.log(factorization(8733));
 
 })();
 
-//: 9258ms
+//: 9785ms
