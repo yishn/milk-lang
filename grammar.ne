@@ -51,7 +51,7 @@
                   {% function(d) { return [d[1][0] + ']', d[0], d[3]] } %}
                 | memberAccess "?":? range
                   {% function(d) { return [d[1] ? '?[]' : '[]', d[0], d[2]] } %}
-                | memberAccess "?":? callList ")"
+                | memberAccess "?":? callList _ ")"
                   {% function(d) { return [d[1] ? '?()' : '()', d[0], d[2]] } %}
                 | parenthesis
                   {% id %}
