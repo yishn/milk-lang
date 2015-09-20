@@ -315,7 +315,7 @@
                   | "{" _ objectListItem _+ forHead _ "}"
                     {% function(d) { return ['objectfor', d[4].concat([d[2]])] } %}
 
-      objectList -> null
+      objectList -> _
                     {% function(d) { return [] } %}
                   | (_ objectListItem __ [,\n]):* _ objectListItem __ ([,\n] _):?
                     {% function(d) { return d[0].map(function(x) { return x[1] }).concat([d[2]]) } %}
