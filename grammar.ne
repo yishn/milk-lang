@@ -345,14 +345,19 @@
        emptyCallList -> "(" _
                         {% function(d) { return [] } %}
 
-    nonemptyCallList -> "(" _ expression
+    nonemptyCallList -> "(" _ callListItem
                         {% function(d) { return [d[2]] } %}
-                      | "(" _ "_"
-                        {% function(d) { return [['keyword', '_']] } %}
-                      | callList _ "," _ expression
+                      | callList _ "," _ callListItem
                         {% function(d) { return d[0].concat([d[4]]) } %}
-                      | callList _ "," _ "_"
-                        {% function(d) { return d[0].concat([['keyword', '_']]) } %}
+
+        callListItem -> expression
+                        {% id %}
+                      | "_"
+                        {% function(d) { return ['keyword', '_'] } %}
+                      | "*" expression
+                        {% function(d) { return ['spread', d[1]] } %}
+                      | "*_"
+                        {% function(d) { return ['spread', ['keyword', '_']] } %}
 
 # Classes
 

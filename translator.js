@@ -444,7 +444,11 @@ function funcCall(tree) {
     var output = ''
     var placeholderCount = tree[2].filter(function(x) {
         return x[0] == 'keyword' && x[1] == '_'
+            || x[0] == 'spread' && x[1][1] == '_'
     }).length
+    var hasSpread = tree[2].some(function(x) {
+        return x[0] == 'spread'
+    })
 
     var callsuper = (tree[1][0] == '.' || tree[1][0] == '?.') && tree[1][1][0] == 'keyword' && tree[1][1][1] == 'super'
     if (callsuper) {
@@ -452,15 +456,41 @@ function funcCall(tree) {
         tree[2].splice(0, 0, ['identifier', 'self'])
     }
 
-    if (placeholderCount == 0 && tree[0][0] != '?') {
+    if (placeholderCount == 0 && !hasSpread && tree[0][0] != '?') {
         return paren(tree[1]) + '(' + tree[2].map(function(x) {
             return expression(x)
         }).join(', ') + ')'
     }
 
     if (placeholderCount == 0) {
-        output = function(token) {
-            return ['()', token, tree[2]]
+        if (!hasSpread) {
+            output = function(token) {
+                return ['()', token, tree[2]]
+            }
+        } else {
+            var s = ['statements']
+            var temp = ['identifier', getVarName('r')]
+
+            s.push(['=', temp, ['array']])
+
+            tree[2].forEach(function(x) {
+                if (x[0] != 'spread')
+                    s.push(['()', ['.', temp, ['identifier', 'push']], [x]])
+                else
+                    s.push(['()', ['.', ['.',
+                        temp,
+                        ['identifier', 'push']],
+                        ['identifier', 'apply']
+                    ], [['keyword', 'this'], x[1]]])
+            })
+
+
+            output = function(token) {
+                s.push(['keyword', 'return', ['()',
+                    ['.', token, ['identifier', 'apply']], [['keyword', 'this'], temp]
+                ]])
+                return ['()', ['function', null, [], s], []]
+            }
         }
     } else {
         var temps = []
@@ -472,8 +502,11 @@ function funcCall(tree) {
                 return [['identifier', x], null]
             }), ['()', token, tree[2].map(function(x) {
                 if (x[0] == 'keyword' && x[1] == '_') {
-                    var temp = temps.splice(0, 1)
-                    return ['identifier', temp[0]]
+                    var temp = temps.splice(0, 1)[0]
+                    return ['identifier', temp]
+                } else if (x[0] == 'spread' && x[1][1] == '_') {
+                    var temp = temps.splice(0, 1)[0]
+                    return ['spread', ['identifier', temp]]
                 } else {
                     return x
                 }
