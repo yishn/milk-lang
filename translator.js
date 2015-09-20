@@ -646,8 +646,13 @@ function func(tree) {
 }
 
 function forHead(tree) {
-    var firstIdentifier = register(expression(tree[1][0]))
-    var secondIdentifier = tree[1][1] ? register(expression(tree[1][1])) : null
+    var firstIdentifier = expression(tree[1][0])
+    var secondIdentifier = tree[1][1] ? expression(tree[1][1]) : null
+    if (firstIdentifier == '_') firstIdentifier = getVarName('x')
+    if (secondIdentifier == '_') secondIdentifier = getVarName('y')
+    register(firstIdentifier)
+    if (secondIdentifier != null) register(secondIdentifier)
+
     var identifierCount = tree[1][1] ? 2 : 1
     var output = ''
 
@@ -707,7 +712,7 @@ function forHead(tree) {
         output = formatCode([
             statements(s),
             'for (' + itemp + ' = 0; ' + itemp + ' < ' + listtemp + '.length; ' + itemp + '++) {', [
-                firstIdentifier + ' = ' + listtemp + '[' + itemp + '];'
+                firstIdentifier == '_' ? '' : firstIdentifier + ' = ' + listtemp + '[' + itemp + '];'
             ]
         ])
     } else {
@@ -717,7 +722,7 @@ function forHead(tree) {
         output = formatCode([
             statements(s),
             'for (' + firstIdentifier + ' in ' + listtemp + ') {', [
-                secondIdentifier + ' = ' + listtemp + '[' + firstIdentifier + '];'
+                secondIdentifier == '_' ? '' : secondIdentifier + ' = ' + listtemp + '[' + firstIdentifier + '];'
             ]
         ])
     }

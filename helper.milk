@@ -36,7 +36,7 @@ exports.getIndent = function(input):
     indents = whitespaces.map(x => x.length)
     indentDiffs = []
 
-    for i, x in indents if i > 0:
+    for i, _ in indents if i > 0:
         indentDiffs.push(Math.abs(indents[i] - indents[i - 1]))
 
     return exports.gcd(*indentDiffs)
@@ -95,7 +95,7 @@ exports.indentifizer = function(input, pureCode):
     indentLength = exports.getIndent(input)
     [depth, lastIndex, indentDepths] = [0, 0, []]
 
-    for i, l in input if pureCode[i].trim() != '':
+    for i, _ in input if pureCode[i].trim() != '':
         linedepth = /^\s*/.exec(input[i])[0].length / indentLength
 
         if i != 0:
@@ -114,7 +114,7 @@ exports.indentifizer = function(input, pureCode):
 
         [depth, lastIndex] = [linedepth, i]
 
-    for x in indentDepths:
+    for _ in indentDepths:
         input[lastIndex] += ' #DEINDENT'
 
     return input.join('\n').replace(/\s*$/, '')
@@ -125,7 +125,7 @@ exports.commentator = function(input, src, comments):
 
     [lines, pureCode] = [input, pureCode].map(x => x.split('\n'))
 
-    for i, l in lines:
+    for i, _ in lines:
         index = pureCode[i].search(/#OFFSET\d+$/)
         if index == -1: continue
 
