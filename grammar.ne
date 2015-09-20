@@ -276,16 +276,16 @@
 
       stringBeg1 -> "\""
                     {% id %}
-                  | stringBeg1 [^"] #"
+                  | stringBeg1 [^"\\] #"
                     {% function(d) { return d.join('') } %}
-                  | stringBeg1 "\\" [^]
+                  | stringBeg1 "\\" [^\n]
                     {% function(d) { return d.join('') } %}
 
       stringBeg2 -> "'"
                     {% id %}
-                  | stringBeg2 [^'] #'
+                  | stringBeg2 [^'\\] #'
                     {% function(d) { return d.join('') } %}
-                  | stringBeg2 "\\" [^]
+                  | stringBeg2 "\\" [^\n]
                     {% function(d) { return d.join('') } %}
 
            regex -> regexBeg "/" [gim]:*
