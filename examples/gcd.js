@@ -16,10 +16,10 @@ gcd = function() {
     if (rest.length === 0) {
         return first;
     }
-    /*@4:5*/
     gcdInner = function(a, b) {
         return (b === 0) ? a : gcdInner(b, _.modulo(a, b));
     }
+    /*@5:5*/
     return gcdInner(first, (function() {
         var r;
         r = [];
@@ -29,4 +29,4 @@ gcd = function() {
 }
 })();
 
-//: 701ms
+//: 714ms

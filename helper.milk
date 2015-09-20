@@ -115,7 +115,7 @@ exports.indentifizer = function(input, pureCode):
 
         [depth, lastIndex] = [linedepth, i]
 
-    for i in [0, ..., indentDepths.length - 1]:
+    for x in indentDepths:
         input[lastIndex] += ' #DEINDENT'
 
     return input.join('\n').replace(/\s*$/, '')
@@ -135,7 +135,7 @@ exports.commentator = function(input, src, comments):
         [row, col] = exports.offsetToLinePos(offset, src)
         lines[i] = ''
 
-        if comments.length == 0 && i - lastReportedLine >= 5:
+        if i - lastReportedLine > 5:
             lines[i] = indent + '/*@' + row + ':' + col + '*/'
             lastReportedLine = i
 
