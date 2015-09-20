@@ -7,7 +7,7 @@
                       | statementList [;\n] __ statement __
                         {% function(d) { return  d[0].concat([d[3]]) } %}
 
-      flatStatements -> __ statement __ (";" __ "\n"):?
+      flatStatements -> __ statement (__ ";"):?
                         {% function(d) { return ['statements', d[1]] } %}
 
            statement -> (class | keywordStatement | condStatement | tryStatement | loop)
