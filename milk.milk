@@ -1,0 +1,74 @@
+process = require('process')
+fs = require('fs')
+nearley = require('nearley')
+grammar = require('./grammar')
+helper = require('./helper')
+translator = require('./translator')
+
+filename = process.argv[2]
+data = fs.readFileSync(filename, 'utf-8')
+
+console.time('//')
+
+// Normalize endings
+
+console.error('Normalize endings...')
+data = data.replace(/\r\n/g, '\n').replace(/\r/g, '')
+
+// Extract comments & strings
+
+console.error('Extract comments...')
+[data, pureCode, comments] = removeStringComments(data)
+
+// Indentifizer
+
+console.error('Indentifizer...')
+
+try:
+    data = helper.indentifizer(data, pureCode)
+catch e:
+    console.error('Mixed indentation @' + e.line + ':1')
+    return
+
+// Parser
+
+src = data
+console.error('Parsing...')
+p = new nearley.Parser(grammar.ParserRules, grammar.ParserStart)
+
+try:
+    p.feed(data)
+
+    if not p.results?.length:
+        throw {
+            message: 'Unexpected end'
+            offset: data.length - 1
+        }
+catch e:
+    [row, col] = helper.offsetToLinePos(e.offset, data)
+    message = e.message
+    if 'nearley' in message: message = 'Parse error'
+
+    console.error(message + ' @' + row + ':' + col)
+    return
+
+if p.results.length == 1:
+    console.error('No ambiguity detected.')
+else:
+    console.error('Ambiguity detected.')
+
+tree = p.results[0]
+
+// Translator
+
+console.error('Translating...')
+data = translator.translate(tree)
+
+// Commentator
+
+console.error('Commenting...')
+data = helper.commentator(data, src, comments)
+
+console.log(data)
+console.log()
+console.timeEnd('//')
