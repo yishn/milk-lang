@@ -290,7 +290,7 @@
                     {% function(d) { return d.join('') } %}
                   | regexBeg [^/\n]
                     {% function(d) { return d.join('') } %}
-                  | regexBeg "\\" [.]
+                  | regexBeg "\\" [^\n]
                     {% function(d) { return d.join('') } %}
 
            array -> (arrayList | "[") __ ([,\n] _):? "]"
