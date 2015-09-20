@@ -198,6 +198,8 @@
 
       objpatternItem -> expression _ ":" (_ "#INDENT"):? _ pattern (_ "#DEINDENT"):?
                         {% function(d) { return [d[0], d[5]] } %}
+                      | identifier
+                        {% function(d) { return [d[0], d[0]] } %}
 
 # Values
 
