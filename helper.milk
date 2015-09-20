@@ -1,0 +1,146 @@
+exports.gcd = function(list):
+    [first, *rest] = list
+    if rest.length == 0: return first
+
+    gcdInner = (a, b) => b == 0 ? a : gcdInner(b, a % b)
+    return gcdInner(first, exports.gcd(rest))
+
+exports.offsetToLinePos = function(offset, input):
+    lines = [x + '\n' for x in input.split('\n')]
+
+    navigate = function(pos, step):
+        [row, col] = pos
+
+        if col + step >= 0 && col + step < lines[row].length:
+            return [row, col + step]
+        else if col + step < 0 && row > 0:
+            pos = [row - 1, lines[row - 1].length - 1]
+            return navigate(pos, col + step + 1)
+        else if col + step >= lines[row].length && row + 1 < lines.length:
+            pos = [row + 1, 0]
+            return navigate(pos, col + step - lines[row].length)
+        else:
+            [..., l] = lines
+            return [lines.length - 1, l.length - 1]
+
+    return navigate([0, 0], offset, lines).map(x => x + 1)
+
+exports.getIndent = function(input):
+    useTabs = null
+    whitespaces = [/^\s*/.exec(l)[0] for l in input if l.trim() != '']
+
+    for w in whitespaces if w.length != 0:
+        tabs = '\t' in w
+        if useTabs == null: useTabs = tabs
+        else if useTabs != tabs: throw { line: i }
+
+    indents = whitespaces.map(x => x.length)
+    indentDiffs = []
+
+    for i in [1, ..., indents.length - 1]:
+        indentDiffs.push(Math.abs(indents[i] - indents[i - 1]))
+
+    return exports.gcd(indentDiffs)
+
+exports.removeStringComments = function(input):
+    commentsRemoved = ''
+    pureCode = ''
+    comments = []
+    offset = 0
+    residue = input
+    lineCounter = 1
+
+    rules = {
+        doublestring: /^"("|[^]*?[^\\]"|[^]*?\\\\")/
+        singlestring: /^'('|[^]*?[^\\]'|[^]*?\\\\')/
+        singlecomment: /^\/\/.*/
+        blockcomment: /^\/\*[^]*?\*\//
+        regexstring: /^\/(.*?[^\\]\/|.*?\\\\\/)[gim]*/
+        purecode: /^[^"'\/]+/
+    }
+
+    while residue.length > 0:
+        [type, value] = ['purecode', residue[0]]
+
+        for t, regex in rules:
+            matches = regex.exec(residue)
+            if matches == null: continue
+
+            [type, value] = [t, matches[0]]
+            break
+
+        if 'comment' in type:
+            // Add comment to comments
+            comments.push([value, lineCounter])
+
+        for i in [0, ..., value.length - 1]:
+            space = ' '
+            if value[i] == '\n':
+                space = '\n'
+                lineCounter++
+
+            if 'comment' in type: commentsRemoved += space
+            else: commentsRemoved += value[i]
+
+            if type == 'purecode': pureCode += value[i]
+            else: pureCode += space
+
+        residue = residue[value.length...]
+        offset += value.length
+
+    return [commentsRemoved, pureCode, comments]
+
+exports.indentifizer = function(input, pureCode):
+    [input, pureCode] = [input, pureCode].map(x => x.split('\n'))
+
+    indentLength = exports.getIndent(input)
+    [depth, lastIndex, indentDepths] = [0, 0, []]
+
+    for i in [0, ..., input.length - 1] if pureCode[i].trim() != '':
+        linedepth = /^\s*/.exec(input[i])[0].length / indentLength
+
+        if i != 0:
+            if linedepth > depth:
+                trimmed = pureCode[lastIndex].trim()
+
+                if trimmed[trimmed.length - 1] == ':':
+                    input[lastIndex] += ' #INDENT'
+                    indentDepths.push(depth)
+
+            for j in [0, 1, ..., depth - linedepth - 1]:
+                if indentDepths[indentDepths.length - 1] != depth - j - 1: continue
+
+                input[lastIndex] += ' #DEINDENT'
+                indentDepths.pop()
+
+        [depth, lastIndex] = [linedepth, i]
+
+    for i in [0, ..., indentDepths.length - 1]:
+        input[lastIndex] += ' #DEINDENT'
+
+    return input.join('\n').replace(/\s*$/, '')
+
+exports.commentator = function(input, src, comments):
+    [_, pureCode, _] = exports.removeStringComments(input)
+    lastReportedLine = -5
+
+    [lines, pureCode] = [input, pureCode].map(x => x.split('\n'))
+
+    for i in [0, ..., lines.length - 1]:
+        index = pureCode[i].search(/#OFFSET\d+$/)
+        if index == -1: continue
+
+        offset = parseInt(pureCode[i][index + 7, ...])
+        indent = pureCode[i].match(/^\s*/)[0]
+        [row, col] = exports.offsetToLinePos(offset, src)
+        lines[i] = ''
+
+        if comments.length == 0 && i - lastReportedLine >= 5:
+            lines[i] = indent + '/*@' + row + ':' + col + '*/'
+            lastReportedLine = i
+
+        while comments.length > 0 && comments[0][1] <= row:
+            lines[i] += '\n' + indent + comments[0][0]
+            comments.splice(0, 1)
+
+    return lines.filter(x => x != '').join('\n')

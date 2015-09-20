@@ -1,5 +1,4 @@
 (function() {
-
 var _ = {}, gcd;
 _.modulo = function(a, b) {
     var c = a % b;
@@ -28,7 +27,6 @@ gcd = function() {
         return gcd.apply(this, r);
     })());
 }
-
 })();
 
-//: 787ms
+//: 701ms

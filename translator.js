@@ -15,11 +15,9 @@ exports.translate = function(tree, indent) {
 
     return [
         '(function() {',
-        '',
         'var _ = {}' + (vars.length > 0 ? ', ' + vars.join(', ') : '') + ';',
         underscore(),
         code,
-        '',
         '})();'
     ].join('\n')
 }
