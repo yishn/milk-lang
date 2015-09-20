@@ -33,7 +33,7 @@ _.equals = function(a, b) {
     if (areArrays) {
         if (a.length !== b.length) return false;
 
-        for (var i = 0; i < a.length; i++)
+        for (var i = 0; i < a.length; i++) {
             if (!_.equals(a[i], b[i]))
                 return false;
         }
@@ -43,7 +43,7 @@ _.equals = function(a, b) {
         var akeys = Object.keys(a);
         if (akeys.length !== Object.keys(b).length) return false;
 
-        for (var i = 0; i < akeys.length; i++)
+        for (var i = 0; i < akeys.length; i++) {
             key = akeys[i];
             if (!(key in b))
                 return false;
