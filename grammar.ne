@@ -174,17 +174,15 @@
                       | "_"
                         {% function(d) { return ['keyword', '_'] } %}
 
-        arraypattern -> "[" _ pattern __ ([,\n] _ pattern __):* ([,\n] _ spread __ ([,\n] _ pattern __):*):? "]"
+        arraypattern -> "[" _ pattern __ ([,\n] _ pattern __):* [,\n] _ spread __ ([,\n] _ pattern __):* "]"
                         {% function(d) {
                             var r = ['arraypattern', d[2]].concat(d[4].map(function(x) {
                                 return x[2]
                             }))
-                            if (d[5] != null) {
-                                r.push(d[5][2])
-                                r.push.apply(r, d[5][4].map(function(x) {
-                                    return x[2]
-                                }))
-                            }
+                            r.push(d[7])
+                            r.push.apply(r, d[9].map(function(x) {
+                                return x[2]
+                            }))
                             return r
                         } %}
                       | "[" ((_ pattern __ [,\n]):* _ spread __ [,\n]):? _ pattern __ ([,\n] _ pattern __):* "]"
