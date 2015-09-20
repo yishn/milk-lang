@@ -174,18 +174,36 @@
                       | "_"
                         {% function(d) { return ['keyword', '_'] } %}
 
-        arraypattern -> "[" (_ patternspread __ [,\n]):* _ patternspread __ ([,\n] _):? "]"
+        arraypattern -> "[" _ pattern __ ([,\n] _ pattern __):* ([,\n] _ spread __ ([,\n] _ pattern __):*):? "]"
                         {% function(d) {
-                            var r = ['arraypattern'].concat(d[1].map(function(x) {
-                                return x[1]
+                            var r = ['arraypattern', d[2]].concat(d[4].map(function(x) {
+                                return x[2]
                             }))
+                            if (d[5] != null) {
+                                r.push(d[5][2])
+                                r.push.apply(r, d[5][4].map(function(x) {
+                                    return x[2]
+                                }))
+                            }
+                            return r
+                        } %}
+                      | "[" ((_ pattern __ [,\n]):* _ spread __ [,\n]):? _ pattern __ ([,\n] _ pattern __):* "]"
+                        {% function(d) {
+                            var r = ['arraypattern']
+                            if (d[1] != null) {
+                                r = r.concat(d[1][0].map(function(x) {
+                                    return x[1]
+                                }).concat([d[1][2]]))
+                            }
+
                             r.push(d[3])
+                            r.push.apply(r, d[5].map(function(x) {
+                                return x[2]
+                            }))
                             return r
                         } %}
 
-       patternspread -> pattern
-                        {% id %}
-                      | "*" pattern
+              spread -> "*" pattern
                         {% function(d) { return ['spread', d[1]] } %}
                       | "..."
                         {% function(d) { return ['spread', ['keyword', '_']] } %}
