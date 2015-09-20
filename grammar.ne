@@ -286,9 +286,11 @@
            regex -> regexBeg "/" [gim]:*
                     {% function(d) { return ['regex', d[0] + '/' + d[2].join('')] } %}
 
-        regexBeg -> "/" [^/\n]
+        regexBeg -> "/" [^/\n\\]
                     {% function(d) { return d.join('') } %}
-                  | regexBeg [^/\n]
+                  | "/\\" [^\n]
+                    {% function(d) { return d.join('') } %}
+                  | regexBeg [^/\n\\]
                     {% function(d) { return d.join('') } %}
                   | regexBeg "\\" [^\n]
                     {% function(d) { return d.join('') } %}
