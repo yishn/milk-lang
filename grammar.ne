@@ -81,6 +81,8 @@
                   {% function(d) { return [d[0][0] + '_', d[2]] } %}
                 | "typeof" _+ wedgeOp
                   {% function(d) { return [d[0], d[2]] } %}
+                | "!" _ wedgeOp
+                  {% function(d) { return ['not', d[2]] } %}
                 | wedgeOp
                   {% id %}
 
@@ -117,17 +119,12 @@
                       return r
                   } %}
 
-       boolNot -> "not" _+ comparison
-                  {% function(d) { return ['not', d[2]] } %}
+       boolAnd -> boolAnd _ "&&" _ comparison
+                  {% function(d) { return ['and', d[0], d[4]] } %}
                 | comparison
                   {% id %}
 
-       boolAnd -> boolAnd _+ "and" _+ boolNot
-                  {% function(d) { return ['and', d[0], d[4]] } %}
-                | boolNot
-                  {% id %}
-
-       boolOr -> boolOr _+ "or" _+ boolAnd
+       boolOr -> boolOr _ "||" _ boolAnd
                   {% function(d) { return ['or', d[0], d[4]] } %}
                 | boolAnd
                   {% id %}
@@ -245,7 +242,7 @@
                     {% function(d, _, r) {
                         var keywords = [
                             '_', 'pass', "equals",
-                            'null', 'undefined', 'and', 'or', 'not', 'true', 'false', 'arguments',
+                            'null', 'undefined', 'not', 'true', 'false', 'arguments',
                             'export', 'import', 'void', 'debugger', 'with',
                             'delete', 'var', 'let', 'const', 'typeof',
                             'new', 'class', 'extends', 'this', 'self', 'super',

@@ -9,13 +9,13 @@ function getPrimes(limit):
     checklist = [false for i in [0...limit]]
     checklist[0] = checklist[1] = true
 
-    for i, checked in checklist if not checked:
+    for i, checked in checklist if !checked:
         // Check all multiples of i
         for j in [i*i, (i + 1)*i, ..., limit]:
             checklist[j] = true
 
     // Accumulate unchecked items
-    return [i for i, checked in checklist if not checked]
+    return [i for i, checked in checklist if !checked]
 
 /**
  * Factorizes a given number in its unique prime
