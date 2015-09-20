@@ -1,6 +1,16 @@
 (function() {
 
-var _, getPrimes, factorization;
+var _ = {}, getPrimes, factorization;
+_.modulo = function(a, b) {
+    var c = a % b;
+    return c >= 0 ? c : c + b;
+}
+_.enumerate = function(l) {
+    var t = toString.call(l);
+    if (t !== "[object Array]" && t !== "[object String]")
+        return Object.keys(l);
+    return l;
+}
 
 /**
  * Gets all the primes below a certain integer
@@ -93,4 +103,4 @@ console.log(factorization(8733));
 
 })();
 
-//: 9785ms
+//: 11490ms

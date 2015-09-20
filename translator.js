@@ -5,7 +5,7 @@ exports.translate = function(tree, indent) {
     exports.flags = {}
     exports.identifiers = getIdentifiers(tree)
     exports.currentScope = {
-        vars: ['_'],
+        vars: [],
         children: [],
         parent: null
     }
@@ -16,11 +16,89 @@ exports.translate = function(tree, indent) {
     return [
         '(function() {',
         '',
-        varsDefinition(vars),
+        'var _ = {}' + (vars.length > 0 ? ', ' + vars.join(', ') : '') + ';',
+        underscore(),
         code,
         '',
         '})();'
     ].join('\n')
+}
+
+function underscore() {
+    var output = []
+
+    if (exports.flags.modulo) {
+        output.push(formatCode([
+            '_.modulo = function(a, b) {', [
+                'var c = a % b;',
+                'return c >= 0 ? c : c + b;'
+            ], '}'
+        ]))
+    }
+    if (exports.flags.enumerate) {
+        output.push(formatCode([
+            '_.enumerate = function(l) {', [
+                'var t = toString.call(l);',
+                'if (t !== "[object Array]" && t !== "[object String]")', [
+                    'return Object.keys(l);'
+                ], 'return l;'
+            ], '}'
+        ]))
+    }
+    if (exports.flags.inOp) {
+        output.push(formatCode([
+            '_.inOp = function(x, l) {', [
+                'var t = toString.call(l);',
+                'if (t !== "[object Array]" && t !== "[object String]")', [
+                    'return x in l;'
+                ], 'return l.indexOf(x) != -1;'
+            ], '}'
+        ]))
+    }
+    if (exports.flags.extends) {
+        output.push(formatCode([
+            '_.extends = function(x, y) {', [
+                'var copy = function() {}',
+                'copy.prototype = y.prototype;',
+                'var c = new copy();',
+                'c.constructor = x;',
+                'x.prototype = c;',
+                'x.prototype.__super__ = y.prototype;',
+                'x.prototype.__super__.init = y.prototype.constructor;',
+                'return x;',
+            ], '}'
+        ]))
+    }
+    if (exports.flags.equals) {
+        output.push(formatCode([
+            '_.equals = function(a, b) {', [
+                'if (a === b) return true;',
+                'if (a == null || b == null) return a == b;',
+                'var t = toString.call(a);',
+                'if (t !== toString.call(b)) return false;',
+                'var aa = t === "[object Array]";',
+                'var ao = t === "[object Object]";',
+                'if (aa) {', [
+                    'if (a.length !== b.length) return false;',
+                    'for (var i = 0; i < a.length; i++)', [
+                        'if (!_.equals(a[i], b[i])) return false;'
+                    ], 'return true;'
+                ], '} else if (ao) {', [
+                    'var akeys = Object.keys(a);',
+                    'if (akeys.length !== Object.keys(b).length) return false;',
+                    'for (var i = 0; i < akeys.length; i++) {', [
+                        'key = akeys[i];',
+                        'if (!(key in b)) return false;',
+                        'if (!_.equals(a[key], b[key])) return false;'
+                    ], '}',
+                    'return true;'
+                ], '}',
+                'return false;'
+            ], '}'
+        ]))
+    }
+
+    return output.join('\n')
 }
 
 // Helper functions
