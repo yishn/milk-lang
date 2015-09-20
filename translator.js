@@ -569,14 +569,14 @@ function forHead(tree) {
             output = formatCode([
                 statements(s),
                 'for (' + firstIdentifier + ' = ' + starttemp[1] + '; '
-                    + (end ? firstIdentifier + ' <= ' + endtemp[1] : 'true') + '; '
+                    + (end ? steptemp[1] + ' > 0 ? ' + firstIdentifier + ' <= ' + endtemp[1] + ' : ' + firstIdentifier + ' >= ' + endtemp[1] : 'true') + '; '
                     + firstIdentifier + ' += ' + steptemp[1] + ') {'
             ])
         } else {
             output = formatCode([
                 statements(s),
                 'for (' + secondIdentifier + ' = ' + starttemp[1] + ', ' + firstIdentifier + ' = 0; '
-                    + (end ? secondIdentifier + ' <= ' + endtemp[1] : 'true') + '; '
+                    + (end ? steptemp[1] + ' > 0 ? ' + secondIdentifier + ' <= ' + endtemp[1] + ' : ' + secondIdentifier + ' >= ' + endtemp[1] : 'true') + '; '
                     + secondIdentifier + ' += ' + steptemp[1] + ', ' + firstIdentifier + '++) {'
             ])
         }
