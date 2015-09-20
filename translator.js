@@ -481,7 +481,7 @@ function funcCall(tree) {
                         temp,
                         ['identifier', 'push']],
                         ['identifier', 'apply']
-                    ], [['keyword', 'this'], x[1]]])
+                    ], [temp, x[1]]])
             })
 
 
