@@ -64,16 +64,17 @@ exports.removeStringComments = function(input) {
     var lineCounter = 1
 
     var rules = {
-        doublestring: /^"("|.*?[^\\]"|.*?\\\\")/,
-        singlestring: /^'('|.*?[^\\]'|.*?\\\\')/,
+        doublestring: /^"("|[^]*?[^\\]"|[^]*?\\\\")/,
+        singlestring: /^'('|[^]*?[^\\]'|[^]*?\\\\')/,
+        regexstring: /^\/(.*?[^\\]\/|.*?\\\\\/)[gim]*/,
         singlecomment: /^\/\/.*/,
         blockcomment: /^\/\*[^]*?\*\//,
-        purecode: /^([^"'\/]+|\/[^\/\*][^"'\/]*)+/
+        purecode: /^[^"'\/]+/
     }
 
     while (residue.length > 0) {
-        var type = ''
-        var value = ' '
+        var type = 'purecode'
+        var value = residue[0]
         var length = 1
 
         for (var t in rules) {
