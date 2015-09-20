@@ -37,7 +37,7 @@ exports.getIndent = function(input):
     indents = whitespaces.map(x => x.length)
     indentDiffs = []
 
-    for i in [1, ..., indents.length - 1]:
+    for i, x in indents if i > 0:
         indentDiffs.push(Math.abs(indents[i] - indents[i - 1]))
 
     return exports.gcd(indentDiffs)
@@ -73,16 +73,16 @@ exports.removeStringComments = function(input):
             // Add comment to comments
             comments.push([value, lineCounter])
 
-        for i in [0, ..., value.length - 1]:
+        for i, v in value:
             space = ' '
-            if value[i] == '\n':
+            if v == '\n':
                 space = '\n'
                 lineCounter++
 
             if 'comment' in type: commentsRemoved += space
-            else: commentsRemoved += value[i]
+            else: commentsRemoved += v
 
-            if type == 'purecode': pureCode += value[i]
+            if type == 'purecode': pureCode += v
             else: pureCode += space
 
         residue = residue[value.length...]
@@ -96,7 +96,7 @@ exports.indentifizer = function(input, pureCode):
     indentLength = exports.getIndent(input)
     [depth, lastIndex, indentDepths] = [0, 0, []]
 
-    for i in [0, ..., input.length - 1] if pureCode[i].trim() != '':
+    for i, l in input if pureCode[i].trim() != '':
         linedepth = /^\s*/.exec(input[i])[0].length / indentLength
 
         if i != 0:
@@ -126,7 +126,7 @@ exports.commentator = function(input, src, comments):
 
     [lines, pureCode] = [input, pureCode].map(x => x.split('\n'))
 
-    for i in [0, ..., lines.length - 1]:
+    for i, l in lines:
         index = pureCode[i].search(/#OFFSET\d+$/)
         if index == -1: continue
 
