@@ -5,14 +5,10 @@
                       | statementList [;\n] __
                         {% id %}
                       | statementList [;\n] __ statement __
-                        {% function(d) { return d[3] ? d[0].concat([d[3]]) : d[0] } %}
+                        {% function(d) { return  d[0].concat([d[3]]) } %}
 
-      flatStatements -> __ statement
+      flatStatements -> __ statement __ (";" __ "\n"):?
                         {% function(d) { return ['statements', d[1]] } %}
-                      | flatStatements __ ";"
-                        {% id %}
-                      | flatStatements __ ";" __ statement
-                        {% function(d) { return d[3] ? d[0].concat([d[3]]) : d[0] } %}
 
            statement -> (class | keywordStatement | condStatement | tryStatement | loop)
                         {% function(d, l) {
