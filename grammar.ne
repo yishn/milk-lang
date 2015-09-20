@@ -250,7 +250,7 @@
                             'delete', 'var', 'let', 'const', 'typeof',
                             'new', 'class', 'extends', 'this', 'self', 'super',
                             'return', 'yield', 'function',
-                            'if', 'else', "elif",
+                            'if', 'else',
                             'switch', 'case', 'default',
                             'do', 'while', 'break', 'continue',
                             'for', 'in', 'of', 'instanceof',
@@ -387,8 +387,8 @@
                           return r
                       } %}
 
-     elifStatement -> "elif" _+ expression _ block
-                      {% function(d) { return [d[2], d[4]] } %}
+     elifStatement -> "else" __ "if" _+ expression _ block
+                      {% function(d) { return [d[4], d[6]] } %}
 
      elseStatement -> (_ "else" _ block):?
                       {% function(d) { return d[0] ? ['else', d[0][3]] : null } %}
