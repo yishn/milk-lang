@@ -855,7 +855,8 @@ function patternMatch(tree) {
 function arraypattern(tree, ref) {
     var s = ['statements']
     var spreadindex = tree.map(function(x) { return x[0] }).indexOf('spread')
-    if (spreadindex == -1) spreadindex = tree[i].length
+    var hasSpread = spreadindex != -1
+    if (spreadindex == -1) spreadindex = tree.length
 
     for (var i = 1; i < spreadindex; i++) {
         if (tree[i][1] == '_') continue
@@ -866,7 +867,7 @@ function arraypattern(tree, ref) {
         ])
     }
 
-    if (tree[spreadindex][1][1] != '_') {
+    if (hasSpread && tree[spreadindex][1][1] != '_') {
         if (spreadindex == tree.length - 1) {
             s.push(['=', tree[spreadindex][1], ['?',
                 ['>=', ['number', spreadindex - 1], ['.',
