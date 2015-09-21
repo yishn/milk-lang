@@ -417,8 +417,6 @@
 
    forItem2 -> pattern
                {% id %}
-             | "_"
-               {% function(d) { return ['keyword', '_'] } %}
 
   whileLoop -> "while" _+ expression _ block
                {% function(d) { return ['while', d[2], d[4]] } %}
