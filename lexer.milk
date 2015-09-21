@@ -9,7 +9,8 @@ rules = {
             '=>', '??', '?',
             '||', '&&', '!',
             '<', '>', '<=', '>=', '==', '!=',
-            'in', 'not in', 'instanceof', 'typeof', 'new'
+            'in', 'not in', 'instanceof', 'typeof', 'new',
+            'equals', 'not equals'
         ])
 
     delimiter:
