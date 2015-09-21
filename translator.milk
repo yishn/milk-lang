@@ -381,6 +381,25 @@ function array(tree):
     if tree[0] != 'arrayfor':
         return '[' + tree[1...].map(x => expression(x)).join(', ') + ']'
 
+    hasSpread = tree.some(x => x[0] == 'spread')
+
+    if hasSpread:
+        temp = ['identifier', getVarName('r')]
+        s = ['statements', ['=', temp, ['array']]]
+
+        for i, expr in tree if i >= 1:
+            if expr[0] != 'spread':
+                s.push(['()', ['.', temp, ['identifier', 'push']], [expr]])
+            else:
+                s.push(['()', ['.', ['.',
+                    temp,
+                    ['identifier', 'push']],
+                    ['identifier', 'apply']
+                ], [temp, expr[1]]])
+
+        s.push(['keyword', 'return', temp])
+        return ['()', ['function', null, [], s], []]
+
     [_, expr, *fortrees] = tree
     temp = ['identifier', getVarName('r')]
 
@@ -500,24 +519,11 @@ function funcCall(tree):
         if !hasSpread:
             output = token => ['()', token, args]
         else:
-            s = ['statements']
-            temp = ['identifier', getVarName('r')]
-
-            s.push(['=', temp, ['array']])
-
-            for arg in args:
-                if arg[0] != 'spread':
-                    s.push(['()', ['.', temp, ['identifier', 'push']], [arg]])
-                else:
-                    s.push(['()', ['.', ['.',
-                        temp,
-                        ['identifier', 'push']],
-                        ['identifier', 'apply']
-                    ], [temp, arg[1]]])
+            array = ['array'].concat(args)
 
             output = function(token):
                 s.push(['keyword', 'return', ['()',
-                    ['.', token, ['identifier', 'apply']], [['keyword', 'this'], temp]
+                    ['.', token, ['identifier', 'apply']], [['keyword', 'this'], array]
                 ]])
                 return ['()', ['function', null, [], s], []]
     else:

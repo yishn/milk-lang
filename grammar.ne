@@ -295,10 +295,15 @@
                   | "[" _ expression (_+ forHead):+ _ "]"
                     {% function(d) { return ['arrayfor', d[2]].concat(d[3].map(function(x) { return x[1] })) } %}
 
-       arrayList -> "[" _ expression
+       arrayList -> "[" _ arrayListItem
                     {% function(d) { return [d[2]] } %}
-                  | arrayList __ [,\n] _ expression
+                  | arrayList __ [,\n] _ arrayListItem
                     {% function(d) { return d[0].concat([d[4]]) } %}
+
+   arrayListItem -> expression
+                    {% id %}
+                  | "*" expression
+                    {% function(d) { return ['spread', d[1]] } %}
 
            range -> "[" _ expression _ ("," _):? "..." _ ("," _):? (expression _):? "]"
                     {% function(d) { return ['range', d[2], null, d[8] ? d[8][0] : null] } %}
@@ -354,12 +359,10 @@
                       | callList _ "," _ callListItem
                         {% function(d) { return d[0].concat([d[4]]) } %}
 
-        callListItem -> expression
+        callListItem -> arrayListItem
                         {% id %}
                       | "_"
                         {% function(d) { return ['keyword', '_'] } %}
-                      | "*" expression
-                        {% function(d) { return ['spread', d[1]] } %}
                       | "*_"
                         {% function(d) { return ['spread', ['keyword', '_']] } %}
 
