@@ -178,17 +178,14 @@
                             }))
                             return r
                         } %}
-                      | "[" ((_ pattern __ [,\n]):* _ spread __ [,\n]):? _ pattern __ ([,\n] _ pattern __):* "]"
+                      | "[" (_ spread __ [,\n]):? _ pattern __ ([,\n] _ pattern __):* "]"
                         {% function(d) {
                             var r = ['arraypattern']
-                            if (d[1] != null) {
-                                r = r.concat(d[1][0].map(function(x) {
-                                    return x[1]
-                                }).concat([d[1][2]]))
-                            }
+                            if (d[0] != null)
+                                r.push(d[0][1])
 
-                            r.push(d[3])
-                            r.push.apply(r, d[5].map(function(x) {
+                            r.push(d[2])
+                            r.push.apply(r, d[4].map(function(x) {
                                 return x[2]
                             }))
                             return r
