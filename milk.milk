@@ -27,7 +27,7 @@ console.error('Indentifizer...')
 try:
     data = helper.indentifizer(data, pureCode)
 catch e:
-    console.error('Mixed indentation @' + e.line + ':1')
+    console.error('Mixed indentation @' + e.row + ':1')
     return
 
 // Parser

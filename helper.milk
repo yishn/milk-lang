@@ -36,7 +36,7 @@ exports.getIndent = function(input):
     for w in whitespaces if w.length != 0:
         tabs = '\t' in w
         if useTabs == null: useTabs = tabs
-        else if useTabs != tabs: throw { line: i }
+        else if useTabs != tabs: throw { row: i, col: 1 }
 
     indents = whitespaces.map(x => x.length)
 
