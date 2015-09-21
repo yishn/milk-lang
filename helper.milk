@@ -43,7 +43,7 @@ exports.getIndent = function(input):
     indentDiffs = []
     for i, _ in indents if i >= 1:
         value = Math.abs(indents[i] - indents[i - 1])
-        if value not in indentDiffs:
+        if value != 0 && value not in indentDiffs:
             indentDiffs.push(value)
 
     return exports.gcd(*indentDiffs)
