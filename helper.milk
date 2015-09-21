@@ -1,8 +1,13 @@
-exports.gcd = function(first, *rest):
-    if rest.length == 0: return first
+exports.gcd = function(*args):
+    if args.length == 1: return args[0]
 
     gcdInner = (a, b) => b == 0 ? a : gcdInner(b, a % b)
-    return gcdInner(first, exports.gcd(*rest))
+
+    middle = Math.floor((args.length - 1) / 2)
+    left = exports.gcd(*args[0...middle])
+    right = exports.gcd(*args[middle + 1...])
+
+    return gcdInner(left, right)
 
 exports.offsetToLinePos = function(offset, input):
     lines = [x + '\n' for x in input.split('\n')]
@@ -34,7 +39,12 @@ exports.getIndent = function(input):
         else if useTabs != tabs: throw { line: i }
 
     indents = whitespaces.map(x => x.length)
-    indentDiffs = [Math.abs(indents[i] - indents[i - 1]) for i, _ in indents if i > 0]
+
+    indentDiffs = []
+    for i, _ in indents if i >= 1:
+        value = Math.abs(indents[i] - indents[i - 1])
+        if value not in indentDiffs:
+            indentDiffs.push(value)
 
     return exports.gcd(*indentDiffs)
 
