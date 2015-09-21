@@ -181,11 +181,11 @@
                       | "[" (_ spread __ [,\n]):? _ pattern __ ([,\n] _ pattern __):* "]"
                         {% function(d) {
                             var r = ['arraypattern']
-                            if (d[0] != null)
-                                r.push(d[0][1])
+                            if (d[1] != null)
+                                r.push(d[1][1])
 
-                            r.push(d[2])
-                            r.push.apply(r, d[4].map(function(x) {
+                            r.push(d[3])
+                            r.push.apply(r, d[5].map(function(x) {
                                 return x[2]
                             }))
                             return r
