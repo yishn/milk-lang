@@ -1,7 +1,13 @@
-helper = require('./helper')
-
 escaperegex = x => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 regexmap = l => l.map(x => new RegExp('^' + escaperegex(x)))
+
+function gcd(*args):
+    if args.length <= 1: return args[0] ?? 1
+
+    gcdInner = (a, b) => b == 0 ? a : gcdInner(b, a % b)
+
+    middle = Math.floor((args.length - 1) / 2)
+    return gcdInner(gcd(*args[0...middle]), gcd(*args[middle + 1...]))
 
 rules = {
     operator:
@@ -21,7 +27,7 @@ rules = {
             '[', '?[', ']', '{', '}', ':', '...'
         ])
 
-    indent: [
+    newline: [
         /^\n[^\S\n]*/
     ]
 
@@ -83,7 +89,6 @@ rules = {
 
 module.exports = function(input):
     [residue, offset] = [input, 0]
-    indent = helper.getIndent(input)
     tokens = []
 
     while residue.length > 0:
@@ -101,11 +106,11 @@ module.exports = function(input):
             [row, col] = helper.offsetToLinePos(offset, input)
             throw {
                 message: "Syntax error: Unexpected '" + residue[0] + "'"
-                row: row
-                col: col
+                offset: offset
             }
 
-        if type == 'indent' && tokens.length > 0 && tokens[tokens.length - 1][0] == 'indent':
+        // Don't add newline twice
+        if type == 'newline' && tokens.length > 0 && tokens[tokens.length - 1][0] == 'newline':
             tokens.pop()
 
         if type != 'ignore':
@@ -113,5 +118,32 @@ module.exports = function(input):
 
         offset += value.length
         residue = residue[value.length...]
+
+    // Indentifizer
+
+    indents = [x.length - 1 for [type, x, _] in tokens if type == 'newline']
+    indentLength = gcd(*indents.filter(x => x != 0))
+    lastDepth = 0
+    useTabs = null
+
+    for i, [type, value, offset] in tokens if type == 'newline':
+        depth = (value.length - 1) / indentLength
+
+        if depth != 0:
+            // Check for mixed indentation
+            if useTabs == null: useTabs = '\t' in value
+            else if useTabs != '\t' in value: throw {
+                message: 'Mixed indentation',
+                offset: offset
+            }
+
+        if depth > lastDepth:
+            tokens[i][1] = 'indent'
+        else if depth < lastDepth:
+            tokens[i][1] = 'dedent'
+        else:
+            tokens[i][1] = 'nodent'
+
+        lastDepth = depth
 
     return tokens
