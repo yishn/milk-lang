@@ -633,7 +633,7 @@ function func(tree) {
 
     funcargs.forEach(function(x) {
         if (x[1] == null) return
-        insert.push(x[0][0] + ' = ' + expression(['??', x[0], x[1]]))
+        insert.push(expression(x[0]) + ' = ' + expression(['??', x[0], x[1]]) + ';')
     })
 
     var code = [output, [
