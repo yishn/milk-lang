@@ -33,7 +33,7 @@ exports.getIndent = function(input):
     useTabs = null
     whitespaces = [/^\s*/.exec(l)[0] for l in input if l.trim() != '']
 
-    for w in whitespaces if w.length != 0:
+    for i, w in whitespaces if w.length != 0:
         tabs = '\t' in w
         if useTabs == null: useTabs = tabs
         else if useTabs != tabs: throw { row: i, col: 1 }
