@@ -131,11 +131,13 @@ module.exports = function(input):
 
         if depth != 0:
             // Check for mixed indentation
-            if useTabs == null: useTabs = '\t' in value
-            else if useTabs != '\t' in value: throw {
-                message: 'Mixed indentation',
-                offset: offset
-            }
+            if useTabs == null:
+                useTabs = '\t' in value
+            else if useTabs != ('\t' in value):
+                throw {
+                    message: 'Mixed indentation',
+                    offset: offset
+                }
 
         if depth > lastDepth:
             tokens[i][1] = 'indent'
