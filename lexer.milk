@@ -1,3 +1,5 @@
+helper = require('./helper')
+
 escaperegex = x => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 regexmap = l => l.map(x => new RegExp('^' + escaperegex(x)))
 
@@ -15,9 +17,13 @@ rules = {
 
     delimiter:
         regexmap([
-            '\n', ';', ',', '.', '?.', '(', '?(', ')',
+            ';', ',', '.', '?.', '(', '?(', ')',
             '[', '?[', ']', '{', '}', ':', '...'
         ])
+
+    indent: [
+        /^\n[^\S\n]*/
+    ]
 
     bool:
         regexmap(['true', 'false'])
@@ -45,25 +51,31 @@ rules = {
     identifier: [
         /^[a-zA-Z_$][0-9a-zA-Z_$]*/
     ]
+
     sharp: [
         /^#[A-Z]+/
     ]
+
     number: [
         /^[0-9]+/
         /^[0-9]*\.[0-9]+/
         /^0x[0-9a-fA-F]+/
     ]
+
     string: [
         /^"("|.*?[^\\]"|.*?\\\\")/
         /^'('|.*?[^\\]'|.*?\\\\')/
     ]
+
     regex: [
         /^\/(.*?[^\\]\/|.*?\\\\\/)[gim]*/
     ]
+
     comment: [
         /^\/\/.*/
         /^\/\*[^]*?\*\//
     ]
+
     ignore: [
         /^[^\S\n]+/
     ]
@@ -71,6 +83,7 @@ rules = {
 
 module.exports = function(input):
     [residue, offset] = [input, 0]
+    indent = helper.getIndent(input)
     tokens = []
 
     while residue.length > 0:
@@ -84,10 +97,16 @@ module.exports = function(input):
 
                 [type, value] = [t, matches[0]]
 
-        if type == null: throw {
-            message: "Syntax error: Unexpected '" + residue[0] + "'"
-            offset: offset
-        }
+        if type == null:
+            [row, col] = helper.offsetToLinePos(offset, input)
+            throw {
+                message: "Syntax error: Unexpected '" + residue[0] + "'"
+                row: row
+                col: col
+            }
+
+        if type == 'indent' && tokens.length > 0 && tokens[tokens.length - 1][0] == 'indent':
+            tokens.pop()
 
         if type != 'ignore':
             tokens.push([type, value, offset])
