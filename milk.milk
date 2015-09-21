@@ -37,7 +37,16 @@ console.error('Parsing...')
 p = new nearley.Parser(grammar.ParserRules, grammar.ParserStart)
 
 try:
-    p.feed(data)
+    lastReported = 0
+
+    for i, v in data:
+        p.feed(v)
+
+        percent = Math.round(i / (data.length - 1) * 100)
+        if percent - lastReported < 10: continue
+
+        console.error(percent + '%')
+        lastReported = percent
 
     if !p.results?.length:
         throw {
