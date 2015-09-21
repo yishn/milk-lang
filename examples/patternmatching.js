@@ -17,11 +17,11 @@ console.log((function() {
             a = ref[0];
             b = ref[1];
             return ref;
-        })(l[i])
+        })(l[i]);
         r.push(a + b);
     }
     return r;
 })());
 })();
 
-//: 404ms
+//: 442ms

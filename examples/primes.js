@@ -36,7 +36,7 @@ getPrimes = function(limit) {
     checklist[0] = checklist[1] = true;
     l = checklist;
     for (i in l) {
-        checked = l[i]
+        checked = l[i];
         if (!(!checked)) continue;
         var start1, end1, step1, j;
         /*@14:9*/
@@ -55,7 +55,7 @@ getPrimes = function(limit) {
         r1 = [];
         l1 = checklist;
         for (i in l1) {
-            checked = l1[i]
+            checked = l1[i];
             if (!(!checked)) continue;
             r1.push(i);
         }
@@ -98,4 +98,4 @@ console.log('Here is your prime factorization for 8733:');
 console.log(factorization(8733));
 })();
 
-//: 10451ms
+//: 9882ms
