@@ -1,0 +1,8 @@
+function quicksort(list):
+    if list.length == 0: return []
+
+    [pivot, *rest] = list
+    smaller = quicksort(rest.filter(x => x <= pivot))
+    bigger = quicksort(rest.filter(x => x > pivot))
+
+    return smaller.concat([pivot]).concat(bigger)
