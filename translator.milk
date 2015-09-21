@@ -381,17 +381,24 @@ function array(tree):
     if tree[0] != 'arrayfor':
         return '[' + tree[1...].map(x => expression(x)).join(', ') + ']'
 
+    [_, expr, *fortrees] = tree
     temp = ['identifier', getVarName('r')]
-    fortree = tree[1]
-    fortree[4] = ['statements', ['()',
-        ['.', temp, ['identifier', 'push']],
-        [fortree[4]]
-    ]]
+
     s = ['statements',
         ['=', temp, ['array']],
-        fortree,
+        fortrees[0],
         ['keyword', 'return', temp]
     ]
+
+    ref = s[2]
+    for i, t in fortrees if i >= 1:
+        ref.push(['statements', t])
+        ref = fortrees[i]
+
+    ref.push(['statements', ['()',
+        ['.', temp, ['identifier', 'push']],
+        [expr]
+    ]])
 
     return expression(['()', ['function', null, [], s], []])
 
@@ -402,20 +409,23 @@ function object(tree):
             tree[1...].map((x, i) => expression(x[0]) + ': ' + expression(x[1]) + (i == tree.length - 2 ? '' : ',')),
         '}'])
 
-    fortree = tree[1]
-    key = fortree[4][0]
-    value = fortree[4][1]
+    [_, [key, value], *fortrees] = tree
     temp = ['identifier', getVarName('r')]
-
-    fortree[4] = ['statements', ['=', ['[]',
-        temp, key
-    ], value]]
 
     s = ['statements',
         ['=', temp, ['object']],
-        fortree,
+        fortrees[0],
         ['keyword', 'return', temp]
     ]
+
+    ref = s[2]
+    for i, t in fortrees if i >= 1:
+        ref.push(['statements', t])
+        ref = fortrees[i]
+
+    ref.push(['statements', ['=', ['[]',
+        temp, key
+    ], value]])
 
     return expression(['()', ['function', null, [], s], []])
 
