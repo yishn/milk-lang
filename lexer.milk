@@ -1,0 +1,97 @@
+escaperegex = x => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+regexmap = l => l.map(x => new RegExp('^' + escaperegex(x)))
+
+rules = {
+    operator:
+        regexmap([
+            '*', '^', '%', '-', '+',
+            '--', '++', '+=', '^=', '*=', '%=', '-=', '+=',
+            '=>', '??', '?',
+            '||', '&&', '!',
+            '<', '>', '<=', '>=', '==', '!=',
+            'in', 'not in', 'instanceof', 'typeof', 'new'
+        ])
+
+    delimiter:
+        regexmap([
+            '\n', ';', ',', '.', '?.', '(', '?(', ')',
+            '[', '?[', ']', '{', '}', ':', '...'
+        ])
+
+    bool:
+        regexmap(['true', 'false'])
+
+    keyword:
+        regexmap([
+            '_', 'pass', 'equals',
+            'null', 'undefined', 'not', 'true', 'false', 'arguments',
+            'export', 'import', 'void', 'debugger', 'with',
+            'delete', 'var', 'let', 'const', 'typeof',
+            'new', 'class', 'extends', 'this', 'self', 'super',
+            'return', 'yield', 'function',
+            'if', 'else', 'else if',
+            'switch', 'case', 'default',
+            'do', 'while', 'break', 'continue',
+            'for', 'in', 'of', 'instanceof',
+            'try', 'catch', 'finally', 'throw',
+            'enum', 'implements', 'static', 'public', 'package',
+            'interface', 'protected', 'private', 'abstract', 'final',
+            'native', 'boolean', 'float', 'short', 'byte',
+            'goto', 'synchronized', 'char', 'int', 'transient', 'double',
+            'long', 'volatile'
+        ])
+
+    identifier: [
+        /^[a-zA-Z_$][0-9a-zA-Z_$]*/
+    ]
+    sharp: [
+        /^#[A-Z]+/
+    ]
+    number: [
+        /^[0-9]+/
+        /^[0-9]*\.[0-9]+/
+        /^0x[0-9a-fA-F]+/
+    ]
+    string: [
+        /^"("|.*?[^\\]"|.*?\\\\")/
+        /^'('|.*?[^\\]'|.*?\\\\')/
+    ]
+    regex: [
+        /^\/(.*?[^\\]\/|.*?\\\\\/)[gim]*/
+    ]
+    comment: [
+        /^\/\/.*/
+        /^\/\*[^]*?\*\//
+    ]
+    ignore: [
+        /^[^\S\n]+/
+    ]
+}
+
+module.exports = function(input):
+    [residue, offset] = [input, 0]
+    tokens = []
+
+    while residue.length > 0:
+        [type, value] = [null, '']
+
+        for t, list in rules:
+            for regex in list:
+                matches = regex.exec(residue)
+                if matches == null || matches[0].length <= value.length:
+                    continue
+
+                [type, value] = [t, matches[0]]
+
+        if type == null: throw {
+            message: "Syntax error: Unexpected '" + residue[0] + "'"
+            offset: offset
+        }
+
+        if type != 'ignore':
+            tokens.push([type, value, offset])
+
+        offset += value.length
+        residue = residue[value.length...]
+
+    return tokens

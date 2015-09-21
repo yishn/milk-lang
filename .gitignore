@@ -5,3 +5,5 @@ test.milk
 milk.js
 helper.js
 translator.js
+lexer.js
+milk2.js
