@@ -1,0 +1,5 @@
+function palindrome(input):
+    if input.length == 0: return true
+
+    [first, *rest, last] = input
+    return first == last && palindrome(rest)
