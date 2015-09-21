@@ -10,49 +10,48 @@ function gcd(*args):
     return gcdInner(gcd(*args[0...middle]), gcd(*args[middle + 1...]))
 
 rules = {
-    operator:
-        regexmap([
-            '*', '/', '^', '%', '-', '+',
-            '=', '--', '++', '+=', '^=', '*=', '%=', '-=', '+=',
-            '=>', '??', '?',
-            '||', '&&', '!',
-            '<', '>', '<=', '>=', '==', '!=',
-            'in', 'not in', 'instanceof', 'typeof', 'new',
-            'equals', 'not equals'
-        ])
+    operator: regexmap([
+        '*', '/', '^', '%', '-', '+',
+        '=', '--', '++', '+=', '^=', '*=', '%=', '-=', '+=',
+        '=>', '??', '?',
+        '||', '&&', '!',
+        '<', '>', '<=', '>=', '==', '!=',
+        'in', 'not in', 'instanceof', 'typeof', 'new',
+        'equals', 'not equals'
+    ])
 
-    delimiter:
-        regexmap([
-            ';', ',', '.', '?.', '(', '?(', ')',
-            '[', '?[', ']', '{', '}', ':', '...'
-        ])
+    delimiter: regexmap([
+        ';', ',', '.', '?.', '(', '?(', ')',
+        '[', '?[', ']', '{', '}', ':', '...'
+    ])
 
     newline: [
         /^\n[^\S\n]*/
     ]
 
-    bool:
-        regexmap(['true', 'false'])
+    bool: regexmap([
+        'true'
+        'false'
+    ])
 
-    keyword:
-        regexmap([
-            '_', 'pass', 'equals',
-            'null', 'undefined', 'not', 'true', 'false', 'arguments',
-            'export', 'import', 'void', 'debugger', 'with',
-            'delete', 'var', 'let', 'const', 'typeof',
-            'new', 'class', 'extends', 'this', 'self', 'super',
-            'return', 'yield', 'function',
-            'if', 'else', 'else if',
-            'switch', 'case', 'default',
-            'do', 'while', 'break', 'continue',
-            'for', 'in', 'of', 'instanceof',
-            'try', 'catch', 'finally', 'throw',
-            'enum', 'implements', 'static', 'public', 'package',
-            'interface', 'protected', 'private', 'abstract', 'final',
-            'native', 'boolean', 'float', 'short', 'byte',
-            'goto', 'synchronized', 'char', 'int', 'transient', 'double',
-            'long', 'volatile'
-        ])
+    keyword: regexmap([
+        '_', 'pass', 'equals',
+        'null', 'undefined', 'not', 'true', 'false', 'arguments',
+        'export', 'import', 'void', 'debugger', 'with',
+        'delete', 'var', 'let', 'const', 'typeof',
+        'new', 'class', 'extends', 'this', 'self', 'super',
+        'return', 'yield', 'function',
+        'if', 'else', 'else if',
+        'switch', 'case', 'default',
+        'do', 'while', 'break', 'continue',
+        'for', 'in', 'of', 'instanceof',
+        'try', 'catch', 'finally', 'throw',
+        'enum', 'implements', 'static', 'public', 'package',
+        'interface', 'protected', 'private', 'abstract', 'final',
+        'native', 'boolean', 'float', 'short', 'byte',
+        'goto', 'synchronized', 'char', 'int', 'transient', 'double',
+        'long', 'volatile'
+    ])
 
     identifier: [
         /^[a-zA-Z_$][0-9a-zA-Z_$]*/
@@ -91,6 +90,7 @@ module.exports = function(input):
     [residue, offset] = [input, 0]
     tokens = []
 
+    // Tokenizer
     while residue.length > 0:
         [type, value] = [null, '']
 
@@ -102,6 +102,7 @@ module.exports = function(input):
 
                 [type, value] = [t, matches[0]]
 
+        // No token found
         if type == null:
             [row, col] = helper.offsetToLinePos(offset, input)
             throw {
@@ -119,12 +120,10 @@ module.exports = function(input):
         offset += value.length
         residue = residue[value.length...]
 
-    // Indentifizer
-
-    indents = [x.length - 1 for [type, x, _] in tokens if type == 'newline']
+    // Detect indents & dedents
+    indents = [x.length - 1 for [t, x, _] in tokens if t == 'newline']
     indentLength = gcd(*indents.filter(x => x != 0))
-    lastDepth = 0
-    useTabs = null
+    [lastDepth, useTabs] = [0, null]
 
     for i, [type, value, offset] in tokens if type == 'newline':
         depth = (value.length - 1) / indentLength
