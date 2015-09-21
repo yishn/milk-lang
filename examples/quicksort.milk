@@ -5,4 +5,6 @@ function quicksort(list):
     smaller = quicksort(rest.filter(x => x <= pivot))
     bigger = quicksort(rest.filter(x => x > pivot))
 
-    return smaller.concat([pivot]).concat(bigger)
+    return [*smaller, pivot, *bigger]
+
+console.log(quicksort([453, 45, 234, 46, 34, 4, 24, 56]))
