@@ -378,10 +378,10 @@ function dotOp(tree):
         return wrapper(['.', token, right])
 
 function array(tree):
-    if tree[0] != 'arrayfor':
-        return '[' + tree[1...].map(x => expression(x)).join(', ') + ']'
-
     hasSpread = tree.some(x => x[0] == 'spread')
+
+    if tree[0] != 'arrayfor' && !hasSpread:
+        return '[' + tree[1...].map(x => expression(x)).join(', ') + ']'
 
     if hasSpread:
         temp = ['identifier', getVarName('r')]
@@ -398,7 +398,7 @@ function array(tree):
                 ], [temp, expr[1]]])
 
         s.push(['keyword', 'return', temp])
-        return ['()', ['function', null, [], s], []]
+        return expression(['()', ['function', null, [], s], []])
 
     [_, expr, *fortrees] = tree
     temp = ['identifier', getVarName('r')]
@@ -519,13 +519,9 @@ function funcCall(tree):
         if !hasSpread:
             output = token => ['()', token, args]
         else:
-            array = ['array'].concat(args)
-
-            output = function(token):
-                s.push(['keyword', 'return', ['()',
-                    ['.', token, ['identifier', 'apply']], [['keyword', 'this'], array]
-                ]])
-                return ['()', ['function', null, [], s], []]
+            a = ['array'].concat(args)
+            output = token =>
+                ['()', ['.', token, ['identifier', 'apply']], [['keyword', 'this'], a]]
     else:
         temps = [getVarName('x') for _ in [1...placeholderCount]]
 
