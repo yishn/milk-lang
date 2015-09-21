@@ -18,11 +18,11 @@ _.enumerate = function(l) {
  * @return array          the list of all primes below limit
  */
 getPrimes = function(limit) {
-    var checklist, i, checked, l;
+    var checklist, l, i, checked;
 
     // Initialize checklist
     checklist = (function() {
-        var r, i, start, end, step;
+        var r, start, end, step, i;
         r = [];
         start = 0;
         end = limit;
@@ -36,9 +36,9 @@ getPrimes = function(limit) {
     checklist[0] = checklist[1] = true;
     l = checklist;
     for (i in l) {
-        checked = l[i];
+        checked = l[i]
         if (!(!checked)) continue;
-        var j, start1, end1, step1;
+        var start1, end1, step1, j;
         /*@14:9*/
         // Check all multiples of i
         start1 = i * i;
@@ -55,7 +55,7 @@ getPrimes = function(limit) {
         r1 = [];
         l1 = checklist;
         for (i in l1) {
-            checked = l1[i];
+            checked = l1[i]
             if (!(!checked)) continue;
             r1.push(i);
         }
@@ -72,7 +72,7 @@ getPrimes = function(limit) {
  *                         of number
  */
 factorization = function(number) {
-    var primes, p, l2, i1;
+    var primes, i1, l2, p;
     if (number <= 1) {
         return [];
     }
@@ -98,4 +98,4 @@ console.log('Here is your prime factorization for 8733:');
 console.log(factorization(8733));
 })();
 
-//: 9937ms
+//: 10451ms

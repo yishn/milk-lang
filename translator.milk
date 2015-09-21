@@ -656,7 +656,7 @@ function forHead(tree):
                 statement(['=',
                     first,
                     ['[]', ['identifier', listtemp], ['identifier', itemp]]
-                ])
+                ]) + ';'
             ]
         ])
     else:
@@ -669,7 +669,7 @@ function forHead(tree):
                 statement(['=',
                     second,
                     ['[]', ['identifier', listtemp], first]
-                ])
+                ]) + ';'
             ]
         ])
 
