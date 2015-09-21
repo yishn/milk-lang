@@ -1,0 +1,923 @@
+exports.translate = function(tree, indent = '    '):
+    exports.indent = indent
+    exports.flags = {}
+    exports.identifiers = getIdentifiers(tree)
+    exports.currentScope = {
+        vars: []
+        children: []
+        parent: null
+    }
+
+    code = statements(tree)
+    vars = popScope()
+
+    return [
+        '(function() {'
+        'var _ = {}' + (vars.length > 0 ? ', ' + vars.join(', ') : '') + ';'
+        underscore()
+        code
+        '})();'
+    ].join('\n')
+
+function underscore():
+    output = []
+
+    if exports.flags['modulo']:
+        output.push(formatCode([
+            '_.modulo = function(a, b) {', [
+                'var c = a % b;'
+                'return c >= 0 ? c : c + b;'
+            ], '}'
+        ]))
+
+    if exports.flags['enumerate']:
+        output.push(formatCode([
+            '_.enumerate = function(l) {', [
+                'var t = toString.call(l);'
+                'if (t !== "[object Array]" && t !== "[object String]")', [
+                    'return Object.keys(l);'
+                ], 'return l;'
+            ], '}'
+        ]))
+
+    if exports.flags['inOp']:
+        output.push(formatCode([
+            '_.inOp = function(x, l) {', [
+                'var t = toString.call(l);'
+                'if (t !== "[object Array]" && t !== "[object String]")', [
+                    'return x in l;'
+                ], 'return l.indexOf(x) != -1;'
+            ], '}'
+        ]))
+
+    if exports.flags['extends']:
+        output.push(formatCode([
+            '_.extends = function(x, y) {', [
+                'var copy = function() {}'
+                'copy.prototype = y.prototype;'
+                'var c = new copy();'
+                'c.constructor = x;'
+                'x.prototype = c;'
+                'x.prototype.__super__ = y.prototype;'
+                'x.prototype.__super__.init = y.prototype.constructor;'
+                'return x;'
+            ], '}'
+        ]))
+
+    if exports.flags['equals']:
+        output.push(formatCode([
+            '_.equals = function(a, b) {', [
+                'if (a === b) return true;'
+                'if (a == null || b == null) return a == b;'
+                'var t = toString.call(a);'
+                'if (t !== toString.call(b)) return false;'
+                'var aa = t === "[object Array]";'
+                'var ao = t === "[object Object]";'
+                'if (aa) {', [
+                    'if (a.length !== b.length) return false;'
+                    'for (var i = 0; i < a.length; i++)', [
+                        'if (!_.equals(a[i], b[i])) return false;'
+                    ], 'return true;'
+                ], '} else if (ao) {', [
+                    'var kk = Object.keys(a);'
+                    'if (kk.length !== Object.keys(b).length) return false;'
+                    'for (var i = 0; i < kk.length; i++) {', [
+                        'k = kk[i];'
+                        'if (!(k in b)) return false;'
+                        'if (!_.equals(a[k], b[k])) return false;'
+                    ], '}'
+                    'return true;'
+                ], '}'
+                'return false;'
+            ], '}'
+        ]))
+
+    return output.join('\n')
+
+// Scope functions
+
+function pushScope():
+    scope = {
+        vars: []
+        children: []
+        parent: exports.currentScope
+    }
+
+    exports.currentScope.children.push(scope)
+    exports.currentScope = scope
+    return ''
+
+function popScope():
+    if exports.currentScope == null: throw 'no scope'
+
+    scope = exports.currentScope
+    exports.currentScope = scope.parent
+    return scope.vars
+
+function register(varname):
+    if !isObservable(varname):
+        exports.currentScope.vars.push(varname)
+    return varname
+
+function isObservable(varname, scope = exports.currentScope):
+    return varname in scope.vars ||
+        scope.parent != null && isObservable(varname, scope.parent)
+
+function getIdentifiers(tree, list = []):
+    if tree[0] == 'identifier' && tree[1] not in list:
+        list.push(tree[1])
+
+    for x in tree if x != null && typeof x == 'object':
+        getIdentifiers(x, list)
+
+    return list
+
+function getVarName(base):
+    r = base
+
+    if r in exports.identifiers:
+        i = 0
+        while true:
+            r = base + ++i
+            if r not in exports.identifiers: break
+
+    exports.identifiers.push(r)
+    return r
+
+// Helper functions
+
+function formatCode(input):
+    return input
+        .filter(x => typeof x == 'string' ? x.trim() != '' : x != null)
+        .map(x => typeof x == 'string' ? x
+            : formatCode(x).split('\n')
+                .map(y => exports.indent + y)
+                .join('\n')
+        ).join('\n')
+
+function getCheckExistenceWrapper(token):
+    needTempVar = token[0] not in ['identifier', 'keyword']
+    temp = needTempVar ? ['identifier', getVarName('r')] : token
+
+    function output(tree):
+        s = ['statements']
+        if needTempVar: s.push(['=', temp, token])
+
+        s.push(['if', [['or',
+            ['==', ['typeof', temp], ['string', "'undefined'"]],
+            ['==', temp, ['keyword', 'null']]
+        ], ['statements',
+            ['keyword', 'return', ['keyword', 'null']]
+        ]]])
+        s.push(['keyword', 'return', tree])
+
+        return expression(['()', ['function', null, [], s], []])
+
+    return [output, temp]
+
+function paren(tree):
+    list = ['.', '?.', '()', '?()', '[]', '?[]',
+        'bool', 'number', 'keyword', 'identifier',
+        'array', 'object', 'string',
+        '^', '%', 'chaincmp', '??', 'range']
+
+    if tree[0] in list:
+        return expression(tree)
+    return '(' + expression(tree) + ')'
+
+function varsDefinition(vars):
+    if vars.length != 0:
+        return 'var ' + vars.join(', ') + ';'
+    return ''
+
+// Translator functions
+
+function statements(tree):
+    s = []
+
+    for i, node in tree if i >= 1:
+        code = statement(node)
+        if code[code.length - 1] != '}':
+            code += ';'
+        if node.offset != null:
+            code = '#OFFSET' + node.offset + '\n' + code
+
+        s.push(code)
+
+    return formatCode(s)
+
+function statement(tree):
+    [type, name] = tree
+
+    if type == 'keyword':
+        if name == 'pass': return ''
+        if name == 'delete': return deleteStatement(tree)
+        return tree[1] + (tree[2] ? ' ' + expression(tree[2]) : '')
+    else if type == 'for':
+        return forStatement(tree)
+    else if type == 'while':
+        return whileStatement(tree)
+    else if type == 'if':
+        return ifStatement(tree)
+    else if type == 'try':
+        return tryStatement(tree)
+    else if type == 'class':
+        return classStatement(tree)
+    else:
+        return expression(tree)
+
+function deleteStatement(tree):
+    [_, _, subject] = tree
+
+    if subject[0] != '[]' || subject[2][0] != 'range':
+        return 'delete ' + expression(subject)
+
+    temp = ['identifier', getVarName('i')]
+    range = subject[2]
+
+    return forStatement(['for', [temp, null], range, null, ['statements',
+        ['keyword', 'delete', ['[]', subject[1], temp]]
+    ]])
+
+function expression(tree):
+    [type, subject] = tree
+
+    if type in ['number', 'bool', 'keyword', 'identifier', 'regex']:
+        return subject
+    else if type == 'string':
+        return subject.replace(/\n/g, '\\n')
+    else if type.indexOf('array') == 0:
+        return array(tree)
+    else if type.indexOf('object') == 0:
+        return object(tree)
+    else if type == 'function':
+        return func(tree)
+    else if type == '=':
+        return assignment(tree)
+    else if type == '==' || type == '!=':
+        op = tree[2][0] == 'keyword' && tree[2][1] == 'null' ? type : type + '='
+        return [paren(tree[1]), op, paren(tree[2])].join(' ')
+    else if type == 'equals' || type == 'not equals':
+        exports.flags['equals'] = true
+        output = expression(['()', ['.',
+            ['keyword', '_'],
+            ['identifier', 'equals']
+        ], tree[1...2]])
+        return type == 'equals' ? output : '!' + output
+    else if type[1] == '=' && type.length == 2:
+        return [paren(tree[1]), type, paren(tree[2])].join(' ')
+    else if type == 'lambda':
+        return lambda(tree)
+    else if type == '?':
+        return [paren(tree[1]), '?', paren(tree[2]), ':', paren(tree[3])].join(' ')
+    else if type == '??':
+        return existentialOp(tree)
+    else if type == 'or':
+        return [paren(tree[1]), '||', paren(tree[2])].join(' ')
+    else if type == 'and':
+        return [paren(tree[1]), '&&', paren(tree[2])].join(' ')
+    else if type == 'not':
+        return '!' + paren(subject)
+    else if type == 'chaincmp':
+        return chainCmp(tree)
+    else if type in ['<', '>', '+', '-', '*', '/', 'instanceof'] && tree.length == 3:
+        return [paren(tree[1]), type, paren(tree[2])].join(' ')
+    else if type == '%':
+        exports.flags['modulo'] = true
+        return expression(['()', ['.',
+            ['keyword', '_'],
+            ['identifier', 'modulo']
+        ], tree[1...2]])
+    else if type == '^':
+        return expression(['()', ['.',
+            ['identifier', 'Math'],
+            ['identifier', 'pow']
+        ], tree[1...2]])
+    else if type == 'in' || type == 'not in':
+        exports.flags['inOp'] = true
+        output = expression(['()', ['.',
+            ['keyword', '_'],
+            ['identifier', 'inOp']
+        ], tree[1...2]])
+        return type == 'in' ? output : '!' + output
+    else if type in ['+', '-', '++_', '--_', 'typeof', 'new']:
+        op = type in ['new', 'typeof'] ? type + ' ' : type.replace('_', '')
+        return op + paren(subject)
+    else if type == '_++' || type == '_--':
+        return paren(tree[1]) + type[1...]
+    else if type in ['.', '?.']:
+        return dotOp(tree)
+    else if type in ['()', '?()']:
+        return funcCall(tree)
+    else if type in ['[]', '?[]']:
+        return index(tree)
+    else if type == 'range':
+        return range(tree)
+
+    console.dir(tree, { depth: null })
+    return '/* ... */'
+
+function assignment(tree):
+    [_, left, right] = tree
+    patternmatch = left[0] in ['arraypattern', 'objpattern']
+    assignRange = left[0] == '[]' && left[2][0] == 'range'
+
+    if patternmatch: return patternMatch(tree)
+    if left[0] == 'identifier': register(left[1])
+
+    if !assignRange:
+        return [paren(tree[1]), '=', expression(tree[2])].join(' ')
+    else if left[2][2] == null:
+        range = left[2]
+        rtemp = ['identifier', getVarName('r')]
+        starttemp = ['identifier', getVarName('start')]
+        lentemp = ['identifier', getVarName('len')]
+
+        return expression(['()', ['function', null, [], ['statements',
+            ['=', rtemp, tree[1][1]],
+            ['=', starttemp, range[1]],
+            ['=', lentemp, range[3]
+                ? ['-', ['+', range[3], ['number', 1]], starttemp]
+                : ['.', rtemp, ['identifier', 'length']]
+            ],
+            ['()',
+                ['.',
+                    ['.', ['array'], ['identifier', 'splice']],
+                    ['identifier', 'apply']
+                ], [
+                    rtemp,
+                    ['()', ['.',
+                        ['array', starttemp, lentemp],
+                        ['identifier', 'concat']
+                    ], [tree[2]]]
+                ]
+            ],
+            ['keyword', 'return', rtemp]
+        ]], []])
+    else:
+        range = left[2]
+        rtemp = ['identifier', getVarName('r')]
+        listtemp = ['identifier', getVarName('l')]
+        itemp = ['identifier', getVarName('i')]
+        jtemp = ['identifier', getVarName('j')]
+
+        return expression(['()', ['function', null, [], ['statements',
+            ['=', rtemp, tree[1][1]],
+            ['=', listtemp, tree[2]],
+            ['for', [itemp, jtemp], range, null, ['statements',
+                ['=', ['[]', rtemp, jtemp], ['[]', listtemp, itemp]]
+            ]],
+            ['keyword', 'return', rtemp]
+        ]], []])
+
+function dotOp(tree):
+    [type, left, right] = tree
+
+    if type[0] != '?':
+        return [paren(left), '.', expression(right)].join('')
+    else:
+        [wrapper, token] = getCheckExistenceWrapper(left)
+        return wrapper(['.', token, right])
+
+function array(tree):
+    if tree[0] != 'arrayfor':
+        return '[' + tree[1...].map(x => expression(x)).join(', ') + ']'
+
+    temp = ['identifier', getVarName('r')]
+    fortree = tree[1]
+    fortree[4] = ['statements', ['()',
+        ['.', temp, ['identifier', 'push']],
+        [fortree[4]]
+    ]]
+    s = ['statements',
+        ['=', temp, ['array']],
+        fortree,
+        ['keyword', 'return', temp]
+    ]
+
+    return expression(['()', ['function', null, [], s], []])
+
+function object(tree):
+    if tree[0] != 'objectfor':
+        if tree.length == 1: return '{}'
+        return formatCode(['{',
+            tree[1...].map((x, i) => expression(x[0]) + ': ' + expression(x[1]) + (i == tree.length - 2 ? '' : ',')),
+        '}'])
+
+    fortree = tree[1]
+    key = fortree[4][0]
+    value = fortree[4][1]
+    temp = ['identifier', getVarName('r')]
+
+    fortree[4] = ['statements', ['=', ['[]',
+        temp, key
+    ], value]]
+
+    s = ['statements',
+        ['=', temp, ['object']],
+        fortree,
+        ['keyword', 'return', temp]
+    ]
+
+    return expression(['()', ['function', null, [], s], []])
+
+function index(tree):
+    [type, left, right] = tree
+    output = null
+    soak = type[0] == '?'
+
+    if !soak && right[0] != 'range':
+        return paren(tree[1]) + '[' + expression(tree[2]) + ']'
+
+    if right[0] != 'range':
+        output = token => ['[]', token, right]
+    else:
+        [_, start, step, end] = right
+
+        if end == null:
+            output = token => ['()',
+                ['.', token, ['identifier', 'slice']],
+                [start]
+            ]
+        else:
+            output = function(token):
+                t = ['()',
+                    ['.', token, ['identifier', 'slice']],
+                    [start, ['+', end, ['number', 1]]]
+                ]
+
+                if step == null: return t
+
+                modulo = ['-', step, start]
+                xtemp = ['identifier', getVarName('x')]
+                itemp = ['identifier', getVarName('i')]
+
+                return ['()',
+                    ['.', t, ['identifier', 'filter']],
+                    [['lambda', null, [[xtemp, null], [itemp, null]],
+                        ['==',
+                            ['%', itemp, modulo],
+                            ['number', 0]
+                        ]
+                    ]]
+                ]
+
+    if soak:
+        [wrapper, token] = getCheckExistenceWrapper(left)
+        return wrapper(output(token))
+
+    return expression(output(left))
+
+function funcCall(tree):
+    [type, subject, args] = tree
+
+    output = null
+    placeholderCount = args.filter(x =>
+        x equals ['keyword', '_']
+        || x equals ['spread', ['keyword', '_']]
+    ).length
+    hasSpread = args.some(x => x[0] == 'spread')
+    callsuper = subject[0] in ['.', '?.']
+        && subject[1] equals ['keyword', 'super']
+    soak = type[0] == '?'
+
+    if callsuper:
+        tree[1] = ['.', ['.', ['.', ['identifier', 'self'], ['identifier', '__super__']], subject[2]], ['identifier', 'call']]
+        tree[2].splice(0, 0, ['identifier', 'self'])
+
+    if placeholderCount == 0 && !hasSpread && !soak:
+        return paren(subject) + '(' + args.map(x => expression(x)).join(', ') + ')'
+
+    if placeholderCount == 0:
+        if !hasSpread:
+            output = token => ['()', token, args]
+        else:
+            s = ['statements']
+            temp = ['identifier', getVarName('r')]
+
+            s.push(['=', temp, ['array']])
+
+            for arg in args:
+                if arg[0] != 'spread':
+                    s.push(['()', ['.', temp, ['identifier', 'push']], [arg]])
+                else:
+                    s.push(['()', ['.', ['.',
+                        temp,
+                        ['identifier', 'push']],
+                        ['identifier', 'apply']
+                    ], [temp, arg[1]]])
+
+            output = function(token):
+                s.push(['keyword', 'return', ['()',
+                    ['.', token, ['identifier', 'apply']], [['keyword', 'this'], temp]
+                ]])
+                return ['()', ['function', null, [], s], []]
+    else:
+        temps = [getVarName('x') for _ in [1...placeholderCount]]
+
+        output = function(token):
+            a = temps.map(x => [['identifier', x], null])
+            b = args.map(function(x):
+                if x equals ['keyword', '_']:
+                    temp = temps.splice(0, 1)[0]
+                    return ['identifier', temp]
+                else if x equals ['spread', ['keyword', '_']]:
+                    temp = temps.splice(0, 1)[0]
+                    return ['spread', ['identifier', temp]]
+                else:
+                    return x
+            )
+            return ['lambda', null, a, ['()', token, b]]
+
+    if soak:
+        [wrapper, token] = getCheckExistenceWrapper(subject)
+        return wrapper(output(token))
+
+    return expression(output(subject))
+
+// Block constructs
+
+function func(tree):
+    [_, identifier, args, s] = tree
+    if identifier != null:
+        identifier = register(expression(identifier))
+
+    hasOptionalArgs = args.some(x => x[1] != null)
+    spreadindex = args.map(x => x[0][0]).indexOf('spread')
+    hasSpread = spreadindex != -1
+    if spreadindex < 0:
+        spreadindex = args.length
+
+    output = 'function('
+    if identifier != null:
+        output = identifier + ' = ' + output
+
+    pushScope()
+    if !hasSpread:
+        output += args.map(x => expression(x[0])).join(', ')
+
+    output += ') {'
+    insert = []
+
+    if hasSpread:
+        stemp = ['statements']
+        pattern = ['arraypattern'].concat(args.map(x => x[0]))
+        itemp = ['identifier', getVarName('i')]
+
+        stemp.push(['=', pattern, ['keyword', 'arguments']])
+        insert.push(statements(stemp))
+
+    for x in args if x[1] != null:
+        [token, defaultv] = x
+        insert.push(expression(token) + ' = ' + expression(['??'
+            token, defaultv
+        ]) + ';')
+
+    code = [output, [
+        insert.join('\n'),
+        statements(s)
+    ], '}']
+    vars = popScope()
+
+    code[1].splice(0, 0, varsDefinition(vars))
+    return formatCode(code)
+
+function forStatement(tree):
+    code = [forHead(tree), [
+        pushScope() + statements(tree[4])
+    ], '}']
+    vars = popScope()
+
+    code[1].splice(0, 0, varsDefinition(vars))
+    return formatCode(code)
+
+function forHead(tree):
+    [_, [first, second], subject, condition, s] = tree
+    identifierCount = second != null ? 2 : 1
+    output = ''
+
+    first = expression(first)
+    second = second != null ? expression(second) : null
+    if first == '_': first = getVarName('x')
+    if second == '_': second = getVarName('y')
+    register(first)
+    if second != null: register(second)
+
+    if subject[0] == 'range':
+        [_, start, next, end] = subject
+
+        starttemp = ['identifier', getVarName('start')]
+        endtemp = end != null ? ['identifier', getVarName('end')] : null
+        steptemp = ['identifier', getVarName('step')]
+
+        step = ['number', 1]
+        if next != null: step = ['-', next, starttemp]
+        else if end != null: step = ['?',
+            ['==', endtemp, starttemp],
+            ['number', 1],
+            ['()', ['.',
+                ['identifier', 'Math'],
+                ['identifier', 'sign']],
+                [['-', endtemp, starttemp]]
+            ]
+        ]
+
+        s = ['statements', ['=', starttemp, start]]
+        if end != null: s.push(['=', endtemp, end])
+        s.push(['=', steptemp, step])
+
+        if second == null:
+            output = formatCode([
+                statements(s),
+                'for (' + first + ' = ' + starttemp[1] + '; '
+                    + (end ? steptemp[1] + ' > 0 ? ' + first + ' <= ' + endtemp[1] + ' : ' + first + ' >= ' + endtemp[1] : 'true') + '; '
+                    + first + ' += ' + steptemp[1] + ') {'
+            ])
+        else:
+            output = formatCode([
+                statements(s),
+                'for (' + second + ' = ' + starttemp[1] + ', ' + firstIdentifier + ' = 0; '
+                    + (end ? steptemp[1] + ' > 0 ? ' + second + ' <= ' + endtemp[1] + ' : ' + second + ' >= ' + endtemp[1] : 'true') + '; '
+                    + second + ' += ' + steptemp[1] + ', ' + first + '++) {'
+            ])
+    else if identifierCount == 1:
+        exports.flags['enumerate'] = true
+        listtemp = getVarName('l')
+        itemp = register(getVarName('i'))
+
+        s = ['statements', ['=', ['identifier', listtemp],
+            ['()', ['.',
+                ['keyword', '_'],
+                ['identifier', 'enumerate']
+            ], [subject]]
+        ]]
+
+        output = formatCode([
+            statements(s),
+            'for (' + itemp + ' = 0; ' + itemp + ' < ' + listtemp + '.length; ' + itemp + '++) {', [
+                first == '_' ? '' : first + ' = ' + listtemp + '[' + itemp + '];'
+            ]
+        ])
+    else:
+        listtemp = getVarName('l')
+        s = ['statements', ['=', ['identifier', listtemp], subject]]
+
+        output = formatCode([
+            statements(s),
+            'for (' + first + ' in ' + listtemp + ') {', [
+                second == '_' ? '' : second + ' = ' + listtemp + '[' + first + '];'
+            ]
+        ])
+
+    if condition != null:
+        output += '\n' + exports.indent
+            + 'if (!(' + expression(condition) + ')) continue;'
+
+    return output
+
+function whileStatement(tree):
+    [_, condition, s] = tree
+
+    code = ['while (' + expression(condition) + ') {', [
+        pushScope() + statements(s)
+    ], '}']
+    vars = popScope()
+
+    code[1].splice(0, 0, varsDefinition(vars))
+    return formatCode(code)
+
+function ifStatement(tree):
+    code = ['if (' + expression(tree[1][0]) + ') {', [
+        pushScope() + statements(tree[1][1])
+    ], '}']
+    vars = popScope()
+
+    code[1].splice(0, 0, varsDefinition(vars))
+    output = formatCode(code)
+
+    for i, node in tree if i >= 2:
+        [condition, s] = node
+        code = [condition == 'else'
+            ? ' else {'
+            : ' else if (' + expression(condition) + ') {', [
+                pushScope() + statements(s)
+            ], '}'
+        ]
+        vars = popScope()
+        code[1].splice(0, 0, varsDefinition(vars))
+        output += formatCode(code)
+
+    return output
+
+function tryStatement(tree):
+    [_, s, catchb, finallyb] = tree
+
+    code = ['try {', [
+        pushScope() + statements(s)
+    ], '}']
+    vars = popScope()
+
+    code[1].splice(0, 0, varsDefinition(vars))
+    output = formatCode(code)
+
+    if catchb != null:
+        code = [' catch (' + expression(catchb[0]) + ') {', [
+            pushScope() + statements(catchb[1])
+        ], '}']
+        vars = popScope()
+
+        code[1].splice(0, 0, varsDefinition(vars))
+        output += formatCode(code)
+    else:
+        temp = getVarName('e')
+        output += ' catch(' + temp + ') {}'
+
+    if finallyb != null:
+        code = [' finally {', [
+            pushScope() + statements(tree[3])
+        ], '}']
+        vars = popScope()
+
+        code[1].splice(0, 0, varsDefinition(vars))
+        output += formatCode(code)
+
+    return output
+
+// Rewriter functions
+
+function chainCmp(tree):
+    temps = []
+    s = ['statements']
+
+    for i, x in tree if i % 2 != 0:
+        temp = ['identifier', getVarName('r')]
+        temps.push(temp)
+        s.push(['=', temp, x])
+
+    expr = temps[0]
+    for i in [3, 5, ..., tree.length - 1]:
+        if i == 3:
+            expr = [tree[i - 1], expr, temps[(i + 1) / 2 - 1]]
+        else:
+            expr = ['and', expr, [tree[i - 1], temps[(i - 1) / 2 - 1], temps[(i + 1) / 2 - 1]]]
+
+    s.push(['keyword', 'return', expr])
+    return expression(['()', ['function', null, [], s], []])
+
+function range(tree):
+    temp = ['identifier', getVarName('i')]
+    return array(['arrayfor', ['for',
+        [temp, null],
+        tree, null, temp
+    ]])
+
+function lambda(tree):
+    [_, _, args, s] = tree
+
+    return func(['function',
+        null, args,
+        ['statements', ['keyword', 'return', s]]
+    ])
+
+function existentialOp(tree):
+    [_, subject, defaultv] = tree
+
+    needTempVar = subject[0] not in ['identifier', 'keyword']
+    temp = needTempVar ? ['identifier', getVarName('r')] : subject
+    condition = ['or',
+        ['==', ['typeof', temp], ['string', "'undefined'"]],
+        ['==', temp, ['keyword', 'null']]
+    ]
+
+    if needTempVar:
+        s = ['statements']
+        s.push(['=', temp, subject])
+        s.push(['if', [condition, ['statements',
+            ['keyword', 'return', defaultv]
+        ]]])
+        s.push(['keyword', 'return', temp])
+
+        return expression(['()', ['function', null, [], s], []])
+
+    return expression(['?', condition, defaultv, temp])
+
+function patternMatch(tree):
+    [_, pattern, subject] = tree
+
+    temp = ['identifier', getVarName('ref')]
+    s = pattern[0] == 'arraypattern' ? arraypattern(pattern, temp) : objpattern(pattern, temp)
+    s.push(['keyword', 'return', temp])
+
+    return formatCode([
+        '(function(' + expression(temp) + ') {', [
+            statements(s)
+        ], '})(' + expression(subject) + ')'
+    ])
+
+function arraypattern(tree, ref):
+    s = ['statements']
+    spreadindex = tree.map(x => x[0]).indexOf('spread')
+    hasSpread = spreadindex != -1
+    if spreadindex < 0: spreadindex = tree.length
+
+    for i, node in tree if 1 <= i < spreadindex:
+        if node[1] == '_': continue
+        s.push(['=', node, ['[]', ref, ['number', i - 1]]])
+
+    if hasSpread && tree[spreadindex][1][1] != '_':
+        if spreadindex == tree.length - 1:
+            s.push(['=', tree[spreadindex][1], ['?',
+                ['>=', ['number', spreadindex - 1], ['.',
+                    ref,
+                    ['identifier', 'length']
+                ]],
+                ['array'],
+                ['()', ['.', ['.', ['array'], ['identifier', 'slice']], ['identifier', 'call']], [ref, ['number', spreadindex - 1]]]
+            ]])
+        else:
+            afterspreadcount = tree.length - 1 - spreadindex
+
+            s.push(['=', tree[spreadindex][1], ['?',
+                ['>=', ['number', spreadindex - 1], ['-', ['.',
+                    ref,
+                    ['identifier', 'length']
+                ], ['number', afterspreadcount]]],
+                ['array'],
+                ['()', ['.', ['.', ['array'], ['identifier', 'slice']], ['identifier', 'call']], [ref, ['number', spreadindex - 1], ['-', ['number', afterspreadcount]]]]
+            ]])
+
+    for i, node in tree if spreadindex < i:
+        if node[1] == '_': continue
+
+        s.push(['=',
+            node,
+            ['[]', ref, ['-',
+                ['.', ref, ['identifier', 'length']],
+                ['number', tree.length - i]
+            ]]
+        ])
+
+    return s
+
+function objpattern(tree, ref):
+    s = ['statements']
+
+    for i, node in tree if i >= 1:
+        if node[1] == '_': continue
+
+        s.push(['=',
+            node[1],
+            node[0][0] == 'identifier'
+            ? ['.', ref, node[0]]
+            : ['[]', ref, tree[i][0]]
+        ])
+
+    return s
+
+function classStatement(tree):
+    [_, classname, superclass, functions] = tree
+    if superclass != null: exports.flags['extends'] = true
+
+    functions = functions
+    .filter(x => x[0] == 'function')
+    .map(function(f):
+        f[3].splice(1, 0, ['=', ['identifier', 'self'], ['keyword', 'this']])
+        return f
+    )
+
+    constructor = functions.filter(x => x[1][1] == 'init')[0]
+
+    if constructor == null:
+        constructor = ['function', ['identifier', 'init'], [], ['statements']]
+
+        if superclass != null:
+            constructor[3].push(['=', ['identifier', 'self'], ['keyword', 'this']])
+            constructor[3].push(['()', ['.', ['.', ['.',
+                ['identifier', 'self'],
+                ['identifier', '__super__']],
+                ['identifier', 'init']],
+                ['identifier', 'apply']],
+                [['identifier', 'self'], ['identifier', 'arguments']]
+            ])
+
+    s = ['statements']
+    s.push(constructor)
+
+    if superclass != null: s.push(['()',
+        ['.', ['keyword', '_'], ['identifier', 'extends']],
+        [['identifier', 'init'], superclass]
+    ])
+
+    s.push(*functions.filter(f => f != constructor).map(function(f):
+        [name, f[1]] = [f[1], null]
+        return ['=', ['.',
+            ['.', ['identifier', 'init'], ['identifier', 'prototype']],
+            name
+        ], f]
+    ))
+    s.push(['keyword', 'return', ['identifier', 'init']])
+
+    return expression(['=',
+        classname,
+        ['()', ['function', null, [], s], []]
+    ])

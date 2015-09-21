@@ -43,7 +43,7 @@ try:
         p.feed(v)
 
         percent = Math.round(i / (data.length - 1) * 100)
-        if percent - lastReported < 10: continue
+        if percent - lastReported < 5: continue
 
         console.error(percent + '%')
         lastReported = percent
