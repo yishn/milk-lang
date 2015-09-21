@@ -1,5 +1,5 @@
 exports.gcd = function(*args):
-    if args.length == 1: return args[0]
+    if args.length <= 1: return args[0] ?? 1
 
     gcdInner = (a, b) => b == 0 ? a : gcdInner(b, a % b)
 
