@@ -407,10 +407,15 @@
     forLoop -> forHead _ block
                {% function(d) { return d[0].concat([d[2]]) } %}
 
-    forHead -> "for" _+ idorus (_ "," _ idorus):? _+ "in" _+ memberAccess (_+ "if" _ expression):?
-               {% function(d) { return ['for', [d[2], d[3] ? d[3][3] : null], d[7], d[8] ? d[8][3] : null] } %}
+    forHead -> "for" _+ (forItem1 _ "," _):? forItem2 _+ "in" _+ memberAccess (_+ "if" _ expression):?
+               {% function(d) { return ['for', d[2] ? [d[2][0], d[3]] : [d[3], null], d[7], d[8] ? d[8][3] : null] } %}
 
-     idorus -> identifier
+   forItem1 -> identifier
+               {% id %}
+             | "_"
+               {% function(d) { return ['keyword', '_'] } %}
+
+   forItem2 -> pattern
                {% id %}
              | "_"
                {% function(d) { return ['keyword', '_'] } %}
