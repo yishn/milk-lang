@@ -199,11 +199,13 @@
                       | "..."
                         {% function(d) { return ['spread', ['keyword', '_']] } %}
 
-          objpattern -> "{" objpatternList "}"
-                        {% function(d) { return ['objpattern'].concat(d[1]) } %}
+          objpattern -> "{" _ objpatternList _ "}"
+                        {% function(d) { return ['objpattern'].concat(d[2]) } %}
 
-      objpatternList -> (_ objpatternItem __ [,\n]):* _ objpatternItem __ ([,\n] _):?
-                        {% function(d) { return d[0].map(function(x) { return x[1] }).concat([d[2]]) } %}
+      objpatternList -> objpatternItem
+                        {% function(d) { return [d[0]] } %}
+                      | objpatternList __ [,\n] _ objpatternItem
+                        {% function(d) { return d[0].concat([d[4]]) } %}
 
       objpatternItem -> expression _ ":" (_ "#INDENT"):? _ pattern (_ "#DEINDENT"):?
                         {% function(d) { return [d[0], d[5]] } %}
@@ -306,15 +308,17 @@
                   | "[" _ expression _ "," _ expression _ ("," _):? "..." _ ("," _):? (expression _):? "]"
                     {% function(d) { return ['range', d[2], d[6], d[12] ? d[12][0] : null] } %}
 
-          object -> "{" objectList "}"
-                    {% function(d) { return ['object'].concat(d[1]) } %}
+          object -> "{" _ objectList _ "}"
+                    {% function(d) { return ['object'].concat(d[2]) } %}
+                  | "{" _ "}"
+                    {% function(d) { return [] } %}
                   | "{" _ objectListItem _+ forHead _ "}"
                     {% function(d) { return ['objectfor', d[4].concat([d[2]])] } %}
 
-      objectList -> _
-                    {% function(d) { return [] } %}
-                  | (_ objectListItem __ [,\n]):* _ objectListItem __ ([,\n] _):?
-                    {% function(d) { return d[0].map(function(x) { return x[1] }).concat([d[2]]) } %}
+      objectList -> objectListItem
+                    {% function(d) { return [d[0]] } %}
+                  | objectList __ [,\n] _ objectListItem
+                    {% function(d) { return d[0].concat([d[4]]) } %}
 
   objectListItem -> expression _ ":" (_ "#INDENT"):? _ expression (_ "#DEINDENT"):?
                     {% function(d) { return [d[0], d[5]] } %}

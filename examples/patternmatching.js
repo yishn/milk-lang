@@ -1,5 +1,5 @@
 (function() {
-var _ = {}, list;
+var _ = {}, list, options, print, async, regex;
 _.enumerate = function(l) {
     var t = toString.call(l);
     if (t !== "[object Array]" && t !== "[object String]")
@@ -19,9 +19,24 @@ console.log((function() {
             return ref;
         })(l[i]);
         r.push(a + b);
-    }
+    };
     return r;
 })());
+/*@4:1*/
+options = {
+    async: true,
+    print: false,
+    match: /^\s+/
+};
+/*@10:1*/
+(function(ref1) {
+    print = ref1.print;
+    async = ref1.async;
+    regex = ref1.match;
+    return ref1;
+})(options);
+/*@11:1*/
+console.log(print, async, regex);
 })();
 
-//: 442ms
+//: 926ms

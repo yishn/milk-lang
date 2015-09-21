@@ -1,2 +1,11 @@
 list = [[1, 3], [4, 3], [2, 4], [5, 3], [5, 6], [3, 1]]
 console.log([a + b for [a, b] in list])
+
+options = {
+    async: true
+    print: false
+    match: /^\s+/
+}
+
+{ print, async, match: regex } = options
+console.log(print, async, regex)
