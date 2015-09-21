@@ -196,9 +196,7 @@ function statements(tree):
     s = []
 
     for i, node in tree if i >= 1:
-        code = statement(node)
-        if code[code.length - 1] != '}':
-            code += ';'
+        code = statement(node) + ';'
         if node.offset != null:
             code = '#OFFSET' + node.offset + '\n' + code
 
