@@ -1,5 +1,7 @@
-function gcd(first, *rest):
-    if rest.length == 0: return first
+function gcd(*args):
+    if args.length == 1: return args[0]
 
     gcdInner = (a, b) => b == 0 ? a : gcdInner(b, a % b)
-    return gcdInner(first, gcd(*rest))
+
+    middle = Math.floor((args.length - 1) / 2)
+    return gcdInner(gcd(*args[0...middle]), gcd(*args[middle + 1...]))

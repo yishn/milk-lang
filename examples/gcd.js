@@ -6,27 +6,36 @@ _.modulo = function(a, b) {
 }
 /*@1:1*/
 gcd = function() {
-    var first, rest, gcdInner;
+    var args, gcdInner, middle, left, right;
     (function(ref) {
-        first = ref[0];
-        rest = (1 >= ref.length) ? [] : [].slice.call(ref, 1);
+        args = (0 >= ref.length) ? [] : [].slice.call(ref, 0);
         return ref;
     })(arguments);
     /*@2:5*/
-    if (rest.length === 0) {
-        return first;
+    if (args.length === 1) {
+        return args[0];
     }
     gcdInner = function(a, b) {
         return (b === 0) ? a : gcdInner(b, _.modulo(a, b));
     }
-    /*@5:5*/
-    return gcdInner(first, (function() {
+    /*@6:5*/
+    middle = Math.floor((args.length - 1) / 2);
+    left = (function() {
         var r;
         r = [];
-        r.push.apply(r, rest);
+        r.push.apply(r, args.slice(0, middle + 1));
         return gcd.apply(this, r);
-    })());
+    })();
+    /*@8:5*/
+    right = (function() {
+        var r1;
+        r1 = [];
+        r1.push.apply(r1, args.slice(middle + 1));
+        return gcd.apply(this, r1);
+    })();
+    /*@10:5*/
+    return gcdInner(left, right);
 }
 })();
 
-//: 714ms
+//: 1228ms
