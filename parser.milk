@@ -1,9 +1,50 @@
-function searchToken(*needles, hay):
+operatormap = l => l.map(x => ['operator', x])
+
+assignmentOp = operatormap([
+    '=', '+=', '-=', '*=',
+    '^=', '/=', '%='
+])
+
+comparisonOp = operatormap([
+    '<=', '>=', '<', '>', '==',
+    '!=', 'equals', 'not equals'
+])
+
+elementOp = operatormap([
+    'in', 'instanceof', 'not in'
+])
+
+prepostOp = operatormap(['++', '--'])
+
+unaryOp = operatormap(['typeof', '!'])
+
+additionOp = operatormap(['+', '-'])
+multOp = operatormap(['*', '/', '%'])
+
+function searchTokenR(*needles, hay):
     for i, token in hay:
         if needles.some(x => token equals x):
             return i
 
     return -1
+
+function searchTokenL(*needles, hay):
+    if hay.length == 0: return -1
+
+    for i in [hay.length - 1...0]:
+        if needles.some(x => hay[i] equals x):
+            return i
+
+    return -1
+
+function searchTokens(*needles, hay):
+    r = []
+
+    for i, token in hay:
+        if needles.some(x => token equals x):
+            r.push(i)
+
+    return r
 
 module.exports = function(tokens):
     return parseExpression(tokens)
@@ -33,7 +74,11 @@ function parseExpression(tokens):
                 break
 
         else if token equals ['delimiter', ':']
-        || token equals ['delimiter', ',']
+        && tokens[i + 1] equals ['newline', 'indent']:
+            // End of expression
+            break
+
+        else if token equals ['delimiter', ',']
         || token equals ['delimiter', ';']:
             // End of expression
             break
@@ -42,27 +87,102 @@ function parseExpression(tokens):
             output.push(token)
 
     // Group stuff
-    assignmentOperators = ['=', '+=', '-=', '*=', '^=', '/=', '%='].map(x => ['operator', x])
-
-    if (k = searchToken(*assignmentOperators, output)) != -1:
+    if (k = searchTokenR(*assignmentOp, output)) != -1:
         [left, _] = parsePattern(output[0...k - 1])
         [right, _] = parseExpression(output[k + 1...])
 
         output = ['=', left, right]
 
-    else if (k = searchToken(['operator', '=>'], output)) != -1:
+    else if (k = searchTokenR(['operator', '=>'], output)) != -1:
         [left, _] = parseLambdaHead(output[0...k - 1])
         [right, _] = parseExpression(output[k + 1...])
 
         output = ['lambda', null, left, right]
 
-    else if (k = searchToken(['operator', '?'], output)) != -1:
+    else if (k = searchTokenR(['operator', '?'], output)) != -1:
+        m = searchTokenR(['delimiter', ':'], output)
         [condition, _] = parseExpression(output[0...k - 1])
-        [left, end] = parseExpression(output[k + 1...])
-        [right, _] = parseExpression(output[k + 1...][end + 1...])
+        [left, _] = parseExpression(output[k + 1...m - 1])
+        [right, _] = parseExpression(output[m + 1...])
 
         output = ['?', condition, left, right]
 
+    else if (k = searchTokenR(['operator', '??'], output)) != -1
+    || (k = searchTokenL(['operator', '||'], output)) != -1
+    || (k = searchTokenL(['operator', '&&'], output)) != -1:
+        [left, _] = parseExpression(output[0...k - 1])
+        [right, _] = parseExpression(output[k + 1...])
+
+        output = [output[k][1], left, right]
+
+    else if (kk = searchTokens(*comparisonOp, output)).length > 0:
+        r = kk.length > 1 ? ['chaincmp'] : []
+
+        for m, _ in kk:
+            start = m >= 1 ? kk[m - 1] + 1 : 0
+            [expr, _] = parseExpression(output[start...kk[m] - 1])
+            r.push(expr)
+            r.push(output[kk[m]][1])
+
+        [expr, _] = parseExpression(output[kk[m] + 1...])
+        r.push(expr)
+
+        if kk.length == 1:
+            output = [r[1], r[0], r[2]]
+        else:
+            output = r
+
+    else if (k = searchTokenL(*elementOp, output)) != -1:
+        [left, _] = parseExpression(output[0...k - 1])
+        [right, _] = parseExpression(output[k + 1...])
+
+        output = [output[k][1], left, right]
+
+    else if (k = searchTokenL(*additionOp, output)) != -1:
+        prevType = output[k - 1]?[0]
+        unary = prevType in [null, 'operator']
+        left = null
+
+        if !unary: [left, _] = parseExpression(output[0...k - 1])
+        [right, _] = parseExpression(output[k + 1...])
+
+        if unary:
+            output = [output[k][1], right]
+        else:
+            output = [output[k][1], left, right]
+
+    else if (k = searchTokenL(*multOp, output)) != -1:
+        [left, _] = parseExpression(output[0...k - 1])
+        [right, _] = parseExpression(output[k + 1...])
+
+        output = [output[k][1], left, right]
+
+    else if (k = searchTokenL(*prepostOp, output)) != -1:
+        prevType = output[k - 1]?[0]
+        nextType = output[k + 1]?[0]
+
+        l = [null, 'newline', 'operator']
+        prefix = prevType in l && nextType not in l
+        postfix = nextType in l && prevType not in l
+
+        if prefix == postfix: throw {
+            message: "Ambiguous operator '" + output[k][1] + "'"
+            offset: output[k].offset
+        }
+
+        if prefix:
+            [subject, _] = parseExpression(output[k + 1...])
+            output = [output[k][1] + '_', subject]
+        else:
+            [subject, _] = parseExpression(output[0...k - 1])
+            output = ['_' + output[k][1], subject]
+
+    else if (k = searchTokenL(*unaryOp, output)) != -1:
+        [subject, _] = parseExpression(output[k + 1...])
+
+        output = [output[k][1], subject]
+
+    if output.length == 1: output = output[0]
     return [output, i]
 
 function parsePattern(tokens):
