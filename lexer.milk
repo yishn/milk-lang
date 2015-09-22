@@ -9,6 +9,16 @@ function gcd(*args):
     middle = Math.floor((args.length - 1) / 2)
     return gcdInner(gcd(*args[0...middle]), gcd(*args[middle + 1...]))
 
+function removeIndent(tokens, i):
+    depth = 0
+    for k, [type, value, _] in tokens if k >= i:
+        if type == 'newline':
+            if value == 'indent': depth++
+            else if value == 'dedent': depth--
+
+        if depth == 0
+            tokens[k] = null
+
 rules = {
     operator: regexmap([
         '*', '/', '^', '%', '-', '+',
@@ -156,4 +166,10 @@ module.exports = function(input):
 
         lastDepth = depth
 
-    return output
+    // Remove superfluous indents
+    for i, [*token, _] in output if i >= 1:
+        if token not equals ['newline', 'indent']: continue
+        if output[i - 1][0...1] equals ['newline', 'indent']:
+            removeIndent(output, i)
+
+    return output.filter(x => x != null)
