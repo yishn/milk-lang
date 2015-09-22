@@ -19,7 +19,8 @@ additionOp = operatormap(['+', '-'])
 multOp = operatormap(['*', '/', '%'])
 prepostOp = operatormap(['++', '--'])
 unaryOp = operatormap(['typeof', '!'])
-dotOp = delimitermap(['.', '?.'])
+dotOp = operatormap(['.', '?.'])
+bracketDel = delimitermap(['[', '?['])
 
 function searchTokenR(*needles, hay):
     for i, token in hay:
@@ -51,42 +52,63 @@ module.exports = function(tokens):
 
 function parseExpression(tokens):
     output = []
-    depth = 0
+    [parenDepth, bracketDepth, braceDepth] = [0, 0, 0]
 
     // Detect parentheses
     for i, token in tokens:
         if token equals ['delimiter', '(']:
-            if tokens[i - 1]?[0] in [null, 'operator', 'delimiter', 'newline']:
+            if tokens[i - 1]?[0] in [null, 'operator', 'newline']:
                 // Expression grouping
                 [tree, i] = parseExpression(tokens[i + 1...])
                 output.push(tree)
             else:
                 // Function call parentheses
-                depth++
+                parenDepth++
                 output.push(token)
 
         else if token equals ['delimiter', ')']:
-            if depth > 0:
-                depth--
+            if parenDepth > 0:
+                parenDepth--
                 output.push(token)
             else:
                 // End of expression
                 break
+
+        else if token equals ['delimiter', '?(']:
+            parenDepth++
+
+        else if token equals ['delimiter', '[']
+        || token equals ['delimiter', '?[']:
+            bracketDepth++
+
+        else if token equals ['delimiter', ']']:
+            bracketDepth--
+
+        else if token equals ['delimiter', '{']:
+            braceDepth++
+
+        else if token equals ['delimiter', '}']:
+            braceDepth--
+
+        else if token equals ['delimiter', ',']
+        && Math.max(parenDepth, braceDepth, bracketDepth) == 0:
+            // End of expression
+            break
 
         else if token equals ['delimiter', ':']
         && tokens?[i + 1] equals ['newline', 'indent']:
             // End of expression
             break
 
-        else if token equals ['delimiter', ',']
-        || token equals ['delimiter', ';']
-        || token equals ['keyword', 'for']
+        else if token equals ['delimiter', ';']
         || token[0] == 'newline':
             // End of expression
             break
 
         else:
             output.push(token)
+
+    console.log(output)
 
     // Group stuff
     if (k = searchTokenR(*assignmentOp, output)) != -1:
@@ -200,8 +222,19 @@ function parseExpression(tokens):
 
         output = [output[k][1], left, right]
 
+    else if (k = searchTokenR(*bracketDel, output)) != -1:
+        [array, end] = parseArray(output[k + 1...])
+        output[k...k + 1 + end] = array
+
+    else if (k = searchTokenR(['delimiter', '{'], output)) != -1:
+        [object, end] = parseObject(output[k + 1...])
+        output[k...k + 1 + end] = object
+
     if output.length == 1: output = output[0]
     return [output, i]
 
 function parsePattern(tokens):
     return tokens
+
+function parseArray(tokens):
+    pass
