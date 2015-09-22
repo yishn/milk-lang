@@ -69,7 +69,7 @@ rules = {
     ]
 
     regex: [
-        /^\/(.*?[^\\]\/|.*?\\\\\/)[gim]*/
+        /^\/[^\/*](.*?[^\\]\/|.*?\\\\\/)[gim]*/
     ]
 
     comment: [
@@ -89,9 +89,15 @@ module.exports = function(input):
 
     // Tokenizer
     while residue.length > 0:
+        lastType = null
         [type, value] = [null, '']
+        if tokens.length > 0: [..., [lastType, _, _]] = tokens
 
         for t, list in rules:
+            // Check whether regex or division
+            if t == 'regex' && lastType not in ['operator', 'delimiter', 'newline', null]:
+                continue
+
             for regex in list:
                 matches = regex.exec(residue)
                 if matches == null || matches[0].length <= value.length:
@@ -100,12 +106,10 @@ module.exports = function(input):
                 [type, value] = [t, matches[0]]
 
         // No token found
-        if type == null:
-            [row, col] = helper.offsetToLinePos(offset, input)
-            throw {
-                message: "Syntax error: Unexpected '" + residue[0] + "'"
-                offset: offset
-            }
+        if type == null: throw {
+            message: "Syntax error: Unexpected '" + residue[0] + "'"
+            offset: offset
+        }
 
         // Don't add newline twice
         if type == 'newline' && tokens.length > 0 && tokens[tokens.length - 1][0] == 'newline':

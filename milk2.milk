@@ -20,7 +20,7 @@ console.error('Lexer...')
 try:
     tokens = lexer(data)
 catch e:
-    [row, col] = helper.offsetToLinePos(e.offset)
+    [row, col] = helper.offsetToLinePos(e.offset, data)
     console.error(e.message + ' @' + row + ':' + col)
     return
 
