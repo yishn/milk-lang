@@ -270,11 +270,9 @@ function expression(tree):
         return [paren(tree[1]), '?', paren(tree[2]), ':', paren(tree[3])].join(' ')
     else if type == '??':
         return existentialOp(tree)
-    else if type == 'or':
-        return [paren(tree[1]), '||', paren(tree[2])].join(' ')
-    else if type == 'and':
-        return [paren(tree[1]), '&&', paren(tree[2])].join(' ')
-    else if type == 'not':
+    else if type == '||' || type == '&&':
+        return [paren(tree[1]), type, paren(tree[2])].join(' ')
+    else if type == '!':
         return '!' + paren(subject)
     else if type == 'chaincmp':
         return chainCmp(tree)

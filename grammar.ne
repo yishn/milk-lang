@@ -78,7 +78,7 @@
                 | "typeof" _+ wedgeOp
                   {% function(d) { return [d[0], d[2]] } %}
                 | "!" _ wedgeOp
-                  {% function(d) { return ['not', d[2]] } %}
+                  {% function(d) { return ['!', d[2]] } %}
                 | wedgeOp
                   {% id %}
 
@@ -116,12 +116,12 @@
                   } %}
 
        boolAnd -> boolAnd _ "&&" _ comparison
-                  {% function(d) { return ['and', d[0], d[4]] } %}
+                  {% function(d) { return ['&&', d[0], d[4]] } %}
                 | comparison
                   {% id %}
 
        boolOr -> boolOr _ "||" _ boolAnd
-                  {% function(d) { return ['or', d[0], d[4]] } %}
+                  {% function(d) { return ['||', d[0], d[4]] } %}
                 | boolAnd
                   {% id %}
 
