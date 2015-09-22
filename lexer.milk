@@ -174,8 +174,11 @@ module.exports = function(input):
 
     // Remove superfluous indents
     for i, token in output if i >= 1:
-        if token not equals ['newline', 'indent']: continue
+        if token not equals ['newline', 'indent']
+        && token not equals ['delimiter', '?.']
+        && token not equals ['delimiter', '.']: continue
+
         if output[i - 1] equals ['newline', 'indent']:
-            removeIndent(output, i)
+            removeIndent(output, i - 1)
 
     return output.filter(x => x != null)
