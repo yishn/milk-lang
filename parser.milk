@@ -1,6 +1,6 @@
-function searchToken(needle, hay):
+function searchToken(*needles, hay):
     for i, token in hay:
-        if token[0...needle.length - 1] equals needle:
+        if needles.some(x => token equals x):
             return i
 
     return -1
@@ -13,9 +13,7 @@ function parseExpression(tokens):
     depth = 0
 
     // Detect parentheses
-    for i, _ in tokens:
-        token = tokens[i][0...1]
-
+    for i, token in tokens:
         if token equals ['delimiter', '(']:
             if tokens[i - 1]?[0] in [null, 'operator', 'delimiter', 'newline']:
                 // Expression grouping
@@ -24,12 +22,12 @@ function parseExpression(tokens):
             else:
                 // Call parentheses
                 depth++
-                output.push(tokens[i])
+                output.push(token)
 
         else if token equals ['delimiter', ')']:
             if depth > 0:
                 depth--
-                output.push(tokens[i])
+                output.push(token)
             else:
                 // End of expression
                 break
@@ -41,14 +39,29 @@ function parseExpression(tokens):
             break
 
         else:
-            output.push(tokens[i])
+            output.push(token)
 
     // Group stuff
-    if (index = searchToken(['operator', '='], output)) != -1:
-        console.log(output[index + 1, ...])
-        [left, _] = parsePattern(output[0, ..., index - 1])
-        [right, end] = parseExpression(output[index + 1, ...])
-        output[0...end] = [['=', left, right]]
+    assignmentOperators = ['=', '+=', '-=', '*=', '^=', '/=', '%='].map(x => ['operator', x])
+
+    if (k = searchToken(*assignmentOperators, output)) != -1:
+        [left, _] = parsePattern(output[0...k - 1])
+        [right, _] = parseExpression(output[k + 1...])
+
+        output = ['=', left, right]
+
+    else if (k = searchToken(['operator', '=>'], output)) != -1:
+        [left, _] = parseLambdaHead(output[0...k - 1])
+        [right, _] = parseExpression(output[k + 1...])
+
+        output = ['lambda', null, left, right]
+
+    else if (k = searchToken(['operator', '?'], output)) != -1:
+        [condition, _] = parseExpression(output[0...k - 1])
+        [left, end] = parseExpression(output[k + 1...])
+        [right, _] = parseExpression(output[k + 1...][end + 1...])
+
+        output = ['?', condition, left, right]
 
     return [output, i]
 
