@@ -16,8 +16,9 @@ function removeNewline(tokens, i):
             if value == 'indent': depth++
             else if value == 'dedent': depth--
 
-        if depth == 0:
-            tokens[k] = null
+            if depth == 0 || k == i:
+                tokens[k] = null
+                if k != i: return
 
 rules = {
     operator: regexmap([
@@ -172,6 +173,9 @@ module.exports = function(input):
 
         lastDepth = depth
 
+    for i in [1,2...lastDepth]:
+        output.push(['newline', 'dedent'])
+
     // Remove superfluous newlines
 
     list = [
@@ -244,7 +248,7 @@ module.exports = function(input):
         else if token equals ['delimiter', ')']:
             parenDepth--
 
-        else if token[0] == 'newline'
+        else if token?[0] == 'newline'
         && Math.min(parenDepth, bracketDepth, braceDepth) > 0:
             removeNewline(output, i)
 
