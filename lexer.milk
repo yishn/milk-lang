@@ -121,12 +121,18 @@ module.exports = function(input):
         offset += value.length
         residue = residue[value.length...]
 
+    output = []
+
     // Detect indents & dedents
     indents = [x.length - 1 for [t, x, _] in tokens if t == 'newline']
     indentLength = gcd(*indents.filter(x => x != 0))
     [lastDepth, useTabs] = [0, null]
 
-    for i, [type, value, offset] in tokens if type == 'newline':
+    for i, [type, value, offset] in tokens:
+        if type != 'newline':
+            output.push(tokens[i])
+            continue
+
         depth = (value.length - 1) / indentLength
 
         if depth != 0:
@@ -140,12 +146,14 @@ module.exports = function(input):
                 }
 
         if depth > lastDepth:
-            tokens[i][1] = 'indent'
+            for _ in [1, ..., depth - lastDepth]:
+                output.push(['newline', 'indent', offset])
         else if depth < lastDepth:
-            tokens[i][1] = 'dedent'
+            for _ in [1, ..., lastDepth - depth]:
+                output.push(['newline', 'dedent', offset])
         else:
-            tokens[i][1] = 'nodent'
+            output.push(tokens[i])
 
         lastDepth = depth
 
-    return tokens
+    return output
