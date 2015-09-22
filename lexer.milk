@@ -9,7 +9,7 @@ function gcd(*args):
     middle = Math.floor((args.length - 1) / 2)
     return gcdInner(gcd(*args[0...middle]), gcd(*args[middle + 1...]))
 
-function removeIndent(tokens, i):
+function removeNewline(tokens, i):
     depth = 0
     for k, [type, value] in tokens if k >= i:
         if type == 'newline':
@@ -168,17 +168,56 @@ module.exports = function(input):
                 token.offset = tokens[i].offset
                 output.push(token)
         else:
-            output.push(tokens[i])
+            output.push(['newline', 'nodent'])
 
         lastDepth = depth
 
+    list = [
+        ['newline', 'indent']
+        ['operator', '*']
+        ['operator', '/']
+        ['operator', '^']
+        ['operator', '%']
+        ['operator', '-']
+        ['operator', '+']
+        ['operator', '=']
+        ['operator', '+=']
+        ['operator', '^=']
+        ['operator', '*=']
+        ['operator', '%=']
+        ['operator', '-=']
+        ['operator', '+=']
+        ['operator', '=>']
+        ['operator', '??']
+        ['operator', '?']
+        ['operator', '||']
+        ['operator', '&&']
+        ['operator', '<']
+        ['operator', '>']
+        ['operator', '<=']
+        ['operator', '>=']
+        ['operator', '==']
+        ['operator', '!=']
+        ['operator', 'in']
+        ['operator', 'not in']
+        ['operator', 'instanceof']
+        ['operator', 'typeof']
+        ['operator', 'new']
+        ['operator', 'equals']
+        ['operator', 'not equals']
+        ['delimiter', '...']
+        ['delimiter', ',']
+        ['delimiter', '?.']
+        ['delimiter', '.']
+    ]
+
     // Remove superfluous indents
     for i, token in output if i >= 1:
-        if token not equals ['newline', 'indent']
-        && token not equals ['delimiter', '?.']
-        && token not equals ['delimiter', '.']: continue
+        if !list.some(x => token equals x): continue
 
-        if output[i - 1] equals ['newline', 'indent']:
-            removeIndent(output, i - 1)
+        if output[i - 1][0] == 'newline':
+            removeNewline(output, i - 1)
+        if token[0] != 'newline' && output[i + 1][0] == 'newline':
+            removeNewline(output, i + 1)
 
     return output.filter(x => x != null)

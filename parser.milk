@@ -1,4 +1,5 @@
 operatormap = l => l.map(x => ['operator', x])
+delimitermap = l => l.map(x => ['delimiter', x])
 
 assignmentOp = operatormap([
     '=', '+=', '-=', '*=',
@@ -14,12 +15,11 @@ elementOp = operatormap([
     'in', 'instanceof', 'not in'
 ])
 
-prepostOp = operatormap(['++', '--'])
-
-unaryOp = operatormap(['typeof', '!'])
-
 additionOp = operatormap(['+', '-'])
 multOp = operatormap(['*', '/', '%'])
+prepostOp = operatormap(['++', '--'])
+unaryOp = operatormap(['typeof', '!'])
+dotOp = delimitermap(['.', '?.'])
 
 function searchTokenR(*needles, hay):
     for i, token in hay:
@@ -74,12 +74,28 @@ function parseExpression(tokens):
                 break
 
         else if token equals ['delimiter', ':']
-        && tokens[i + 1] equals ['newline', 'indent']:
+        && tokens?[i + 1] equals ['newline', 'indent']:
             // End of expression
             break
 
         else if token equals ['delimiter', ',']
-        || token equals ['delimiter', ';']:
+        || token equals ['delimiter', ';']
+        || token equals ['newline', 'dedent']
+        || token equals ['keyword', 'class']
+        || token equals ['keyword', 'for']
+        || token equals ['keyword', 'while']
+        || token equals ['keyword', 'if']
+        || token equals ['keyword', 'else']
+        || token equals ['keyword', 'else if']
+        || token equals ['keyword', 'try']
+        || token equals ['keyword', 'catch']
+        || token equals ['keyword', 'finally']
+        || token equals ['keyword', 'return']
+        || token equals ['keyword', 'continue']
+        || token equals ['keyword', 'break']
+        || token equals ['keyword', 'throw']
+        || token equals ['keyword', 'delete']
+        || token equals ['keyword', 'pass']:
             // End of expression
             break
 
@@ -181,6 +197,22 @@ function parseExpression(tokens):
         [subject, _] = parseExpression(output[k + 1...])
 
         output = [output[k][1], subject]
+
+    else if (k = searchTokenR(['operator', '^'], output)) != -1:
+        [left, _] = parseExpression(output[0...k - 1])
+        [right, _] = parseExpression(output[k + 1...])
+
+        output = ['^', left, right]
+
+    else if (k = searchTokenR(['operator', 'new'], output)) != -1:
+        [subject, _] = parseExpression(output[k + 1...])
+        output = ['new', subject]
+
+    else if (k = searchTokenR(*dotOp, output)) != -1:
+        [left, _] = parseExpression(output[0...k - 1])
+        [right, _] = parseExpression(output[k + 1...])
+
+        output = [output[k][1], left, right]
 
     if output.length == 1: output = output[0]
     return [output, i]
