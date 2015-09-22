@@ -11,7 +11,7 @@ function gcd(*args):
 
 function removeIndent(tokens, i):
     depth = 0
-    for k, [type, value, _] in tokens if k >= i:
+    for k, [type, value] in tokens if k >= i:
         if type == 'newline':
             if value == 'indent': depth++
             else if value == 'dedent': depth--
@@ -101,7 +101,7 @@ module.exports = function(input):
     while residue.length > 0:
         lastType = null
         [type, value] = [null, '']
-        if tokens.length > 0: [..., [lastType, _, _]] = tokens
+        if tokens.length > 0: [..., [lastType, _]] = tokens
 
         for t, list in rules:
             // Check whether regex or division
@@ -126,7 +126,9 @@ module.exports = function(input):
             tokens.pop()
 
         if type != 'ignore':
-            tokens.push([type, value, offset])
+            token = [type, value]
+            token.offset = offset
+            tokens.push(token)
 
         offset += value.length
         residue = residue[value.length...]
@@ -134,11 +136,11 @@ module.exports = function(input):
     output = []
 
     // Detect indents & dedents
-    indents = [x.length - 1 for [t, x, _] in tokens if t == 'newline']
+    indents = [x.length - 1 for [t, x] in tokens if t == 'newline']
     indentLength = gcd(*indents.filter(x => x != 0))
     [lastDepth, useTabs] = [0, null]
 
-    for i, [type, value, offset] in tokens:
+    for i, [type, value] in tokens:
         if type != 'newline':
             output.push(tokens[i])
             continue
@@ -152,24 +154,28 @@ module.exports = function(input):
             else if useTabs != ('\t' in value):
                 throw {
                     message: 'Mixed indentation',
-                    offset: offset
+                    offset: tokens[i].offset
                 }
 
         if depth > lastDepth:
             for _ in [1, ..., depth - lastDepth]:
-                output.push(['newline', 'indent', offset])
+                token = ['newline', 'indent']
+                token.offset = tokens[i].offset
+                output.push(token)
         else if depth < lastDepth:
             for _ in [1, ..., lastDepth - depth]:
-                output.push(['newline', 'dedent', offset])
+                token = ['newline', 'dedent']
+                token.offset = tokens[i].offset
+                output.push(token)
         else:
             output.push(tokens[i])
 
         lastDepth = depth
 
     // Remove superfluous indents
-    for i, [*token, _] in output if i >= 1:
+    for i, token in output if i >= 1:
         if token not equals ['newline', 'indent']: continue
-        if output[i - 1][0...1] equals ['newline', 'indent']:
+        if output[i - 1] equals ['newline', 'indent']:
             removeIndent(output, i)
 
     return output.filter(x => x != null)
