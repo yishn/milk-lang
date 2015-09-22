@@ -118,7 +118,7 @@ module.exports = function(input):
 
         // No token found
         if type == null: throw {
-            message: "Syntax error: Unexpected '" + residue[0] + "'"
+            message: "Syntax error: Unexpected '" + residue[0] + "'",
             offset: offset
         }
 
@@ -177,43 +177,42 @@ module.exports = function(input):
         output.push(['newline', 'dedent'])
 
     // Remove superfluous newlines
-
     list = [
-        ['newline', 'indent']
-        ['operator', '*']
-        ['operator', '/']
-        ['operator', '^']
-        ['operator', '%']
-        ['operator', '-']
-        ['operator', '+']
-        ['operator', '=']
-        ['operator', '+=']
-        ['operator', '^=']
-        ['operator', '*=']
-        ['operator', '%=']
-        ['operator', '-=']
-        ['operator', '+=']
-        ['operator', '=>']
-        ['operator', '??']
-        ['operator', '?']
-        ['operator', '||']
-        ['operator', '&&']
-        ['operator', '<']
-        ['operator', '>']
-        ['operator', '<=']
-        ['operator', '>=']
-        ['operator', '==']
-        ['operator', '!=']
-        ['operator', 'in']
-        ['operator', 'not in']
-        ['operator', 'instanceof']
-        ['operator', 'typeof']
-        ['operator', 'new']
-        ['operator', 'equals']
-        ['operator', 'not equals']
-        ['delimiter', '...']
-        ['delimiter', ',']
-        ['delimiter', '?.']
+        ['newline', 'indent'],
+        ['operator', '*'],
+        ['operator', '/'],
+        ['operator', '^'],
+        ['operator', '%'],
+        ['operator', '-'],
+        ['operator', '+'],
+        ['operator', '='],
+        ['operator', '+='],
+        ['operator', '^='],
+        ['operator', '*='],
+        ['operator', '%='],
+        ['operator', '-='],
+        ['operator', '+='],
+        ['operator', '=>'],
+        ['operator', '??'],
+        ['operator', '?'],
+        ['operator', '||'],
+        ['operator', '&&'],
+        ['operator', '<'],
+        ['operator', '>'],
+        ['operator', '<='],
+        ['operator', '>='],
+        ['operator', '=='],
+        ['operator', '!='],
+        ['operator', 'in'],
+        ['operator', 'not in'],
+        ['operator', 'instanceof'],
+        ['operator', 'typeof'],
+        ['operator', 'new'],
+        ['operator', 'equals'],
+        ['operator', 'not equals'],
+        ['delimiter', '...'],
+        ['delimiter', ','],
+        ['delimiter', '?.'],
         ['delimiter', '.']
     ]
 
