@@ -670,16 +670,22 @@ function forHead(tree):
             ]
         ])
     else:
+        itemp = register(getVarName('i'))
         listtemp = getVarName('l')
         s = ['statements', ['=', ['identifier', listtemp], subject]]
 
         output = formatCode([
             statements(s),
-            'for (' + register(first[1]) + ' in ' + listtemp + ') {', [
+            'for (' + itemp + ' in ' + listtemp + ') {', [
                 statement(['=',
                     second,
-                    ['[]', ['identifier', listtemp], first]
-                ]) + ';'
+                    ['[]', ['identifier', listtemp], ['identifier', itemp]]
+                ]) + ';',
+                statement(['=',
+                    first,
+                    ['()', ['identifier', 'parseInt'], [['identifier', itemp], ['number', 10]]]
+                ]) + ';',
+                'if (isNaN(' + first[1] + ')) ' + first[1] + ' = ' + itemp + ';'
             ]
         ])
 
