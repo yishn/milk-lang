@@ -16,7 +16,7 @@ function removeIndent(tokens, i):
             if value == 'indent': depth++
             else if value == 'dedent': depth--
 
-        if depth == 0
+        if depth == 0:
             tokens[k] = null
 
 rules = {

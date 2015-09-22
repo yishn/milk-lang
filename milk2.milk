@@ -2,6 +2,7 @@ process = require('process')
 fs = require('fs')
 helper = require('./helper')
 lexer = require('./lexer')
+parser = require('./parser')
 
 filename = process.argv[2]
 data = fs.readFileSync(filename, 'utf-8')
@@ -24,5 +25,10 @@ catch e:
     console.error(e.message + ' @' + row + ':' + col)
     return
 
-console.log(tokens)
+// Parser
+
+console.error('Parsing...')
+tree = parser(tokens)
+
+console.dir(tree, { depth: null })
 console.timeEnd('//')

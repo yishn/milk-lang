@@ -1,0 +1,56 @@
+function searchToken(needle, hay):
+    for i, token in hay:
+        if token[0...needle.length - 1] equals needle:
+            return i
+
+    return -1
+
+module.exports = function(tokens):
+    return parseExpression(tokens)
+
+function parseExpression(tokens):
+    output = []
+    depth = 0
+
+    // Detect parentheses
+    for i, _ in tokens:
+        token = tokens[i][0...1]
+
+        if token equals ['delimiter', '(']:
+            if tokens[i - 1]?[0] in [null, 'operator', 'delimiter', 'newline']:
+                // Expression grouping
+                [tree, i] = parseExpression(tokens[i + 1...])
+                output.push(tree)
+            else:
+                // Call parentheses
+                depth++
+                output.push(tokens[i])
+
+        else if token equals ['delimiter', ')']:
+            if depth > 0:
+                depth--
+                output.push(tokens[i])
+            else:
+                // End of expression
+                break
+
+        else if token equals ['delimiter', ':']
+        || token equals ['delimiter', ',']
+        || token equals ['delimiter', ';']:
+            // End of expression
+            break
+
+        else:
+            output.push(tokens[i])
+
+    // Group stuff
+    if (index = searchToken(['operator', '='], output)) != -1:
+        console.log(output[index + 1, ...])
+        [left, _] = parsePattern(output[0, ..., index - 1])
+        [right, end] = parseExpression(output[index + 1, ...])
+        output[0...end] = [['=', left, right]]
+
+    return [output, i]
+
+function parsePattern(tokens):
+    return tokens
