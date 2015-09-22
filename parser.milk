@@ -61,7 +61,7 @@ function parseExpression(tokens):
                 [tree, i] = parseExpression(tokens[i + 1...])
                 output.push(tree)
             else:
-                // Call parentheses
+                // Function call parentheses
                 depth++
                 output.push(token)
 
@@ -80,22 +80,8 @@ function parseExpression(tokens):
 
         else if token equals ['delimiter', ',']
         || token equals ['delimiter', ';']
-        || token equals ['newline', 'dedent']
-        || token equals ['keyword', 'class']
         || token equals ['keyword', 'for']
-        || token equals ['keyword', 'while']
-        || token equals ['keyword', 'if']
-        || token equals ['keyword', 'else']
-        || token equals ['keyword', 'else if']
-        || token equals ['keyword', 'try']
-        || token equals ['keyword', 'catch']
-        || token equals ['keyword', 'finally']
-        || token equals ['keyword', 'return']
-        || token equals ['keyword', 'continue']
-        || token equals ['keyword', 'break']
-        || token equals ['keyword', 'throw']
-        || token equals ['keyword', 'delete']
-        || token equals ['keyword', 'pass']:
+        || token[0] == 'newline':
             // End of expression
             break
 
