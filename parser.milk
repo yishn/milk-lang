@@ -57,20 +57,17 @@ function parseExpression(tokens):
     for i in [0, 1, ..., tokens.length - 1]:
         token = tokens[i]
 
-        // Detect end of expression
         if token[0] == 'delimiter'
         || token[0] == 'rightdelimiter'
         || token[0] == 'newline'
         || token equals ['keyword', 'for']:
+            // Detect end of expression
             break
 
         else if token equals ['keyword', 'function']:
             // Function closure
             [tree, end] = parseFunction(tokens[i...])
-            output.push(tree)
-
-            i += end
-            continue
+            return [tree, i + end]
 
         else if assignmentOp.some(x => x equals token):
             // Drop everything!
@@ -474,19 +471,26 @@ function parseBlock(tokens):
 
 function parseStatements(tokens):
     output = ['statements']
+    depth = 0
     pointer = 0
+    end = tokens.length
 
-    while pointer < tokens.length:
-        token = tokens[pointer]
+    for i in [0, 1, ..., tokens.length - 1]:
+        if tokens[i] equals ['newline', 'indent']:
+            depth++
+        else if tokens[i] equals ['newline', 'dedent']:
+            depth--
 
-        if token equals ['newline', 'dedent']:
+        if depth < 0:
+            end = i
             break
 
-        [statement, end] = parseStatement(tokens[pointer...])
-        output.push(statement)
-        pointer += end + 1
+    while pointer <= end:
+        [s, e] = parseStatement(tokens[pointer...])
+        if s.length != 0: output.push(s)
+        pointer += e + 1
 
-    return [output, pointer]
+    return [output, end]
 
 function parseStatement(tokens):
     return parseExpression(tokens)
