@@ -18,7 +18,10 @@ function removeNewline(tokens, i):
             if value == 'indent': depth++
             else if value == 'dedent': depth--
 
-            if depth == 0 || k == i:
+            if k == i:
+                tokens[k] = null
+
+            if depth == 0:
                 tokens[k] = null
                 if k != i: return
 
