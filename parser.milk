@@ -255,6 +255,11 @@ function parsePattern(tokens):
             return parseObjectPattern(tokens[1...])
     else:
         [expr, end] = parseExpression(tokens)
+        type = expr[0]
+
+        if type in ['[]', '?[]', '.', '?.', 'identifier']
+        || type equals ['keyword', '_']:
+            return [expr, end]
 
     throw {
         message: "Invalid pattern",
