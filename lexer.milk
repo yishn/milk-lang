@@ -13,7 +13,7 @@ function removeNewline(tokens, i):
     depth = 0
     for k, token in tokens if k >= i && token != null:
         [type, value] = token
-        
+
         if type == 'newline':
             if value == 'indent': depth++
             else if value == 'dedent': depth--
@@ -32,7 +32,7 @@ rules = {
         'in', 'not in', 'instanceof', 'typeof', 'new',
         'equals', 'not equals',
         '.', '?.'
-    ]),
+    ]).concat([/^\s+:\s+/]),
 
     delimiter: regexmap([
         ';', ',', ':', '...'
@@ -137,7 +137,7 @@ module.exports = function(input):
             tokens.pop()
 
         if type != 'ignore':
-            token = [type, value]
+            token = [type, value.trim()]
             token.offset = offset
             tokens.push(token)
 

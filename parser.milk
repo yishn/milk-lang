@@ -59,11 +59,7 @@ function parseExpression(tokens):
         token = tokens[i]
 
         // Detect end of expression
-        if token equals ['delimiter', ':']
-        && tokens?[i + 1] equals ['newline', 'indent']:
-            break
-
-        else if token[0] == 'delimiter'
+        if token[0] == 'delimiter'
         || token[0] == 'rightdelimiter'
         || token[0] == 'newline'
         || token equals ['keyword', 'for']:
@@ -123,7 +119,12 @@ function parseExpression(tokens):
         output = ['lambda', null, left, right]
 
     else if (k = searchTokenR(['operator', '?'], output)) != -1:
-        m = searchTokenR(['delimiter', ':'], output)
+        m = searchTokenR(['operator', ':'], output)
+        if m < k: throw {
+            message: "Didn't find the ':' to the '?'",
+            offset: output[k].offset
+        }
+
         [condition, _] = parseExpression(output[0...k - 1])
         [left, _] = parseExpression(output[k + 1...m - 1])
         [right, _] = parseExpression(output[m + 1...])
@@ -220,8 +221,9 @@ function parseExpression(tokens):
         output = ['^', left, right]
 
     else if (k = searchTokenR(['operator', 'new'], output)) != -1:
-        [subject, _] = parseExpression(output[k + 1...])
-        output = ['new', subject]
+        [subject, end] = parseExpression(output[k + 1...])
+        output[k...k + end] = [['new', subject]]
+        [output, _] = parseExpression(output)
 
     else if (k = searchTokenL(*dotOp, output)) != -1:
         [left, _] = parseExpression(output[0...k - 1])
@@ -233,6 +235,15 @@ function parseExpression(tokens):
     return [output, i]
 
 function parsePattern(tokens):
+    if tokens.length == 1:
+        token = tokens[0]
+
+        if token[0] == 'keyword' && token[1] != '_':
+            throw {
+                message: 'Invalid pattern',
+                offset: token.offset
+            }
+
     return parseExpression(tokens)
 
 function parseArray(tokens):
@@ -247,6 +258,8 @@ function parseArray(tokens):
         else if token equals ['delimiter', ',']:
             pointer++
         else if token equals ['keyword', 'for']:
+            output[0] = 'arrayfor'
+
             [forhead, end] = parseForHead(tokens[pointer...])
             output.push(forhead)
             pointer += end
@@ -272,6 +285,8 @@ function parseObject(tokens):
         else if token equals ['delimiter', ',']:
             pointer++
         else if token equals ['keyword', 'for']:
+            output[0] == 'objectfor'
+
             [forhead, end] = parseForHead(tokens[pointer...])
             output.push(forhead)
             pointer += end
@@ -292,11 +307,18 @@ function parseKeyValuePair(tokens):
         if token[0] == 'rightdelimiter' || token equals ['delimiter', ',']:
             break
         else if token equals ['delimiter', ':']:
+            if output.length == 2: throw {
+                message: "Object definition is wrong: Unexpected ':'",
+                offset: token.offset
+            }
             pointer++
         else:
             [expr, end] = parseExpression(tokens[pointer...])
             output.push(expr)
             pointer += end
+
+    if output.length == 1:
+        output = [output[0], output[0]]
 
     return [output, pointer]
 
