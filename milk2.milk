@@ -31,7 +31,14 @@ console.log(tokens)
 // Parser
 
 console.error('Parsing...')
-tree = parser(tokens)
+tree = null
+
+try:
+    tree = parser(tokens)
+catch e:
+    [row, col] = helper.offsetToLinePos(e.offset, data)
+    console.error(e.message + ' @' + row + ':' + col)
+    return
 
 console.dir(tree, { depth: null })
 console.timeEnd('//')
