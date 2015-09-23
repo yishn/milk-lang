@@ -230,12 +230,12 @@ module.exports = function(input):
         ['delimiter', ','],
     ]
 
-    for i, token in output if i >= 1:
+    for i, token in output:
         if !list.some(x => token equals x): continue
 
-        if output[i - 1][0] == 'newline':
+        if output[i - 1]?[0] == 'newline':
             removeNewline(output, i - 1)
-        if token[0] != 'newline' && output[i + 1][0] == 'newline':
+        if token[0] != 'newline' && output[i + 1]?[0] == 'newline':
             removeNewline(output, i + 1)
 
     return output.filter(x => x != null)

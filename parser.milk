@@ -273,7 +273,8 @@ function parseArrayPattern(tokens):
 
         if token[0] == 'rightdelimiter':
             break
-        else if token equals ['delimiter', ',']:
+        else if token equals ['delimiter', ',']
+        || token[0] == 'newline':
             pointer++
         else if token equals ['delimiter', '...']:
             if output.some(x => x[0] == 'spread'): throw {
@@ -303,7 +304,8 @@ function parseObjectPattern(tokens):
 
         if token[0] == 'rightdelimiter':
             break
-        else if token equals ['delimiter', ',']:
+        else if token equals ['delimiter', ',']
+        || token[0] == 'newline':
             pointer++
         else:
             [expr, end] = parseObjectPatternItem(tokens[pointer...])
@@ -385,7 +387,8 @@ function parseArray(tokens):
 
         if token[0] == 'rightdelimiter':
             break
-        else if token equals ['delimiter', ',']:
+        else if token equals ['delimiter', ',']
+        || token[0] == 'newline':
             pointer++
         else if token equals ['keyword', 'for']:
             output[0] = 'arrayfor'
@@ -412,7 +415,8 @@ function parseObject(tokens):
 
         if token[0] == 'rightdelimiter':
             break
-        else if token equals ['delimiter', ',']:
+        else if token equals ['delimiter', ',']
+        || token[0] == 'newline':
             pointer++
         else if token equals ['keyword', 'for']:
             output[0] == 'objectfor'
