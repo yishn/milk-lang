@@ -246,8 +246,8 @@ function parseExpression(tokens):
 function parsePattern(tokens):
     [[type, value], ...] = tokens
 
-    if type == 'identifier' && tokens.length == 1
-    || tokens[0] equals ['keyword', '_'] && tokens.length == 1:
+    if type == 'identifier'
+    || tokens[0] equals ['keyword', '_']:
         return [[type, value], 1]
     else if type == 'leftdelimiter':
         if value == '[':
@@ -259,6 +259,81 @@ function parsePattern(tokens):
             message: "Invalid pattern",
             offset: tokens[0].offset
         }
+
+function parseArrayPattern(tokens):
+    output = ['arraypattern']
+    pointer = 0
+
+    while pointer < tokens.length:
+        token = tokens[pointer]
+
+        if token[0] == 'rightdelimiter':
+            break
+        else if token equals ['delimiter', ',']:
+            pointer++
+        else if token equals ['delimiter', '...']:
+            output.push(['spread', ['keyword', '_']])
+            pointer++
+        else if token equals ['operator', '*']:
+            [expr, end] = parsePattern(tokens[pointer + 1...])
+            output.push(['spread', expr])
+            pointer += end + 1
+        else:
+            [expr, end] = parsePattern(tokens[pointer...])
+            output.push(expr)
+            pointer += end
+
+    return [output, pointer]
+
+function parseObjectPattern(tokens):
+    output = ['objpattern']
+    pointer = 0
+
+    while pointer < tokens.length:
+        token = tokens[pointer]
+
+        if token[0] == 'rightdelimiter':
+            break
+        else if token equals ['delimiter', ',']:
+            pointer++
+        else:
+            [expr, end] = parseObjectPatternItem(tokens[pointer...])
+            output.push(expr)
+            pointer += end
+
+    return [output, pointer]
+
+function parseObjectPatternItem(tokens):
+    output = []
+    pointer = 0
+
+    while pointer < tokens.length:
+        token = tokens[pointer]
+
+        if token[0] == 'rightdelimiter' || token equals ['delimiter', ',']:
+            if output.length > 2: throw {
+                message: "Object pattern has wrong syntax",
+                offset: token.offset
+            }
+            break
+        else if token equals ['delimiter', ':']:
+            pointer++
+        else:
+            [expr, end] = parsePattern(tokens[pointer...])
+            output.push(expr)
+            pointer += end
+
+    if output.length == 1:
+        node = output[0]
+
+        if node[0] != 'identifier': throw {
+            message: "Identifier expected",
+            offset: tokens[0].offset
+        }
+
+        output = [node, node]
+
+    return [output, pointer]
 
 function parseArray(tokens):
     output = ['array']
@@ -319,20 +394,17 @@ function parseKeyValuePair(tokens):
         token = tokens[pointer]
 
         if token[0] == 'rightdelimiter' || token equals ['delimiter', ',']:
-            break
-        else if token equals ['delimiter', ':']:
-            if output.length == 2: throw {
-                message: "Object definition is wrong: Unexpected ':'",
+            if output.length != 2: throw {
+                message: "Object literal has wrong syntax",
                 offset: token.offset
             }
+            break
+        else if token equals ['delimiter', ':']:
             pointer++
         else:
             [expr, end] = parseExpression(tokens[pointer...])
             output.push(expr)
             pointer += end
-
-    if output.length == 1:
-        output = [output[0], output[0]]
 
     return [output, pointer]
 
