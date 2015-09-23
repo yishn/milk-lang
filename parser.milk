@@ -49,7 +49,7 @@ function searchTokens(*needles, hay):
 
 // Expression
 
-function parseExpression(tokens):
+function parseExpression(tokens, *exclude):
     output = []
     [parenDepth, bracketDepth, braceDepth] = [0, 0, 0]
 
@@ -60,7 +60,8 @@ function parseExpression(tokens):
         if token[0] == 'delimiter'
         || token[0] == 'rightdelimiter'
         || token[0] == 'newline'
-        || token equals ['keyword', 'for']:
+        || token equals ['keyword', 'for']
+        || exclude.some(x => x equals token):
             // Detect end of expression
             break
 
@@ -252,7 +253,7 @@ function parsePattern(tokens):
             [pattern, end] = parseObjectPattern(tokens[1...])
             return [pattern, end + 1]
     else:
-        [expr, end] = parseExpression(tokens)
+        [expr, end] = parseExpression(tokens, ['operator', 'in'])
         type = expr[0]
 
         if type in ['[]', '?[]', '.', '?.', 'identifier']
@@ -499,7 +500,64 @@ function parseStatements(tokens):
 function parseStatement(tokens):
     return parseExpression(tokens)
 
+// Loops
+
 function parseForHead(tokens):
-    return tokens
+    pointer = 1
+    [first, second, listexpr, condition] = [null, null, null, null]
+
+    [first, len] = parsePattern(tokens[pointer...])
+    pointer += len
+
+    if tokens[pointer] equals ['delimiter', ',']:
+        pointer++
+        [second, len] = parsePattern(tokens[pointer...])
+        pointer += len
+
+    if tokens[pointer] equals ['operator', 'in']:
+        pointer++
+        [listexpr, len] = parseExpression(tokens[pointer...])
+        pointer += len
+    else: throw {
+        message: "Expecting 'in'",
+        offset: tokens[pointer].offset
+    }
+
+    if tokens[pointer] equals ['keyword', 'if']:
+        pointer++
+        [condition, len] = parseExpression(tokens[pointer...])
+        pointer += len
+
+    return [['for', [first, second], listexpr, condition], pointer]
+
+function parseFor(tokens):
+    [forhead, pointer] = parseForHead(tokens)
+
+    if tokens[pointer] not equals ['delimiter', ':']:
+        throw {
+            message: "Expecting ':'",
+            offset: tokens[pointer].offset
+        }
+
+    pointer++
+    [s, len] = parseBlock(tokens[pointer...])
+    forhead.push(s)
+
+    return [forhead, pointer + len]
+
+function parseWhile(tokens):
+    [expr, pointer] = parseExpression(tokens[1...])
+    pointer++
+
+    if tokens[pointer] not equals ['delimiter', ':']:
+        throw {
+            message: "Unexpected '" + tokens[pointer][1] + "'",
+            offset: tokens[pointer].offset
+        }
+
+    pointer++
+    [s, len] = parseBlock(tokens[pointer...])
+
+    return [['while', expr, s], pointer + len]
 
 module.exports = parseStatements
