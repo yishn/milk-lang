@@ -141,6 +141,7 @@ module.exports = function(input):
 
         if type != 'ignore':
             token = [type, value.trim()]
+            if token[1] == '': token[1] = value
             token.offset = offset
             tokens.push(token)
 
