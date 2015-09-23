@@ -229,16 +229,6 @@ function parseExpression(tokens):
 
         output = [output[k][1], left, right]
 
-    else if (k = searchTokenR(*bracketDel, output)) != -1:
-        [array, end] = parseArray(output[k + 1...])
-        output[k...k + 1 + end] = [array]
-        [output, _] = parseExpression(output)
-
-    else if (k = searchTokenR(['leftdelimiter', '{'], output)) != -1:
-        [object, end] = parseObject(output[k + 1...])
-        output[k...k + 1 + end] = [object]
-        [output, _] = parseExpression(output)
-
     if output.length == 1: output = output[0]
     return [output, i]
 
