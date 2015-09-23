@@ -11,7 +11,9 @@ function gcd(*args):
 
 function removeNewline(tokens, i):
     depth = 0
-    for k, [type, value] in tokens if k >= i:
+    for k, token in tokens if k >= i && token != null:
+        [type, value] = token
+        
         if type == 'newline':
             if value == 'indent': depth++
             else if value == 'dedent': depth--
@@ -256,7 +258,7 @@ module.exports = function(input):
             parenDepth--
 
         else if token?[0] == 'newline'
-        && Math.min(parenDepth, bracketDepth, braceDepth) > 0:
+        && Math.max(parenDepth, bracketDepth, braceDepth) > 0:
             removeNewline(output, i)
 
     return output.filter(x => x != null)
