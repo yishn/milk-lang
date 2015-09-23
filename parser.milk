@@ -1,5 +1,5 @@
 operatormap = l => l.map(x => ['operator', x])
-delimitermap = l => l.map(x => ['delimiter', x])
+leftdelimitermap = l => l.map(x => ['leftdelimiter', x])
 
 assignmentOp = operatormap([
     '=', '+=', '-=', '*=',
@@ -20,7 +20,7 @@ multOp = operatormap(['*', '/', '%'])
 prepostOp = operatormap(['++', '--'])
 unaryOp = operatormap(['typeof', '!'])
 dotOp = operatormap(['.', '?.'])
-bracketDel = delimitermap(['[', '?['])
+bracketDel = leftdelimitermap(['[', '?['])
 
 function searchTokenR(*needles, hay):
     for i, token in hay:
@@ -56,59 +56,49 @@ function parseExpression(tokens):
 
     // Detect parentheses
     for i, token in tokens:
-        if token equals ['delimiter', '(']:
+        if Math.max(parenDepth, braceDepth, bracketDepth) == 0:
+            // Detect end of expression
+            if token equals ['delimiter', ',']
+            || token equals ['delimiter', ';']
+            || token equals ['keyword', 'for']
+            || token[0] == 'rightdelimiter'
+            || token[0] == 'newline':
+                break
+
+            else if token equals ['delimiter', ':']
+            && tokens?[i + 1] equals ['newline', 'indent']:
+                break
+
+        if token equals ['leftdelimiter', '(']:
             if tokens[i - 1]?[0] in [null, 'operator', 'newline']:
                 // Expression grouping
                 [tree, i] = parseExpression(tokens[i + 1...])
                 output.push(tree)
+                continue
             else:
                 // Function call parentheses
                 parenDepth++
-                output.push(token)
 
-        else if token equals ['delimiter', ')']:
-            if parenDepth > 0:
-                parenDepth--
-                output.push(token)
-            else:
-                // End of expression
-                break
-
-        else if token equals ['delimiter', '?(']:
+        else if token equals ['leftdelimiter', '?(']:
             parenDepth++
 
-        else if token equals ['delimiter', '[']
-        || token equals ['delimiter', '?[']:
+        else if token equals ['rightdelimiter', ')']:
+            parenDepth--
+
+        else if token equals ['leftdelimiter', '[']
+        || token equals ['leftdelimiter', '?[']:
             bracketDepth++
 
-        else if token equals ['delimiter', ']']:
+        else if token equals ['rightdelimiter', ']']:
             bracketDepth--
 
-        else if token equals ['delimiter', '{']:
+        else if token equals ['leftdelimiter', '{']:
             braceDepth++
 
-        else if token equals ['delimiter', '}']:
+        else if token equals ['rightdelimiter', '}']:
             braceDepth--
 
-        else if token equals ['delimiter', ',']
-        && Math.max(parenDepth, braceDepth, bracketDepth) == 0:
-            // End of expression
-            break
-
-        else if token equals ['delimiter', ':']
-        && tokens?[i + 1] equals ['newline', 'indent']:
-            // End of expression
-            break
-
-        else if token equals ['delimiter', ';']
-        || token[0] == 'newline':
-            // End of expression
-            break
-
-        else:
-            output.push(token)
-
-    console.log(output)
+        output.push(token)
 
     // Group stuff
     if (k = searchTokenR(*assignmentOp, output)) != -1:
@@ -163,8 +153,7 @@ function parseExpression(tokens):
         output = [output[k][1], left, right]
 
     else if (k = searchTokenL(*additionOp, output)) != -1:
-        prevType = output[k - 1]?[0]
-        unary = prevType in [null, 'operator']
+        unary = output[k - 1]?[0] in [null, 'operator', 'leftdelimiter', 'delimiter']
         left = null
 
         if !unary: [left, _] = parseExpression(output[0...k - 1])
@@ -176,10 +165,16 @@ function parseExpression(tokens):
             output = [output[k][1], left, right]
 
     else if (k = searchTokenL(*multOp, output)) != -1:
-        [left, _] = parseExpression(output[0...k - 1])
+        unary = output[k][1] == '*' && output[k - 1]?[0] in [null, 'operator', 'leftdelimiter', 'delimiter']
+        left = null
+
+        if !unary: [left, _] = parseExpression(output[0...k - 1])
         [right, _] = parseExpression(output[k + 1...])
 
-        output = [output[k][1], left, right]
+        if unary:
+            output = ['spread', right]
+        else:
+            output = [output[k][1], left, right]
 
     else if (k = searchTokenL(*prepostOp, output)) != -1:
         prevType = output[k - 1]?[0]
@@ -224,11 +219,11 @@ function parseExpression(tokens):
 
     else if (k = searchTokenR(*bracketDel, output)) != -1:
         [array, end] = parseArray(output[k + 1...])
-        output[k...k + 1 + end] = array
+        output[k...k + 1 + end] = [array]
 
     else if (k = searchTokenR(['delimiter', '{'], output)) != -1:
         [object, end] = parseObject(output[k + 1...])
-        output[k...k + 1 + end] = object
+        output[k...k + 1 + end] = [object]
 
     if output.length == 1: output = output[0]
     return [output, i]
@@ -237,4 +232,27 @@ function parsePattern(tokens):
     return tokens
 
 function parseArray(tokens):
-    pass
+    output = ['array']
+    start = 0
+
+    while start < tokens.length:
+        if tokens[start] equals ['delimiter', ']']:
+            break
+        else if tokens[start] equals ['delimiter', ',']:
+            start++
+        else if tokens[start] equals ['keyword', 'for']:
+            [forhead, end] = parseForHead(tokens[start...])
+            output.push(forhead)
+            start += end
+        else if tokens[start] equals ['delimiter', '...']:
+            output.push(['spread', ['keyword', '_']])
+            start++
+        else:
+            [expr, end] = parseExpression(tokens[start...])
+            output.push(expr)
+            start += end
+
+    return [output, start]
+
+function parseForHead(tokens):
+    return tokens

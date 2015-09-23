@@ -33,9 +33,16 @@ rules = {
     ]),
 
     delimiter: regexmap([
-        ';', ',', '(', '?(', ')',
-        '[', '?[', ']', '{', '}', ':', '...'
+        ';', ',', ':', '...'
     ]),
+
+    leftdelimiter: regexmap([
+        '(', '?(', '[', '?[', '{'
+    ]),
+
+    rightdelimiter: regexmap([
+        ')', ']', '}'
+    ])
 
     newline: [
         /^\n[^\S\n]*/
@@ -107,7 +114,7 @@ module.exports = function(input):
 
         for t, list in rules:
             // Check whether regex or division
-            if t == 'regex' && lastType not in ['operator', 'delimiter', 'newline', null]:
+            if t == 'regex' && lastType not in ['operator', 'leftdelimiter', 'delimiter', 'newline', null]:
                 continue
 
             for regex in list:
@@ -211,10 +218,10 @@ module.exports = function(input):
         ['operator', 'new'],
         ['operator', 'equals'],
         ['operator', 'not equals'],
+        ['operator', '.']
+        ['operator', '?.'],
         ['delimiter', '...'],
         ['delimiter', ','],
-        ['delimiter', '?.'],
-        ['delimiter', '.']
     ]
 
     for i, token in output if i >= 1:
@@ -228,24 +235,24 @@ module.exports = function(input):
     [parenDepth, bracketDepth, braceDepth] = [0, 0, 0]
 
     for i, token in output:
-        if token equals ['delimiter', '(']
-        || token equals ['delimiter', '?(']:
+        if token equals ['leftdelimiter', '(']
+        || token equals ['leftdelimiter', '?(']:
             parenDepth++
 
-        else if token equals ['delimiter', '[']
-        || token equals ['delimiter', '?[']:
+        else if token equals ['leftdelimiter', '[']
+        || token equals ['leftdelimiter', '?[']:
             bracketDepth++
 
-        else if token equals ['delimiter', '{']:
+        else if token equals ['leftdelimiter', '{']:
             braceDepth++
 
-        else if token equals ['delimiter', '}']:
+        else if token equals ['rightdelimiter', '}']:
             braceDepth--
 
-        else if token equals ['delimiter', ']']:
+        else if token equals ['rightdelimiter', ']']:
             bracketDepth--
 
-        else if token equals ['delimiter', ')']:
+        else if token equals ['rightdelimiter', ')']:
             parenDepth--
 
         else if token?[0] == 'newline'
