@@ -102,7 +102,7 @@ function parseExpression(tokens):
 
         else if token equals ['leftdelimiter', '{']:
             // Object
-            [tree, end] = parseArray(tokens[i + 1...])
+            [tree, end] = parseObject(tokens[i + 1...])
             output.push(tree)
             i += end + 1
             continue
@@ -237,28 +237,68 @@ function parsePattern(tokens):
 
 function parseArray(tokens):
     output = ['array']
-    start = 0
+    pointer = 0
 
-    while start < tokens.length:
-        token = tokens[start]
+    while pointer < tokens.length:
+        token = tokens[pointer]
 
         if token[0] == 'rightdelimiter':
             break
         else if token equals ['delimiter', ',']:
-            start++
+            pointer++
         else if token equals ['keyword', 'for']:
-            [forhead, end] = parseForHead(tokens[start...])
+            [forhead, end] = parseForHead(tokens[pointer...])
             output.push(forhead)
-            start += end
+            pointer += end
         else if token equals ['delimiter', '...']:
             output.push(token)
-            start++
+            pointer++
         else:
-            [expr, end] = parseExpression(tokens[start...])
+            [expr, end] = parseExpression(tokens[pointer...])
             output.push(expr)
-            start += end
+            pointer += end
 
-    return [output, start]
+    return [output, pointer]
+
+function parseObject(tokens):
+    output = ['object']
+    pointer = 0
+
+    while pointer < tokens.length:
+        token = tokens[pointer]
+
+        if token[0] == 'rightdelimiter':
+            break
+        else if token equals ['delimiter', ',']:
+            pointer++
+        else if token equals ['keyword', 'for']:
+            [forhead, end] = parseForHead(tokens[pointer...])
+            output.push(forhead)
+            pointer += end
+        else:
+            [expr, end] = parseKeyValuePair(tokens[pointer...])
+            output.push(expr)
+            pointer += end
+
+    return [output, pointer]
+
+function parseKeyValuePair(tokens):
+    output = []
+    pointer = 0
+
+    while pointer < tokens.length:
+        token = tokens[pointer]
+
+        if token[0] == 'rightdelimiter' || token equals ['delimiter', ',']:
+            break
+        else if token equals ['delimiter', ':']:
+            pointer++
+        else:
+            [expr, end] = parseExpression(tokens[pointer...])
+            output.push(expr)
+            pointer += end
+
+    return [output, pointer]
 
 function parseForHead(tokens):
     return tokens
