@@ -54,7 +54,7 @@ function parseExpression(tokens):
     output = []
     [parenDepth, bracketDepth, braceDepth] = [0, 0, 0]
 
-    // Detect parentheses
+    // Detect objects & parentheses
     for i in [0, 1, ..., tokens.length - 1]:
         token = tokens[i]
 
@@ -64,6 +64,21 @@ function parseExpression(tokens):
         || token[0] == 'newline'
         || token equals ['keyword', 'for']:
             break
+
+        else if token equals ['keyword', 'function']:
+            // Function closure
+            [tree, end] = parseFunction(tokens[i...])
+            output.push(tree)
+
+            i += end
+            continue
+
+        else if assignmentOp.some(x => x equals token):
+            // Drop everything!
+            [pattern, _] = parsePattern(tokens[0...i - 1])
+            [tree, end] = parseExpression(tokens[i + 1...])
+
+            return [['=', pattern, tree], end]
 
         else if token equals ['leftdelimiter', '(']
         && tokens[i - 1]?[0] in [null, 'operator', 'newline']:
@@ -106,13 +121,7 @@ function parseExpression(tokens):
         output.push(token)
 
     // Group stuff
-    if (k = searchTokenR(*assignmentOp, output)) != -1:
-        [left, _] = parsePattern(output[0...k - 1])
-        [right, _] = parseExpression(output[k + 1...])
-
-        output = ['=', left, right]
-
-    else if (k = searchTokenR(['operator', '=>'], output)) != -1:
+    if (k = searchTokenR(['operator', '=>'], output)) != -1:
         [left, _] = parseLambdaHead(output[0...k - 1])
         [right, _] = parseExpression(output[k + 1...])
 
@@ -235,16 +244,21 @@ function parseExpression(tokens):
     return [output, i]
 
 function parsePattern(tokens):
-    if tokens.length == 1:
-        token = tokens[0]
+    [[type, value], ...] = tokens
 
-        if token[0] == 'keyword' && token[1] != '_':
-            throw {
-                message: 'Invalid pattern',
-                offset: token.offset
-            }
-
-    return parseExpression(tokens)
+    if type == 'identifier' && tokens.length == 1
+    || tokens[0] equals ['keyword', '_'] && tokens.length == 1:
+        return [[type, value], 1]
+    else if type == 'leftdelimiter':
+        if value == '[':
+            return parseArrayPattern(tokens[1...])
+        else if value == '{':
+            return parseObjectPattern(tokens[1...])
+    else:
+        throw {
+            message: "Invalid pattern",
+            offset: tokens[0].offset
+        }
 
 function parseArray(tokens):
     output = ['array']
