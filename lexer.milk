@@ -238,31 +238,4 @@ module.exports = function(input):
         if token[0] != 'newline' && output[i + 1][0] == 'newline':
             removeNewline(output, i + 1)
 
-    [parenDepth, bracketDepth, braceDepth] = [0, 0, 0]
-
-    for i, token in output:
-        if token equals ['leftdelimiter', '(']
-        || token equals ['leftdelimiter', '?(']:
-            parenDepth++
-
-        else if token equals ['leftdelimiter', '[']
-        || token equals ['leftdelimiter', '?[']:
-            bracketDepth++
-
-        else if token equals ['leftdelimiter', '{']:
-            braceDepth++
-
-        else if token equals ['rightdelimiter', '}']:
-            braceDepth--
-
-        else if token equals ['rightdelimiter', ']']:
-            bracketDepth--
-
-        else if token equals ['rightdelimiter', ')']:
-            parenDepth--
-
-        else if token?[0] == 'newline'
-        && Math.max(parenDepth, bracketDepth, braceDepth) > 0:
-            removeNewline(output, i)
-
     return output.filter(x => x != null)
