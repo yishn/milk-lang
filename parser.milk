@@ -48,7 +48,7 @@ function searchTokens(*needles, hay):
     return r
 
 module.exports = function(tokens):
-    return parseExpression(tokens)
+    return parseStatements(tokens)
 
 function parseExpression(tokens):
     output = []
@@ -78,7 +78,7 @@ function parseExpression(tokens):
             [pattern, _] = parsePattern(tokens[0...i - 1])
             [tree, end] = parseExpression(tokens[i + 1...])
 
-            return [['=', pattern, tree], end]
+            return [[token[1], pattern, tree], i + 1 + end]
 
         else if token equals ['leftdelimiter', '(']
         && tokens[i - 1]?[0] in [null, 'operator', 'newline']:
@@ -250,9 +250,11 @@ function parsePattern(tokens):
 
     if type == 'leftdelimiter':
         if value == '[':
-            return parseArrayPattern(tokens[1...])
+            [pattern, end] = parseArrayPattern(tokens[1...])
+            return [pattern, end + 1]
         else if value == '{':
-            return parseObjectPattern(tokens[1...])
+            [pattern, end] = parseObjectPattern(tokens[1...])
+            return [pattern, end + 1]
     else:
         [expr, end] = parseExpression(tokens)
         type = expr[0]
@@ -348,6 +350,36 @@ function parseObjectPatternItem(tokens):
 
 // Objects
 
+function parseFunction(tokens):
+    output = ['function']
+    pointer = 1
+
+    if tokens[pointer][0] == 'identifier':
+        output.push(tokens[pointer])
+        pointer++
+    else:
+        output.push(null)
+
+    try:
+        if tokens[pointer] equals ['leftdelimiter', '(']:
+            [pattern, end] = parseArrayPattern(tokens[pointer + 1...])
+            output.push(pattern)
+            pointer += end + 2
+        else: throw pointer
+
+        if tokens[pointer] equals ['delimiter', ':']:
+            [statements, end] = parseBlock(tokens[pointer + 1...])
+            output.push(statements)
+            pointer += end + 1
+        else: throw pointer
+
+        return [output, pointer]
+    catch e:
+        throw {
+            message: "Unexpected '" + tokens[e][1] + "'",
+            offset: tokens[e].offset
+        }
+
 function parseArray(tokens):
     output = ['array']
     pointer = 0
@@ -432,6 +464,33 @@ function parseKeyValuePair(tokens):
     return [output, pointer]
 
 // Statements
+
+function parseBlock(tokens):
+    if tokens[0] equals ['newline', 'indent']:
+        [s, end] = parseStatements(tokens[1...])
+        return [s, end + 1]
+    else:
+        [s, end] = parseStatement(tokens[1...])
+        return [['statements', s], end + 1]
+
+function parseStatements(tokens):
+    output = ['statements']
+    pointer = 0
+
+    while pointer < tokens.length:
+        token = tokens[pointer]
+
+        if token equals ['newline', 'dedent']:
+            break
+
+        [statement, end] = parseStatement(tokens[pointer...])
+        output.push(statement)
+        pointer += end + 1
+
+    return [output, pointer]
+
+function parseStatement(tokens):
+    return parseExpression(tokens)
 
 function parseForHead(tokens):
     return tokens

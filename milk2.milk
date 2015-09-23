@@ -26,8 +26,6 @@ catch e:
     console.error(e.message + ' @' + row + ':' + col)
     return
 
-console.log(tokens)
-
 // Parser
 
 console.error('Parsing...')
