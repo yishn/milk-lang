@@ -58,15 +58,14 @@ function parseExpression(tokens):
     for i, token in tokens:
         if Math.max(parenDepth, braceDepth, bracketDepth) == 0:
             // Detect end of expression
-            if token equals ['delimiter', ',']
-            || token equals ['delimiter', ';']
-            || token equals ['keyword', 'for']
-            || token[0] == 'rightdelimiter'
-            || token[0] == 'newline':
+            if token equals ['delimiter', ':']
+            && tokens?[i + 1] equals ['newline', 'indent']:
                 break
 
-            else if token equals ['delimiter', ':']
-            && tokens?[i + 1] equals ['newline', 'indent']:
+            else if token[0] == 'delimiter'
+            || token[0] == 'rightdelimiter'
+            || token[0] == 'newline'
+            || token equals ['keyword', 'for']:
                 break
 
         if token equals ['leftdelimiter', '(']:
@@ -157,10 +156,11 @@ function parseExpression(tokens):
         left = null
 
         if !unary: [left, _] = parseExpression(output[0...k - 1])
-        [right, _] = parseExpression(output[k + 1...])
+        [right, end] = parseExpression(output[k + 1...])
 
         if unary:
-            output = [output[k][1], right]
+            output[k...k + end] = [[output[k][1], right]]
+            [output, _] = parseExpression(output)
         else:
             output = [output[k][1], left, right]
 
@@ -169,10 +169,11 @@ function parseExpression(tokens):
         left = null
 
         if !unary: [left, _] = parseExpression(output[0...k - 1])
-        [right, _] = parseExpression(output[k + 1...])
+        [right, end] = parseExpression(output[k + 1...])
 
         if unary:
-            output = ['spread', right]
+            output[k...k + end] = [['spread', right]]
+            [output, _] = parseExpression(output)
         else:
             output = [output[k][1], left, right]
 
@@ -197,9 +198,10 @@ function parseExpression(tokens):
             output = ['_' + output[k][1], subject]
 
     else if (k = searchTokenL(*unaryOp, output)) != -1:
-        [subject, _] = parseExpression(output[k + 1...])
+        [subject, end] = parseExpression(output[k + 1...])
 
-        output = [output[k][1], subject]
+        output[k...k + end] = [['spread', right]]
+        [output, _] = parseExpression(output)
 
     else if (k = searchTokenR(['operator', '^'], output)) != -1:
         [left, _] = parseExpression(output[0...k - 1])
@@ -220,10 +222,12 @@ function parseExpression(tokens):
     else if (k = searchTokenR(*bracketDel, output)) != -1:
         [array, end] = parseArray(output[k + 1...])
         output[k...k + 1 + end] = [array]
+        [output, _] = parseExpression(output)
 
-    else if (k = searchTokenR(['delimiter', '{'], output)) != -1:
+    else if (k = searchTokenR(['leftdelimiter', '{'], output)) != -1:
         [object, end] = parseObject(output[k + 1...])
         output[k...k + 1 + end] = [object]
+        [output, _] = parseExpression(output)
 
     if output.length == 1: output = output[0]
     return [output, i]
@@ -236,7 +240,7 @@ function parseArray(tokens):
     start = 0
 
     while start < tokens.length:
-        if tokens[start] equals ['delimiter', ']']:
+        if tokens[start][0] == 'rightdelimiter':
             break
         else if tokens[start] equals ['delimiter', ',']:
             start++
@@ -245,7 +249,7 @@ function parseArray(tokens):
             output.push(forhead)
             start += end
         else if tokens[start] equals ['delimiter', '...']:
-            output.push(['spread', ['keyword', '_']])
+            output.push('...')
             start++
         else:
             [expr, end] = parseExpression(tokens[start...])
