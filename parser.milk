@@ -583,6 +583,10 @@ function parseStatement(tokens):
         return parseWhile(tokens)
     else if token equals ['keyword', 'class']:
         return parseClass(tokens)
+    else if token equals ['keyword', 'if']:
+        return parseIf(tokens)
+    else if token equals ['keyword', 'try']:
+        return parseTry(tokens)
     else if token equals ['keyword', 'pass']:
         return [token, 1]
     else if unaryKeywords.some(x => x equals token):
@@ -640,6 +644,71 @@ function parseClass(tokens):
         }
 
     return [output, pointer]
+
+// Conditions
+
+function parseTry(tokens):
+    pointer = 1
+    output = ['try']
+
+    [block, len] = parseBlock(tokens[pointer...])
+    output.push(block)
+    pointer += len + 1
+
+    if tokens[pointer] equals ['keyword', 'catch']:
+        pointer++
+        [pattern, len] = parsePattern(tokens[pointer...])
+        pointer += len
+        [block, len] = parseBlock(tokens[pointer...])
+        pointer += len + 1
+        output.push([pattern, block])
+    else:
+        output.push(null)
+
+    if tokens[pointer] equals ['keyword', 'finally']:
+        pointer++
+        [block, len] = parseBlock(tokens[pointer...])
+        pointer += len + 1
+        output.push(block)
+    else:
+        output.push(null)
+
+    return [output, pointer - 1]
+
+function parseIf(tokens):
+    pointer = 1
+    output = ['if']
+
+    [cond, len] = parseExpression(tokens[pointer...])
+    pointer += len
+    [block, len] = parseBlock(tokens[pointer...])
+    pointer += len + 1
+    output.push([cond, block])
+
+    while pointer < tokens.length:
+        token = tokens[pointer]
+
+        if token[0] == 'newline':
+            pointer++
+
+        else if token equals ['keyword', 'else if']:
+            pointer++
+            [cond, len] = parseExpression(tokens[pointer...])
+            pointer += len
+            [block, len] = parseBlock(tokens[pointer...])
+            pointer += len
+            output.push([cond, block])
+
+        else:
+            break
+
+    if token[pointer] equals ['keyword', 'else']:
+        pointer++
+        [block, len] = parseBlock(tokens[pointer...])
+        pointer += len
+        output.push(['else', block])
+
+    return [output, pointer - 1]
 
 // Loops
 
