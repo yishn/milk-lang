@@ -259,10 +259,10 @@ function parsePattern(tokens):
     if type == 'leftdelimiter':
         if value == '[':
             [pattern, end] = parseArrayPattern(tokens[1...])
-            return [pattern, end + 1]
+            return [pattern, end + 2]
         else if value == '{':
             [pattern, end] = parseObjectPattern(tokens[1...])
-            return [pattern, end + 1]
+            return [pattern, end + 2]
     else:
         [expr, end] = parseExpression(tokens, ['operator', 'in'])
         type = expr[0]
