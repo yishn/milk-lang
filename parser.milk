@@ -116,7 +116,10 @@ function parseExpression(tokens, *exclude):
         }
 
     // Replace placeholders
-    for j in [0, 1, ..., output.length - 1] if output[j][0] == 'placeholder':
+    j = -1
+    while ++j < output.length:
+        if output[j][0] != 'placeholder': continue
+
         id = output[j][1]
         t = placeholders[id]
         token = t[0]
@@ -138,6 +141,7 @@ function parseExpression(tokens, *exclude):
             // Function call
             [tree, _] = parseArray(t[1...])
             output.splice(j, 1, ['operator', token[1] + ')'], tree)
+            j++
 
         else if token equals ['leftdelimiter', '[']
         || token equals ['leftdelimiter', '?[']:
@@ -145,8 +149,10 @@ function parseExpression(tokens, *exclude):
             indexer = output[j - 1]?[0] not in [null, 'operator', 'newline']
             [tree, _] = parseArray(t[1...])
 
-            if indexer: output.splice(j, 0, ['operator', token[1] + ']'])
             output[j] = tree
+            if indexer:
+                output.splice(j, 0, ['operator', token[1] + ']'])
+                j++
 
         else if token equals ['leftdelimiter', '{']:
             // Object
@@ -559,9 +565,9 @@ function parseStatements(tokens):
         else if tokens[i] equals ['newline', 'dedent']:
             depth--
 
-        if depth < 0:
-            end = i
-            break
+            if depth == 0:
+                end = i
+                break
 
     while pointer <= end:
         if tokens[pointer][0] == 'newline':
@@ -702,7 +708,7 @@ function parseIf(tokens):
         else:
             break
 
-    if token[pointer] equals ['keyword', 'else']:
+    if tokens[pointer] equals ['keyword', 'else']:
         pointer++
         [block, len] = parseBlock(tokens[pointer...])
         pointer += len
