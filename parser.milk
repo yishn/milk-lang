@@ -72,40 +72,40 @@ function parseExpression(tokens, *exclude):
 
         else if token equals ['keyword', 'function']:
             // Function closure
-            [tree, end] = parseFunction(tokens[i...])
-            return [tree, i + end]
+            [tree, len] = parseFunction(tokens[i...])
+            return [tree, i + len]
 
         else if token equals ['operator', '=>']:
             // Lambda function
             [left, _] = parseLambdaHead(tokens[0...i - 1])
-            [right, end] = parseExpression(output[i + 1...])
+            [right, len] = parseExpression(output[i + 1...])
 
-            return [['lambda', null, left, right], i + 1 + end]
+            return [['lambda', null, left, right], i + 1 + len]
 
         else if assignmentOp.some(x => x equals token):
             // Drop everything!
             [pattern, _] = parsePattern(tokens[0...i - 1])
-            [tree, end] = parseExpression(tokens[i + 1...])
+            [tree, len] = parseExpression(tokens[i + 1...])
 
-            return [[token[1], pattern, tree], i + 1 + end]
+            return [[token[1], pattern, tree], i + 1 + len]
 
         else if token equals ['leftdelimiter', '(']
         && tokens[i - 1]?[0] in [null, 'operator', 'newline']:
             // Expression grouping
-            [tree, end] = parseExpression(tokens[i + 1...])
+            [tree, len] = parseExpression(tokens[i + 1...])
             output.push(tree)
 
-            i += end + 1
+            i += len + 1
             continue
 
         else if token equals ['leftdelimiter', '(']
         || token equals ['leftdelimiter', '?(']:
             // Function call
-            [tree, end] = parseArray(tokens[i + 1...])
+            [tree, len] = parseArray(tokens[i + 1...])
             output.push(['operator', token[1] + ')'])
             output.push(tree)
 
-            i += end + 1
+            i += len + 1
             continue
 
         else if token equals ['leftdelimiter', '[']
@@ -113,18 +113,18 @@ function parseExpression(tokens, *exclude):
             // Indexer or array
             indexer = tokens[i - 1]?[0] not in [null, 'operator', 'newline']
 
-            [tree, end] = parseArray(tokens[i + 1...])
+            [tree, len] = parseArray(tokens[i + 1...])
             if indexer: output.push(['operator', token[1] + ']'])
             output.push(tree)
 
-            i += end + 1
+            i += len + 1
             continue
 
         else if token equals ['leftdelimiter', '{']:
             // Object
-            [tree, end] = parseObject(tokens[i + 1...])
+            [tree, len] = parseObject(tokens[i + 1...])
             output.push(tree)
-            i += end + 1
+            i += len + 1
             continue
 
         output.push(token)
@@ -185,10 +185,10 @@ function parseExpression(tokens, *exclude):
         left = null
 
         if !unary: [left, _] = parseExpression(output[0...k - 1])
-        [right, end] = parseExpression(output[k + 1...])
+        [right, len] = parseExpression(output[k + 1...])
 
         if unary:
-            output[k...k + end] = [[output[k][1], right]]
+            output[k...k + len] = [[output[k][1], right]]
             [output, _] = parseExpression(output)
         else:
             output = [output[k][1], left, right]
@@ -198,10 +198,10 @@ function parseExpression(tokens, *exclude):
         left = null
 
         if !unary: [left, _] = parseExpression(output[0...k - 1])
-        [right, end] = parseExpression(output[k + 1...])
+        [right, len] = parseExpression(output[k + 1...])
 
         if unary:
-            output[k...k + end] = [['spread', right]]
+            output[k...k + len] = [['spread', right]]
             [output, _] = parseExpression(output)
         else:
             output = [output[k][1], left, right]
@@ -227,9 +227,9 @@ function parseExpression(tokens, *exclude):
             output = ['_' + output[k][1], subject]
 
     else if (k = searchTokenL(*unaryOp, output)) != -1:
-        [subject, end] = parseExpression(output[k + 1...])
+        [subject, len] = parseExpression(output[k + 1...])
 
-        output[k...k + end] = [['spread', right]]
+        output[k...k + len] = [['spread', right]]
         [output, _] = parseExpression(output)
 
     else if (k = searchTokenR(['operator', '^'], output)) != -1:
@@ -239,8 +239,8 @@ function parseExpression(tokens, *exclude):
         output = ['^', left, right]
 
     else if (k = searchTokenR(['operator', 'new'], output)) != -1:
-        [subject, end] = parseExpression(output[k + 1...])
-        output[k...k + end] = [['new', subject]]
+        [subject, len] = parseExpression(output[k + 1...])
+        output[k...k + len] = [['new', subject]]
         [output, _] = parseExpression(output)
 
     else if (k = searchTokenL(*dotOp, output)) != -1:
@@ -267,18 +267,18 @@ function parsePattern(tokens):
 
     if type == 'leftdelimiter':
         if value == '[':
-            [pattern, end] = parseArrayPattern(tokens[1...])
-            return [pattern, end + 2]
+            [pattern, len] = parseArrayPattern(tokens[1...])
+            return [pattern, len + 2]
         else if value == '{':
-            [pattern, end] = parseObjectPattern(tokens[1...])
-            return [pattern, end + 2]
+            [pattern, len] = parseObjectPattern(tokens[1...])
+            return [pattern, len + 2]
     else:
-        [expr, end] = parseExpression(tokens, ['operator', 'in'])
+        [expr, len] = parseExpression(tokens, ['operator', 'in'])
         type = expr[0]
 
         if type in ['[]', '?[]', '.', '?.', 'identifier']
         || expr equals ['keyword', '_']:
-            return [expr, end]
+            return [expr, len]
 
     throw {
         message: "Invalid pattern",
@@ -306,13 +306,13 @@ function parseArrayPattern(tokens):
             output.push(['spread', ['keyword', '_']])
             pointer++
         else if token equals ['operator', '*']:
-            [expr, end] = parsePattern(tokens[pointer + 1...])
+            [expr, len] = parsePattern(tokens[pointer + 1...])
             output.push(['spread', expr])
-            pointer += end + 1
+            pointer += len + 1
         else:
-            [expr, end] = parsePattern(tokens[pointer...])
+            [expr, len] = parsePattern(tokens[pointer...])
             output.push(expr)
-            pointer += end
+            pointer += len
 
     return [output, pointer]
 
