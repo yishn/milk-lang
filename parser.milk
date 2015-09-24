@@ -23,9 +23,11 @@ bracketDel = leftdelimitermap(['[', '?['])
 
 statementKeywords = keywordmap([
     'class', 'for', 'while', 'if', 'else', 'else if',
-    'try', 'catch', 'return', 'throw', 'delete', 'continue', 'pass'
+    'try', 'catch', 'return', 'throw', 'delete',
+    'continue', 'pass', 'break'
 ])
 unaryKeywords = keywordmap(['delete', 'throw', 'return'])
+nullKeywords = keywordmap(['continue', 'pass', 'break'])
 
 // Expression
 
@@ -594,7 +596,7 @@ function parseStatement(tokens):
         return parseIf(tokens)
     else if token equals ['keyword', 'try']:
         return parseTry(tokens)
-    else if token equals ['keyword', 'pass']:
+    else if nullKeywords.some(x => x equals token):
         return [token, 1]
     else if unaryKeywords.some(x => x equals token):
         return parseUnaryKeyword(tokens)
