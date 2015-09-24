@@ -191,51 +191,10 @@ module.exports = function(input):
         output.push(['newline', 'dedent'])
 
     // Remove superfluous newlines
-    list = [
-        ['newline', 'indent'],
-        ['operator', '*'],
-        ['operator', '/'],
-        ['operator', '^'],
-        ['operator', '%'],
-        ['operator', '-'],
-        ['operator', '+'],
-        ['operator', '='],
-        ['operator', '+='],
-        ['operator', '^='],
-        ['operator', '*='],
-        ['operator', '%='],
-        ['operator', '-='],
-        ['operator', '+='],
-        ['operator', '=>'],
-        ['operator', '??'],
-        ['operator', '?'],
-        ['operator', '||'],
-        ['operator', '&&'],
-        ['operator', '<'],
-        ['operator', '>'],
-        ['operator', '<='],
-        ['operator', '>='],
-        ['operator', '=='],
-        ['operator', '!='],
-        ['operator', 'in'],
-        ['operator', 'not in'],
-        ['operator', 'instanceof'],
-        ['operator', 'typeof'],
-        ['operator', 'new'],
-        ['operator', 'equals'],
-        ['operator', 'not equals'],
-        ['operator', '.']
-        ['operator', '?.'],
-        ['delimiter', '...'],
-        ['delimiter', ','],
-    ]
-
-    for i, token in output:
-        if !list.some(x => token equals x): continue
-
+    for i, token in output if token?[0] == 'operator':
         if output[i - 1]?[0] == 'newline':
             removeNewline(output, i - 1)
-        if token[0] != 'newline' && output[i + 1]?[0] == 'newline':
+        if output[i + 1]?[0] == 'newline':
             removeNewline(output, i + 1)
 
     return output.filter(x => x != null)
