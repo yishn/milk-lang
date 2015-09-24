@@ -27,6 +27,8 @@ statementKeywords = keywordmap([
 ])
 unaryKeywords = keywordmap(['delete', 'throw', 'return'])
 
+// Expression
+
 function searchTokenR(*needles, hay):
     for i, token in hay:
         if needles.some(x => token[0...x.length - 1] equals x):
@@ -52,7 +54,22 @@ function searchTokens(*needles, hay):
 
     return r
 
-// Expression
+function searchMatchingDelimiter(tokens, index):
+    if tokens[index][0] != 'leftdelimiter': return index
+
+    delimiter = tokens[index][1][tokens[index][1].length - 1]
+    matchingdel = { '(': ')', '[': ']', '{': '}' }
+    depth = 0
+
+    for i, [type, value] in tokens if i >= index && type in ['leftdelimiter', 'rightdelimiter']:
+        if value == delimiter:
+            depth++
+        else if value == matchingdel[delimiter]:
+            depth--
+        if depth == 0:
+            return i
+
+    return -1
 
 function parseExpression(tokens, *exclude):
     output = []
