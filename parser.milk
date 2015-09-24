@@ -64,7 +64,7 @@ function searchMatchingDelimiter(tokens, index):
     depth = 0
 
     for i, [type, value] in tokens if i >= index && type in ['leftdelimiter', 'rightdelimiter']:
-        if value == delimiter:
+        if value in [delimiter, '?' + delimiter]:
             depth++
         else if value == matchingdel[delimiter]:
             depth--
