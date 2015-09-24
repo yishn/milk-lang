@@ -26,8 +26,9 @@ bracketDel = leftdelimitermap(['[', '?['])
 
 statementKeywords = keywordmap([
     'class', 'for', 'while', 'if', 'else', 'else if',
-    'try', 'catch'
+    'try', 'catch', 'return', 'throw', 'delete', 'continue', 'pass'
 ])
+unaryKeywords = keywordmap(['delete', 'throw'])
 
 function searchTokenR(*needles, hay):
     for i, token in hay:
@@ -123,6 +124,12 @@ function parseExpression(tokens, *exclude):
             continue
 
         output.push(token)
+
+    if output.length == 0:
+        throw {
+            message: 'Expecting an expression here',
+            offset: tokens[0].offset
+        }
 
     // Group stuff
     if (k = searchTokenR(['operator', '=>'], output)) != -1:
