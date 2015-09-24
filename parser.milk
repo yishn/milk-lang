@@ -75,6 +75,13 @@ function parseExpression(tokens, *exclude):
             [tree, end] = parseFunction(tokens[i...])
             return [tree, i + end]
 
+        else if token equals ['operator', '=>']:
+            // Lambda function
+            [left, _] = parseLambdaHead(tokens[0...i - 1])
+            [right, end] = parseExpression(output[i + 1...])
+
+            return [['lambda', null, left, right], i + 1 + end]
+
         else if assignmentOp.some(x => x equals token):
             // Drop everything!
             [pattern, _] = parsePattern(tokens[0...i - 1])
@@ -129,13 +136,7 @@ function parseExpression(tokens, *exclude):
         }
 
     // Group stuff
-    if (k = searchTokenR(['operator', '=>'], output)) != -1:
-        [left, _] = parseLambdaHead(output[0...k - 1])
-        [right, _] = parseExpression(output[k + 1...])
-
-        output = ['lambda', null, left, right]
-
-    else if (k = searchTokenR(['operator', '?'], output)) != -1:
+    if (k = searchTokenR(['operator', '?'], output)) != -1:
         m = searchTokenR(['operator', ':'], output)
         if m < k: throw {
             message: "Didn't find the ':' to the '?'",
