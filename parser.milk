@@ -405,6 +405,12 @@ function parseArray(tokens):
             output.push(expr)
             pointer += end
 
+    if output.some(x => x equals ['delimiter', '...']):
+        start = output[1]
+        end = output[output.length - 1]
+        next = output[2][0] == 'delimiter' ? null : output[2]
+        return [['range', start, next, end], pointer]
+
     return [output, pointer]
 
 function parseObject(tokens):
