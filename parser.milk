@@ -557,17 +557,18 @@ function parseStatements(tokens):
     output = ['statements']
     depth = 0
     pointer = 0
+    start = tokens[0] equals ['newline', 'indent'] ? 1 : 0
     end = tokens.length - 1
 
-    for i in [0, 1, ..., tokens.length - 1]:
+    for i in [start, start + 1, ..., tokens.length - 1]:
         if tokens[i] equals ['newline', 'indent']:
             depth++
         else if tokens[i] equals ['newline', 'dedent']:
             depth--
 
-            if depth == 0:
-                end = i
-                break
+        if depth < 0:
+            end = i
+            break
 
     while pointer <= end:
         if tokens[pointer][0] == 'newline':
