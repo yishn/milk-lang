@@ -510,7 +510,9 @@ function parseKeyValuePair(tokens):
     while pointer < tokens.length:
         token = tokens[pointer]
 
-        if token[0] == 'rightdelimiter' || token equals ['delimiter', ',']:
+        if token[0] == 'rightdelimiter'
+        || token[0] == 'newline'
+        || token equals ['delimiter', ',']:
             if output.length > 2: throw {
                 message: "Object literal has wrong syntax",
                 offset: token.offset
