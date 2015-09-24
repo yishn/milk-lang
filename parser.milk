@@ -603,6 +603,12 @@ function parseClass(tokens):
     output.push(s)
     pointer += len
 
+    if s[1...].some(x => x[0] != 'function'):
+        throw {
+            message: "Class definitions can only hold functions",
+            offset: tokens[0].offset
+        }
+
     return [output, pointer]
 
 // Loops
