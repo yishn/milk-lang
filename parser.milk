@@ -73,9 +73,9 @@ function searchMatchingDelimiter(tokens, index):
 
 function parseExpression(tokens, *exclude):
     output = []
-    [parenDepth, bracketDepth, braceDepth] = [0, 0, 0]
+    placeholders = []
 
-    // Detect objects & parentheses
+    // Detect delimiters
     for i in [0, 1, ..., tokens.length - 1]:
         token = tokens[i]
 
@@ -87,17 +87,18 @@ function parseExpression(tokens, *exclude):
             // Detect end of expression
             break
 
+        else if token[0] == 'leftdelimiter':
+            // Make placeholder
+            j = searchMatchingDelimiter(tokens, i)
+            placeholders.push(tokens[i...j])
+            output.push(['placeholder', placeholders.length - 1])
+            i = j
+            continue
+
         else if token equals ['keyword', 'function']:
             // Function closure
             [tree, len] = parseFunction(tokens[i...])
             return [tree, i + len]
-
-        else if token equals ['operator', '=>']:
-            // Lambda function
-            [left, _] = parseLambdaHead(tokens[0...i - 1])
-            [right, len] = parseExpression(tokens[i + 1...])
-
-            return [['lambda', null, left, right], i + 1 + len]
 
         else if assignmentOp.some(x => x equals token):
             // Drop everything!
@@ -105,44 +106,6 @@ function parseExpression(tokens, *exclude):
             [tree, len] = parseExpression(tokens[i + 1...])
 
             return [[token[1], pattern, tree], i + 1 + len]
-
-        else if token equals ['leftdelimiter', '(']
-        && tokens[i - 1]?[0] in [null, 'operator', 'newline']:
-            // Expression grouping
-            [tree, len] = parseExpression(tokens[i + 1...])
-            output.push(tree)
-
-            i += len + 1
-            continue
-
-        else if token equals ['leftdelimiter', '(']
-        || token equals ['leftdelimiter', '?(']:
-            // Function call
-            [tree, len] = parseArray(tokens[i + 1...])
-            output.push(['operator', token[1] + ')'])
-            output.push(tree)
-
-            i += len + 1
-            continue
-
-        else if token equals ['leftdelimiter', '[']
-        || token equals ['leftdelimiter', '?[']:
-            // Indexer or array
-            indexer = tokens[i - 1]?[0] not in [null, 'operator', 'newline']
-
-            [tree, len] = parseArray(tokens[i + 1...])
-            if indexer: output.push(['operator', token[1] + ']'])
-            output.push(tree)
-
-            i += len + 1
-            continue
-
-        else if token equals ['leftdelimiter', '{']:
-            // Object
-            [tree, len] = parseObject(tokens[i + 1...])
-            output.push(tree)
-            i += len + 1
-            continue
 
         output.push(token)
 
@@ -152,8 +115,58 @@ function parseExpression(tokens, *exclude):
             offset: tokens[0].offset
         }
 
-    // Group stuff
-    if (k = searchTokenR(['operator', '?'], output)) != -1:
+    // Replace placeholders
+    for j in [0, 1, ..., output.length - 1] if output[j][0] == 'placeholder':
+        id = output[j][1]
+        t = placeholders[id]
+        token = t[0]
+
+        if token equals ['leftdelimiter', '(']
+        && output[j + 1] equals ['operator', '=>']:
+            // Lambda head
+            [tree, _] = parseLambdaHead(t)
+            output[j] = tree
+
+        if token equals ['leftdelimiter', '(']
+        && output[j - 1]?[0] in [null, 'operator', 'newline']:
+            // Expression grouping
+            [tree, _] = parseExpression(t[1...])
+            output[j] = tree
+
+        else if token equals ['leftdelimiter', '(']
+        || token equals ['leftdelimiter', '?(']:
+            // Function call
+            [tree, _] = parseArray(t[1...])
+            output.splice(j, 1, ['operator', token[1] + ')'], tree)
+
+        else if token equals ['leftdelimiter', '[']
+        || token equals ['leftdelimiter', '?[']:
+            // Indexer or array
+            indexer = output[j - 1]?[0] not in [null, 'operator', 'newline']
+            [tree, _] = parseArray(t[1...])
+
+            if indexer: output.splice(j, 0, ['operator', token[1] + ']'])
+            output[j] = tree
+
+        else if token equals ['leftdelimiter', '{']:
+            // Object
+            [tree, _] = parseObject(t[1...])
+            output[j] = tree
+
+    // Operator precedence
+    if (k = searchTokenR(['operator', '=>'], output)) != -1:
+        head = output[k - 1]
+        if head[0] not in ['identifier', 'arraypattern']:
+            throw {
+                message: 'Invalid lambda arguments',
+                offset: output[k].offset
+            }
+
+        [body, _] = parseExpression(output[k + 1...])
+
+        output = ['lambda', null, head, body]
+
+    else if (k = searchTokenR(['operator', '?'], output)) != -1:
         m = searchTokenR(['operator', ':'], output)
         if m < k: throw {
             message: "Didn't find the ':' to the '?'",
