@@ -1,5 +1,7 @@
-operatormap = l => l.map(x => ['operator', x])
-leftdelimitermap = l => l.map(x => ['leftdelimiter', x])
+typemap = (type, l) => l.map(x => [type, x])
+operatormap = typemap('operator', _)
+leftdelimitermap = typemap('leftdelimiter', _)
+keywordmap = typemap('keyword', _)
 
 assignmentOp = operatormap([
     '=', '+=', '-=', '*=',
@@ -21,6 +23,11 @@ prepostOp = operatormap(['++', '--'])
 unaryOp = operatormap(['typeof', '!'])
 dotOp = operatormap(['.', '?.', '()', '?()', '[]', '?[]'])
 bracketDel = leftdelimitermap(['[', '?['])
+
+statementKeywords = keywordmap([
+    'class', 'for', 'while', 'if', 'else', 'else if',
+    'try', 'catch'
+])
 
 function searchTokenR(*needles, hay):
     for i, token in hay:
@@ -60,7 +67,7 @@ function parseExpression(tokens, *exclude):
         if token[0] == 'delimiter'
         || token[0] == 'rightdelimiter'
         || token[0] == 'newline'
-        || token equals ['keyword', 'for']
+        || statementKeywords.some(x => x equals token)
         || exclude.some(x => x equals token):
             // Detect end of expression
             break
@@ -411,6 +418,12 @@ function parseArray(tokens):
         next = output[2][0] == 'delimiter' ? null : output[2]
         return [['range', start, next, end], pointer]
 
+    if output[0] == 'arrayfor' && output[2][0] != 'for':
+        throw {
+            message: "Expecting 'for' directive",
+            offset: tokens[0].offset
+        }
+
     return [output, pointer]
 
 function parseObject(tokens):
@@ -435,6 +448,12 @@ function parseObject(tokens):
             [expr, end] = parseKeyValuePair(tokens[pointer...])
             output.push(expr)
             pointer += end
+
+    if output[0] == 'objectfor' && output[2][0] != 'for':
+        throw {
+            message: "Expecting 'for' directive",
+            offset: tokens[0].offset
+        }
 
     return [output, pointer]
 
