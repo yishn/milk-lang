@@ -268,7 +268,7 @@ function parsePattern(tokens):
         type = expr[0]
 
         if type in ['[]', '?[]', '.', '?.', 'identifier']
-        || type equals ['keyword', '_']:
+        || expr equals ['keyword', '_']:
             return [expr, end]
 
     throw {
