@@ -7,16 +7,13 @@ assignmentOp = operatormap([
     '=', '+=', '-=', '*=',
     '^=', '/=', '%='
 ])
-
 comparisonOp = operatormap([
     '<=', '>=', '<', '>', '==',
     '!=', 'equals', 'not equals'
 ])
-
 elementOp = operatormap([
     'in', 'instanceof', 'not in'
 ])
-
 additionOp = operatormap(['+', '-'])
 multOp = operatormap(['*', '/', '%'])
 prepostOp = operatormap(['++', '--'])
@@ -28,7 +25,7 @@ statementKeywords = keywordmap([
     'class', 'for', 'while', 'if', 'else', 'else if',
     'try', 'catch', 'return', 'throw', 'delete', 'continue', 'pass'
 ])
-unaryKeywords = keywordmap(['delete', 'throw'])
+unaryKeywords = keywordmap(['delete', 'throw', 'return'])
 
 function searchTokenR(*needles, hay):
     for i, token in hay:
@@ -373,25 +370,25 @@ function parseFunction(tokens):
     else:
         output.push(null)
 
-    try:
-        if tokens[pointer] equals ['leftdelimiter', '(']:
-            [pattern, end] = parseArrayPattern(tokens[pointer + 1...])
-            output.push(pattern)
-            pointer += end + 2
-        else: throw pointer
+    if tokens[pointer] equals ['leftdelimiter', '(']:
+        [pattern, end] = parseArrayPattern(tokens[pointer + 1...])
+        output.push(pattern)
+        pointer += end + 2
+    else: throw {
+        message: "Expecting '('",
+        offset: tokens[e].offset
+    }
 
-        if tokens[pointer] equals ['delimiter', ':']:
-            [statements, end] = parseBlock(tokens[pointer + 1...])
-            output.push(statements)
-            pointer += end + 1
-        else: throw pointer
+    if tokens[pointer] equals ['delimiter', ':']:
+        [statements, end] = parseBlock(tokens[pointer + 1...])
+        output.push(statements)
+        pointer += end + 1
+    else: throw {
+        message: "Expecting ':'",
+        offset: tokens[e].offset
+    }
 
-        return [output, pointer]
-    catch e:
-        throw {
-            message: "Unexpected '" + tokens[e][1] + "'",
-            offset: tokens[e].offset
-        }
+    return [output, pointer]
 
 function parseArray(tokens):
     output = ['array']
