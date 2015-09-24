@@ -251,6 +251,14 @@ function parseExpression(tokens, *exclude):
     if output.length == 1: output = output[0]
     return [output, i]
 
+function parseLambdaHead(tokens):
+    if tokens[0] equals ['leftdelimiter', '(']:
+        [pattern, len] = parseArrayPattern(tokens[1...])
+        return [pattern, len + 2]
+    else:
+        [pattern, len] = parsePattern(tokens)
+        return [['arraypattern', pattern], len]
+
 // Pattern matching
 
 function parsePattern(tokens):
