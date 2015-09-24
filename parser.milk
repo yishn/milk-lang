@@ -388,14 +388,9 @@ function parseFunction(tokens):
         offset: tokens[e].offset
     }
 
-    if tokens[pointer] equals ['delimiter', ':']:
-        [statements, end] = parseBlock(tokens[pointer + 1...])
-        output.push(statements)
-        pointer += end + 1
-    else: throw {
-        message: "Expecting ':'",
-        offset: tokens[e].offset
-    }
+    [statements, end] = parseBlock(tokens[pointer...])
+    output.push(statements)
+    pointer += end
 
     return [output, pointer]
 
@@ -505,12 +500,22 @@ function parseKeyValuePair(tokens):
 // Statements
 
 function parseBlock(tokens):
-    if tokens[0] equals ['newline', 'indent']:
-        [s, end] = parseStatements(tokens[1...])
-        return [s, end + 1]
+    pointer = 0
+
+    if tokens[pointer] not equals ['delimiter', ':']:
+        throw {
+            message: "Expecting ':'",
+            offset: tokens[pointer].offset
+        }
+
+    pointer++
+
+    if tokens[pointer] equals ['newline', 'indent']:
+        [s, len] = parseStatements(tokens[pointer...])
+        return [s, pointer + len]
     else:
-        [s, end] = parseStatement(tokens[1...])
-        return [['statements', s], end + 1]
+        [s, len] = parseStatement(tokens[pointer...])
+        return [['statements', s], pointer + len]
 
 function parseStatements(tokens):
     output = ['statements']
@@ -546,6 +551,8 @@ function parseStatement(tokens):
         return parseFor(tokens)
     else if token equals ['keyword', 'while']:
         return parseWhile(tokens)
+    else if token equals ['keyword', 'class']:
+        return parseClass(tokens)
     else if token equals ['keyword', 'pass']:
         return [token, 1]
     else if unaryKeywords.some(x => x equals token):
@@ -570,6 +577,33 @@ function parseUnaryKeyword(tokens):
     [expr, len] = parseExpression(tokens[1...])
     token.push(expr)
     return [token, len + 1]
+
+function parseClass(tokens):
+    pointer = 1
+    output = ['class']
+
+    if tokens[pointer][0] == 'identifier':
+        output.push(tokens[pointer])
+        pointer++
+    else:
+        throw {
+            message: "Expecting class identifier",
+            offset: tokens[pointer].offset
+        }
+
+    if tokens[pointer] equals ['keyword', 'extends']:
+        pointer++
+        [expr, len] = parseExpression(tokens[pointer...])
+        output.push(expr)
+        pointer += len
+    else:
+        output.push(null)
+
+    [s, len] = parseBlock(tokens[pointer...])
+    output.push(s)
+    pointer += len
+
+    return [output, pointer]
 
 // Loops
 
@@ -603,30 +637,15 @@ function parseForHead(tokens):
 
 function parseFor(tokens):
     [forhead, pointer] = parseForHead(tokens)
-
-    if tokens[pointer] not equals ['delimiter', ':']:
-        throw {
-            message: "Expecting ':'",
-            offset: tokens[pointer].offset
-        }
-
-    pointer++
     [s, len] = parseBlock(tokens[pointer...])
     forhead.push(s)
 
     return [forhead, pointer + len]
 
 function parseWhile(tokens):
-    [expr, pointer] = parseExpression(tokens[1...])
-    pointer++
-
-    if tokens[pointer] not equals ['delimiter', ':']:
-        throw {
-            message: "Unexpected '" + tokens[pointer][1] + "'",
-            offset: tokens[pointer].offset
-        }
-
-    pointer++
+    pointer = 1
+    [expr, len] = parseExpression(tokens[pointer...])
+    pointer += len
     [s, len] = parseBlock(tokens[pointer...])
 
     return [['while', expr, s], pointer + len]
