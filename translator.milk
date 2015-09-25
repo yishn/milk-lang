@@ -763,10 +763,7 @@ function chainCmp(tree):
 
 function range(tree):
     temp = ['identifier', getVarName('i')]
-    return array(['arrayfor', ['for',
-        [temp, null],
-        tree, null, temp
-    ]])
+    return array(['arrayfor', temp, ['for', [temp, null], tree, null]])
 
 function lambda(tree):
     [_, _, args, s] = tree
