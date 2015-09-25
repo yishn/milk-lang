@@ -236,17 +236,10 @@ function parseExpression(tokens, *breakerTokens):
             output = [output[k][1], left, right]
 
     else if (k = searchTokenL(*multOp, output)) != -1:
-        unary = output[k][1] == '*' && output[k - 1]?[0] in [null, 'operator', 'leftdelimiter', 'delimiter']
-        left = null
+        [left, _] = parseExpression(output[0...k - 1])
+        [right, _] = parseExpression(output[k + 1...])
 
-        if !unary: [left, _] = parseExpression(output[0...k - 1])
-        [right, len] = parseExpression(output[k + 1...])
-
-        if unary:
-            output[k...k + len] = [['spread', right]]
-            [output, _] = parseExpression(output)
-        else:
-            output = [output[k][1], left, right]
+        output = [output[k][1], left, right]
 
     else if (k = searchTokenL(*prepostOp, output)) != -1:
         prevType = output[k - 1]?[0]
@@ -485,6 +478,11 @@ function parseArray(tokens):
         else if token equals ['delimiter', '...']:
             output.push(token)
             pointer++
+        else if token equals ['operator', '*']:
+            pointer++
+            [expr, end] = parseExpression(tokens[pointer...])
+            output.push(['spread', expr])
+            pointer += end
         else:
             [expr, end] = parseExpression(tokens[pointer...])
             output.push(expr)

@@ -312,7 +312,8 @@ function expression(tree):
 function assignment(tree):
     [_, left, right] = tree
     isProperPattern = left[0] in ['arraypattern', 'objpattern']
-    assignProperArray = !isProperPattern && left[0] == '[]' && left[2].length > 2
+    assignProperArray = !isProperPattern && left[0] == '[]'
+        && (left[2].length > 2 || left[2].some(x => x[0] == 'spread'))
     assignRange = assignProperArray && left[2][0] == 'range'
 
     if isProperPattern: return patternMatch(tree)
@@ -361,7 +362,7 @@ function assignment(tree):
             ['for', [itemp, jtemp], list, null, ['statements',
                 ['=', ['[]', rtemp, ['array', jtemp]], ['[]', listtemp, ['array', itemp]]]
             ]],
-            ['keyword', 'return', rtemp]
+            ['keyword', 'return', listtemp]
         ]], []])
 
 function dotOp(tree):
