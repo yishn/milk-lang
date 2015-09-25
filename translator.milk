@@ -311,13 +311,13 @@ function expression(tree):
 
 function assignment(tree):
     [_, left, right] = tree
-    patternmatch = left[0] in ['arraypattern', 'objpattern']
-    assignProperArray = !patternmatch && left[0] == '[]' && left[2].length > 2
+    isProperPattern = left[0] in ['arraypattern', 'objpattern']
+    assignProperArray = !isProperPattern && left[0] == '[]' && left[2].length > 2
     assignRange = assignProperArray && left[2][0] == 'range'
 
-    if patternmatch: return patternMatch(tree)
+    if isProperPattern: return patternMatch(tree)
     if left equals ['keyword', '_']: return null
-    if left[0] == 'identifier': register(left[0][1])
+    if left[0] == 'identifier': register(left[1])
 
     if !assignProperArray:
         return [paren(left), '=', expression(right)].join(' ')
@@ -540,7 +540,7 @@ function func(tree):
     if identifier != null:
         identifier = register(expression(identifier))
 
-    isProperPattern = !args[1...].all(x => x[0][0] == 'identifier')
+    isProperPattern = !args[1...].every(x => x[0][0] == 'identifier')
         || args[1...].some(x => x[1] != null)
 
     output = 'function('
@@ -549,7 +549,7 @@ function func(tree):
 
     pushScope()
     if !isProperPattern:
-        output += args.map(x => expression(x[0])).join(', ')
+        output += args[1...].map(x => expression(x[0])).join(', ')
 
     output += ') {'
     insert = []
@@ -616,8 +616,8 @@ function forHead(tree):
             output = formatCode([
                 statements(s),
                 'for (' + statement(['=', first, starttemp]) + '; '
-                    + (end ? steptemp[1] + ' > 0 ? ' + first[1] + ' <= ' + endtemp[1] + ' : ' + first[1] + ' >= ' + endtemp[1] : 'true') + '; '
-                    + first[1] + ' += ' + steptemp[1] + ') {'
+                    + (end ? steptemp[1] + ' > 0 ? ' + expression(first) + ' <= ' + endtemp[1] + ' : ' + expression(first) + ' >= ' + endtemp[1] : 'true') + '; '
+                    + expression(first) + ' += ' + steptemp[1] + ') {'
             ])
         else:
             output = formatCode([
@@ -811,12 +811,12 @@ function patternMatch(tree):
 
 function arraypattern(tree, ref):
     s = ['statements']
-    spreadindex = tree.map(x => x[0][0]).indexOf('spread')
+    spreadindex = tree.map(x => x[0]).indexOf('spread')
     hasSpread = spreadindex != -1
     if spreadindex < 0: spreadindex = tree.length
 
     for i, node in tree if 1 <= i < spreadindex:
-        isProperPattern = node[0] not in ['arraypattern', 'objpattern']
+        isProperPattern = node[0] in ['arraypattern', 'objpattern']
         hasDefault = !isProperPattern && node[1] != null
         if !isProperPattern && node[0] equals ['keyword', '_']: continue
 
@@ -827,9 +827,9 @@ function arraypattern(tree, ref):
         if hasDefault: temp[2] = ['??', temp[2], node[1]]
         s.push(temp)
 
-    if hasSpread && tree[spreadindex][1] not equals ['keyword', '_']:
+    if hasSpread && tree[spreadindex][1][0] not equals ['keyword', '_']:
         node = tree[spreadindex][1]
-        isProperPattern = node[0] not in ['arraypattern', 'objpattern']
+        isProperPattern = node[0] in ['arraypattern', 'objpattern']
         hasDefault = !isProperPattern && node[1] != null
         temp = null
 
@@ -864,7 +864,7 @@ function arraypattern(tree, ref):
         s.push(temp)
 
     for i, node in tree if spreadindex < i:
-        isProperPattern = node[0] not in ['arraypattern', 'objpattern']
+        isProperPattern = node[0] in ['arraypattern', 'objpattern']
         hasDefault = !isProperPattern && node[1] != null
         if !isProperPattern && node[0] equals ['keyword', '_']: continue
 
