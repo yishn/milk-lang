@@ -312,15 +312,15 @@ function expression(tree):
 function assignment(tree):
     [_, left, right] = tree
     patternmatch = left[0] in ['arraypattern', 'objpattern']
-    assignProperArray = left[0] == '[]' && left[2].length > 2
-    assignRange = assignProperArray && left[2][0] == 'range'
+    assignProperArray = !patternmatch && left[0][0] == '[]' && left[0][2].length > 2
+    assignRange = assignProperArray && left[0][2][0] == 'range'
 
     if patternmatch: return patternMatch(tree)
-    if left equals ['keyword', '_']: return null
-    if left[0] == 'identifier': register(left[1])
+    if left[0] equals ['keyword', '_']: return null
+    if left[0][0] == 'identifier': register(left[0][1])
 
     if !assignProperArray:
-        return [paren(left), '=', expression(right)].join(' ')
+        return [paren(left[0]), '=', expression(right)].join(' ')
     else if assignRange && left[2][2] == null:
         range = left[2]
         rtemp = ['identifier', getVarName('r')]
