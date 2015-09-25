@@ -541,6 +541,7 @@ function func(tree):
         identifier = register(expression(identifier))
 
     isProperPattern = !args[1...].all(x => x[0][0] == 'identifier')
+        || args[1...].some(x => x[1] != null)
 
     output = 'function('
     if identifier != null:
