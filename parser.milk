@@ -132,7 +132,7 @@ function parseExpression(tokens, *exclude):
             [tree, _] = parseLambdaHead(t)
             output[j] = tree
 
-        if token equals ['leftdelimiter', '(']
+        else if token equals ['leftdelimiter', '(']
         && output[j - 1]?[0] in [null, 'operator', 'newline']:
             // Expression grouping
             [tree, _] = parseExpression(t[1...])
@@ -699,15 +699,12 @@ function parseIf(tokens):
     while pointer < tokens.length:
         token = tokens[pointer]
 
-        if token[0] == 'newline':
-            pointer++
-
-        else if token equals ['keyword', 'else if']:
+        if token equals ['keyword', 'else if']:
             pointer++
             [cond, len] = parseExpression(tokens[pointer...])
             pointer += len
             [block, len] = parseBlock(tokens[pointer...])
-            pointer += len
+            pointer += len + 1
             output.push([cond, block])
 
         else:
@@ -716,7 +713,7 @@ function parseIf(tokens):
     if tokens[pointer] equals ['keyword', 'else']:
         pointer++
         [block, len] = parseBlock(tokens[pointer...])
-        pointer += len
+        pointer += len + 1
         output.push(['else', block])
 
     return [output, pointer - 1]

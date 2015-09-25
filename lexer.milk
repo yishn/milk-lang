@@ -10,20 +10,23 @@ function gcd(*args):
     return gcdInner(gcd(*args[0...middle]), gcd(*args[middle + 1...]))
 
 function removeNewline(tokens, i):
+    if tokens[i] equals ['newline', 'nodent']:
+        tokens[i] = null
+        return
+
     depth = 0
     for k, token in tokens if k >= i && token != null:
         [type, value] = token
+        if type != 'newline': continue
 
-        if type == 'newline':
-            if value == 'indent': depth++
-            else if value == 'dedent': depth--
+        if value == 'indent': depth++
+        else if value == 'dedent': depth--
 
-            if k == i:
-                tokens[k] = null
-
-            if depth == 0:
-                tokens[k] = null
-                if k != i: return
+        if k == i:
+            tokens[k] = null
+        else if depth == 0:
+            tokens[k] = null
+            return
 
 rules = {
     operator: regexmap([
