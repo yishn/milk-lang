@@ -811,13 +811,18 @@ function patternMatch(tree):
 
 function arraypattern(tree, ref):
     s = ['statements']
-    spreadindex = tree.map(x => x[0]).indexOf('spread')
+    spreadindex = tree.map(x => x[0][0]).indexOf('spread')
     hasSpread = spreadindex != -1
     if spreadindex < 0: spreadindex = tree.length
 
-    for i, node in tree if 1 <= i < spreadindex:
-        if node[1] == '_': continue
-        s.push(['=', node, ['[]', ref, ['number', i - 1]]])
+    for i, node in tree if 1 <= i < spreadindex && node[1] != '_':
+        hasOptional = node[1] != null
+        temp = ['=',
+            node,
+            ['[]', ref, ['array', ['number', i - 1]]]
+        ]
+        if hasOptional: temp[2] = ['??', temp[2], node[1]]
+        s.push(temp)
 
     if hasSpread && tree[spreadindex][1][1] != '_':
         if spreadindex == tree.length - 1:
@@ -827,7 +832,10 @@ function arraypattern(tree, ref):
                     ['identifier', 'length']
                 ]],
                 ['array'],
-                ['()', ['.', ['.', ['array'], ['identifier', 'slice']], ['identifier', 'call']], [ref, ['number', spreadindex - 1]]]
+                ['()',
+                    ['.', ['.', ['array'], ['identifier', 'slice']], ['identifier', 'call']],
+                    ['array', ref, ['number', spreadindex - 1]]
+                ]
             ]])
         else:
             afterspreadcount = tree.length - 1 - spreadindex
@@ -838,19 +846,23 @@ function arraypattern(tree, ref):
                     ['identifier', 'length']
                 ], ['number', afterspreadcount]]],
                 ['array'],
-                ['()', ['.', ['.', ['array'], ['identifier', 'slice']], ['identifier', 'call']], [ref, ['number', spreadindex - 1], ['-', ['number', afterspreadcount]]]]
+                ['()',
+                    ['.', ['.', ['array'], ['identifier', 'slice']], ['identifier', 'call']],
+                    ['array', ref, ['number', spreadindex - 1], ['-', ['number', afterspreadcount]]]
+                ]
             ]])
 
-    for i, node in tree if spreadindex < i:
-        if node[1] == '_': continue
-
-        s.push(['=',
+    for i, node in tree if spreadindex < i && node[1] != '_':
+        hasOptional = node[1] != null
+        temp = ['=',
             node,
-            ['[]', ref, ['-',
+            ['[]', ref, ['array', ['-',
                 ['.', ref, ['identifier', 'length']],
                 ['number', tree.length - i]
-            ]]
-        ])
+            ]]]
+        ]
+        if hasOptional: temp[2] = ['??', temp[2], node[1]]
+        s.push(temp)
 
     return s
 
