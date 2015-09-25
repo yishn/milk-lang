@@ -1,9 +1,8 @@
 process = require('process')
 fs = require('fs')
-nearley = require('nearley')
-grammar = require('./grammar')
 helper = require('./helper')
-translator = require('./translator')
+lexer = require('./lexer')
+parser = require('./parser')
 
 filename = process.argv[2]
 data = fs.readFileSync(filename, 'utf-8')
@@ -15,75 +14,29 @@ console.time('//')
 console.error('Normalize endings...')
 data = data.replace(/\r\n/g, '\n').replace(/\r/g, '')
 
-// Extract comments & strings
+// Lexer
 
-console.error('Extract comments...')
-[data, pureCode, comments] = helper.removeStringComments(data)
-
-// Indentifizer
-
-console.error('Indentifizer...')
+console.error('Lexer...')
+tokens = null
 
 try:
-    data = helper.indentifizer(data, pureCode)
-catch e:
-    console.error('Mixed indentation @' + e.row + ':1')
-    return
-
-// Parser
-
-src = data
-console.error('Parsing...')
-p = new nearley.Parser(grammar.ParserRules, grammar.ParserStart)
-
-try:
-    lastReported = 0
-
-    for i, v in data:
-        p.feed(v)
-
-        percent = Math.round(i / (data.length - 1) * 100)
-        if percent - lastReported < 5: continue
-
-        console.error(percent + '%')
-        lastReported = percent
-
-    if !p.results?.length:
-        throw {
-            message: 'Unexpected end'
-            offset: data.length - 1
-        }
-catch e:
-    [row, col] = helper.offsetToLinePos(e.offset, data)
-    message = e.message
-    if 'nearley' in message: message = 'Parse error'
-
-    console.error(message + ' @' + row + ':' + col)
-    return
-
-if p.results.length == 1:
-    console.error('No ambiguities.')
-else:
-    console.error('Ambiguity detected.')
-
-tree = p.results[0]
-
-// Translator
-
-console.error('Translating...')
-
-try:
-    data = translator.translate(tree)
+    tokens = lexer(data)
 catch e:
     [row, col] = helper.offsetToLinePos(e.offset, data)
     console.error(e.message + ' @' + row + ':' + col)
     return
 
-// Commentator
+// Parser
 
-console.error('Commenting...')
-data = helper.commentator(data, src, comments)
+console.error('Parsing...')
+tree = null
 
-console.log(data)
-console.log()
+try:
+    tree = parser(tokens)
+catch e:
+    [row, col] = helper.offsetToLinePos(e.offset, data)
+    console.error(e.message + ' @' + row + ':' + col)
+    return
+
+console.dir(tree, { depth: null })
 console.timeEnd('//')
