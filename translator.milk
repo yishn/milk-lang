@@ -816,12 +816,12 @@ function arraypattern(tree, ref):
     if spreadindex < 0: spreadindex = tree.length
 
     for i, node in tree if 1 <= i < spreadindex && node[1] != '_':
-        hasOptional = node[1] != null
+        hasDefault = node[1] != null
         temp = ['=',
             node,
             ['[]', ref, ['array', ['number', i - 1]]]
         ]
-        if hasOptional: temp[2] = ['??', temp[2], node[1]]
+        if hasDefault: temp[2] = ['??', temp[2], node[1]]
         s.push(temp)
 
     if hasSpread && tree[spreadindex][1][1] != '_':
@@ -853,7 +853,7 @@ function arraypattern(tree, ref):
             ]])
 
     for i, node in tree if spreadindex < i && node[1] != '_':
-        hasOptional = node[1] != null
+        hasDefault = node[1] != null
         temp = ['=',
             node,
             ['[]', ref, ['array', ['-',
@@ -861,7 +861,7 @@ function arraypattern(tree, ref):
                 ['number', tree.length - i]
             ]]]
         ]
-        if hasOptional: temp[2] = ['??', temp[2], node[1]]
+        if hasDefault: temp[2] = ['??', temp[2], node[1]]
         s.push(temp)
 
     return s
