@@ -791,7 +791,7 @@ function existentialOp(tree):
         ]]])
         s.push(['keyword', 'return', temp])
 
-        return expression(['()', ['function', null, [], s], []])
+        return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
 
     return expression(['?', condition, defaultv, temp])
 
