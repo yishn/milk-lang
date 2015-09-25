@@ -500,15 +500,16 @@ function funcCall(tree):
         tree[2].splice(0, 0, ['identifier', 'self'])
 
     if placeholderCount == 0 && !hasSpread && !soak:
-        return paren(subject) + '(' + args.map(x => expression(x)).join(', ') + ')'
+        return paren(subject) + '(' + args[1...].map(x => expression(x)).join(', ') + ')'
 
     if placeholderCount == 0:
         if !hasSpread:
             output = token => ['()', token, args]
         else:
-            a = ['array'].concat(args)
-            output = token =>
-                ['()', ['.', token, ['identifier', 'apply']], [['keyword', 'this'], a]]
+            output = token => ['()',
+                ['.', token, ['identifier', 'apply']],
+                ['array', ['keyword', 'this'], args]
+            ]
     else:
         temps = [getVarName('x') for _ in [1...placeholderCount]]
 
