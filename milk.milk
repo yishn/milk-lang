@@ -3,6 +3,7 @@ fs = require('fs')
 helper = require('./helper')
 lexer = require('./lexer')
 parser = require('./parser')
+translator = require('./translator')
 
 filename = process.argv[2]
 data = fs.readFileSync(filename, 'utf-8')
@@ -41,5 +42,17 @@ catch e:
     console.error(e.message + ' @' + row + ':' + col)
     return
 
-console.dir(tree, { depth: null })
+// Translating
+
+console.error('Translating...')
+code = null
+
+try:
+    code = translator.translate(tree)
+catch e:
+    [row, col] = helper.offsetToLinePos(e.offset, data)
+    console.error(e.message + ' @' + row + ':' + col)
+    return
+
+console.log(code)
 console.timeEnd('//')
