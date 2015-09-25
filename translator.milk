@@ -258,7 +258,7 @@ function expression(tree):
             ['identifier', 'equals']
         ], ['array'].concat(tree[1...2])])
         return type == 'equals' ? output : '!' + output
-    else if type[1] == '=' && type.length == 2:
+    else if type.length == 2 && type[1] == '=':
         return [paren(tree[1]), type, paren(tree[2])].join(' ')
     else if type == 'lambda':
         return lambda(tree)

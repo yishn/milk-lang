@@ -36,7 +36,7 @@ console.error('Parsing...')
 tree = null
 
 try:
-    tree = parser(tokens)
+    [tree, _] = parser(tokens)
 catch e:
     [row, col] = helper.offsetToLinePos(e.offset, data)
     console.error(e.message + ' @' + row + ':' + col)
