@@ -164,7 +164,11 @@ function parseExpression(tokens, *breakerTokens):
     // Operator precedence
     if (k = searchTokenR(['operator', '=>'], output)) != -1:
         head = output[k - 1]
-        if head[0] not in ['identifier', 'arraypattern']:
+
+        if head[0] == 'identifier':
+            head = ['arraypattern', [head, null]]
+
+        else if head[0] != 'arraypattern':
             throw {
                 message: 'Invalid lambda arguments',
                 offset: output[k].offset
@@ -302,7 +306,7 @@ function parseLambdaHead(tokens):
         return [pattern, len + 2]
     else:
         [pattern, len] = parsePattern(tokens)
-        return [['arraypattern', pattern], len]
+        return [['arraypattern', [pattern, null]], len]
 
 // Pattern matching
 
