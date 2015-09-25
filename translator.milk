@@ -540,36 +540,25 @@ function func(tree):
     if identifier != null:
         identifier = register(expression(identifier))
 
-    hasOptionalArgs = args.some(x => x[1] != null)
-    spreadindex = args.map(x => x[0][0]).indexOf('spread')
-    hasSpread = spreadindex != -1
-    if spreadindex < 0:
-        spreadindex = args.length
+    isProperPattern = !args[1...].all(x => x[0][0] == 'identifier')
 
     output = 'function('
     if identifier != null:
         output = identifier + ' = ' + output
 
     pushScope()
-    if !hasSpread:
+    if !isProperPattern:
         output += args.map(x => expression(x[0])).join(', ')
 
     output += ') {'
     insert = []
 
-    if hasSpread:
+    if isProperPattern:
         stemp = ['statements']
-        pattern = ['arraypattern'].concat(args.map(x => x[0]))
         itemp = ['identifier', getVarName('i')]
 
-        stemp.push(['=', pattern, ['keyword', 'arguments']])
+        stemp.push(['=', args, ['keyword', 'arguments']])
         insert.push(statements(stemp))
-
-    for x in args if x[1] != null:
-        [token, defaultv] = x
-        insert.push(expression(token) + ' = ' + expression(['??'
-            token, defaultv
-        ]) + ';')
 
     code = [output, [
         insert.join('\n'),
