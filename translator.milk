@@ -815,18 +815,26 @@ function arraypattern(tree, ref):
     hasSpread = spreadindex != -1
     if spreadindex < 0: spreadindex = tree.length
 
-    for i, node in tree if 1 <= i < spreadindex && node[1] != '_':
-        hasDefault = node[1] != null
+    for i, node in tree if 1 <= i < spreadindex:
+        isProperPattern = node[0] not in ['arraypattern', 'objpattern']
+        hasDefault = !isProperPattern && node[1] != null
+        if !isProperPattern && node[0] equals ['keyword', '_']: continue
+
         temp = ['=',
-            node,
+            isProperPattern ? node : node[0],
             ['[]', ref, ['array', ['number', i - 1]]]
         ]
         if hasDefault: temp[2] = ['??', temp[2], node[1]]
         s.push(temp)
 
-    if hasSpread && tree[spreadindex][1][1] != '_':
+    if hasSpread && tree[spreadindex][1] not equals ['keyword', '_']:
+        node = tree[spreadindex][1]
+        isProperPattern = node[0] not in ['arraypattern', 'objpattern']
+        hasDefault = !isProperPattern && node[1] != null
+        temp = null
+
         if spreadindex == tree.length - 1:
-            s.push(['=', tree[spreadindex][1], ['?',
+            temp = ['=', isProperPattern ? node : node[0], ['?',
                 ['>=', ['number', spreadindex - 1], ['.',
                     ref,
                     ['identifier', 'length']
@@ -836,11 +844,11 @@ function arraypattern(tree, ref):
                     ['.', ['.', ['array'], ['identifier', 'slice']], ['identifier', 'call']],
                     ['array', ref, ['number', spreadindex - 1]]
                 ]
-            ]])
+            ]]
         else:
             afterspreadcount = tree.length - 1 - spreadindex
 
-            s.push(['=', tree[spreadindex][1], ['?',
+            temp = ['=', isProperPattern ? node : node[0], ['?',
                 ['>=', ['number', spreadindex - 1], ['-', ['.',
                     ref,
                     ['identifier', 'length']
@@ -850,12 +858,18 @@ function arraypattern(tree, ref):
                     ['.', ['.', ['array'], ['identifier', 'slice']], ['identifier', 'call']],
                     ['array', ref, ['number', spreadindex - 1], ['-', ['number', afterspreadcount]]]
                 ]
-            ]])
+            ]]
 
-    for i, node in tree if spreadindex < i && node[1] != '_':
-        hasDefault = node[1] != null
+        if hasDefault: temp[2] = ['??', temp[2], node[1]]
+        s.push(temp)
+
+    for i, node in tree if spreadindex < i:
+        isProperPattern = node[0] not in ['arraypattern', 'objpattern']
+        hasDefault = !isProperPattern && node[1] != null
+        if !isProperPattern && node[0] equals ['keyword', '_']: continue
+
         temp = ['=',
-            node,
+            isProperPattern ? node : node[0],
             ['[]', ref, ['array', ['-',
                 ['.', ref, ['identifier', 'length']],
                 ['number', tree.length - i]
@@ -876,7 +890,7 @@ function objpattern(tree, ref):
             node[1],
             node[0][0] == 'identifier'
             ? ['.', ref, node[0]]
-            : ['[]', ref, tree[i][0]]
+            : ['[]', ref, ['array', tree[i][0]]]
         ])
 
     return s
