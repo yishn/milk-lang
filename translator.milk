@@ -415,7 +415,7 @@ function array(tree):
         ['array', expr]
     ]])
 
-    return expression(['()', ['function', null, [], s], []])
+    return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
 
 function object(tree):
     if tree[0] != 'objectfor':
@@ -439,10 +439,10 @@ function object(tree):
         ref = fortrees[i]
 
     ref.push(['statements', ['=', ['[]',
-        temp, key
+        temp, ['array', key]
     ], value]])
 
-    return expression(['()', ['function', null, [], s], []])
+    return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
 
 function index(tree):
     [type, left, right] = tree
