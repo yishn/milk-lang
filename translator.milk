@@ -759,7 +759,7 @@ function chainCmp(tree):
             expr = ['&&', expr, [tree[i - 1], temps[(i - 1) / 2 - 1], temps[(i + 1) / 2 - 1]]]
 
     s.push(['keyword', 'return', expr])
-    return expression(['()', ['function', null, [], s], []])
+    return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
 
 function range(tree):
     temp = ['identifier', getVarName('i')]
