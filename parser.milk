@@ -73,7 +73,7 @@ function searchMatchingDelimiter(tokens, index):
 
     return -1
 
-function parseExpression(tokens, *exclude):
+function parseExpression(tokens, *breakerTokens):
     output = []
     placeholders = []
 
@@ -85,7 +85,7 @@ function parseExpression(tokens, *exclude):
         || token[0] == 'rightdelimiter'
         || token[0] == 'newline'
         || statementKeywords.some(x => x equals token)
-        || exclude.some(x => x equals token):
+        || breakerTokens.some(x => x equals token):
             // Detect end of expression
             break
 
@@ -310,18 +310,27 @@ function parsePattern(tokens):
         else if value == '{':
             [pattern, len] = parseObjectPattern(tokens[1...])
             return [pattern, len + 2]
-    else:
-        [expr, len] = parseExpression(tokens, ['operator', 'in'])
-        type = expr[0]
 
-        if type in ['[]', '?[]', '.', '?.', 'identifier']
-        || expr equals ['keyword', '_']:
-            return [expr, len]
+    pointer = 0
+    [expr, len] = parseExpression(tokens, ['operator', 'in'], ['operator', '='])
+    pointer += len
 
-    throw {
-        message: "Invalid pattern",
-        offset: tokens[0].offset
-    }
+    output = [expr, null]
+
+    if expr[0] not in ['[]', '?[]', '.', '?.', 'identifier']
+    && expr not equals ['keyword', '_']:
+        throw {
+            message: "Invalid pattern",
+            offset: tokens[0].offset
+        }
+
+    if tokens[pointer] equals ['operator', '=']:
+        pointer++
+        [expr, len] = parseExpression(tokens[pointer...], ['operator', 'in'])
+        pointer += len
+        output[1] = expr
+
+    return [output, pointer]
 
 function parseArrayPattern(tokens):
     output = ['arraypattern']
@@ -561,18 +570,18 @@ function parseStatements(tokens):
     output = ['statements']
     depth = 0
     pointer = 0
-    start = tokens[0] equals ['newline', 'indent'] ? 1 : 0
     end = tokens.length - 1
 
-    for i in [start, start + 1, ..., tokens.length - 1]:
-        if tokens[i] equals ['newline', 'indent']:
-            depth++
-        else if tokens[i] equals ['newline', 'dedent']:
-            depth--
+    if tokens[0] equals ['newline', 'indent']:
+        for i in [1, 2, ..., tokens.length - 1]:
+            if tokens[i] equals ['newline', 'indent']:
+                depth++
+            else if tokens[i] equals ['newline', 'dedent']:
+                depth--
 
-        if depth < 0:
-            end = i
-            break
+            if depth < 0:
+                end = i
+                break
 
     while pointer <= end:
         if tokens[pointer][0] == 'newline':
