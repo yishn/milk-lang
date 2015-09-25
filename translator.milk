@@ -707,7 +707,7 @@ function ifStatement(tree):
     return output
 
 function tryStatement(tree):
-    [_, s, catchb, finallyb] = tree
+    [_, s, catchblock, finallyblock] = tree
 
     code = ['try {', [
         pushScope() + statements(s)
@@ -717,9 +717,9 @@ function tryStatement(tree):
     code[1].splice(0, 0, varsDefinition(vars))
     output = formatCode(code)
 
-    if catchb != null:
-        code = [' catch (' + expression(catchb[0]) + ') {', [
-            pushScope() + statements(catchb[1])
+    if catchblock != null:
+        code = [' catch (' + expression(catchblock[0]) + ') {', [
+            pushScope() + statements(catchblock[1])
         ], '}']
         vars = popScope()
 
@@ -729,7 +729,7 @@ function tryStatement(tree):
         temp = getVarName('e')
         output += ' catch(' + temp + ') {}'
 
-    if finallyb != null:
+    if finallyblock != null:
         code = [' finally {', [
             pushScope() + statements(tree[3])
         ], '}']
