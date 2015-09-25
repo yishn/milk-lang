@@ -197,8 +197,8 @@ function statements(tree):
     s = []
 
     for i, node in tree if i >= 1:
-        code = statement(node) + ';'
-        s.push(code)
+        code = statement(node)
+        if code != null: s.push(code + ';')
 
     return formatCode(s)
 
@@ -312,23 +312,25 @@ function expression(tree):
 function assignment(tree):
     [_, left, right] = tree
     patternmatch = left[0] in ['arraypattern', 'objpattern']
-    assignRange = left[0] == '[]' && left[2][0] == 'range'
+    assignProperArray = left[0] == '[]' && left[2].length > 2
+    assignRange = assignProperArray && left[2][0] == 'range'
 
     if patternmatch: return patternMatch(tree)
+    if left equals ['keyword', '_']: return null
     if left[0] == 'identifier': register(left[1])
 
-    if !assignRange:
-        return [paren(tree[1]), '=', expression(tree[2])].join(' ')
-    else if left[2][2] == null:
+    if !assignProperArray:
+        return [paren(left), '=', expression(right)].join(' ')
+    else if assignRange && left[2][2] == null:
         range = left[2]
         rtemp = ['identifier', getVarName('r')]
         starttemp = ['identifier', getVarName('start')]
         lentemp = ['identifier', getVarName('len')]
 
-        return expression(['()', ['function', null, [], ['statements',
-            ['=', rtemp, tree[1][1]],
+        return expression(['()', ['function', null, ['arraypattern'], ['statements',
+            ['=', rtemp, left[1]],
             ['=', starttemp, range[1]],
-            ['=', lentemp, range[3]
+            ['=', lentemp, range[3] != null
                 ? ['-', ['+', range[3], ['number', 1]], starttemp]
                 : ['.', rtemp, ['identifier', 'length']]
             ],
@@ -336,28 +338,28 @@ function assignment(tree):
                 ['.',
                     ['.', ['array'], ['identifier', 'splice']],
                     ['identifier', 'apply']
-                ], [
+                ], ['arraypattern',
                     rtemp,
                     ['()', ['.',
                         ['array', starttemp, lentemp],
                         ['identifier', 'concat']
-                    ], [tree[2]]]
+                    ], ['arraypattern', tree[2]]]
                 ]
             ],
             ['keyword', 'return', rtemp]
         ]], []])
     else:
-        range = left[2]
+        list = left[2]
         rtemp = ['identifier', getVarName('r')]
         listtemp = ['identifier', getVarName('l')]
         itemp = ['identifier', getVarName('i')]
         jtemp = ['identifier', getVarName('j')]
 
-        return expression(['()', ['function', null, [], ['statements',
-            ['=', rtemp, tree[1][1]],
-            ['=', listtemp, tree[2]],
-            ['for', [itemp, jtemp], range, null, ['statements',
-                ['=', ['[]', rtemp, jtemp], ['[]', listtemp, itemp]]
+        return expression(['()', ['function', null, ['arraypattern'], ['statements',
+            ['=', rtemp, left[1]],
+            ['=', listtemp, right],
+            ['for', [itemp, jtemp], list, null, ['statements',
+                ['=', ['[]', rtemp, ['array', jtemp]], ['[]', listtemp, ['array', itemp]]]
             ]],
             ['keyword', 'return', rtemp]
         ]], []])
