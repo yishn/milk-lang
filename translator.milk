@@ -603,7 +603,7 @@ function forHead(tree):
             ['()', ['.',
                 ['identifier', 'Math'],
                 ['identifier', 'sign']],
-                [['-', endtemp, starttemp]]
+                ['array', ['-', endtemp, starttemp]]
             ]
         ]
 
@@ -623,7 +623,7 @@ function forHead(tree):
                 statements(s),
                 'for (' + statement(['=', second, starttemp]) + ', ' + statement(['=', first, ['number', 0]]) + '; '
                     + (end ? steptemp[1] + ' > 0 ? ' + expression(['<=', second, endtemp]) + ' : ' + expression('>=', second, endtemp) : 'true') + '; '
-                    + expression(['+=', second, steptemp]) + ', ' + first[1] + '++) {'
+                    + expression(['+=', second, steptemp]) + ', ' + expression(['_++', first]) + ') {'
             ])
     else if identifierCount == 1:
         exports.flags['enumerate'] = true
@@ -634,7 +634,7 @@ function forHead(tree):
             ['()', ['.',
                 ['keyword', '_'],
                 ['identifier', 'enumerate']
-            ], [subject]]
+            ], ['array', subject]]
         ]]
 
         output = formatCode([
@@ -642,7 +642,7 @@ function forHead(tree):
             'for (' + itemp + ' = 0; ' + itemp + ' < ' + listtemp + '.length; ' + itemp + '++) {', [
                 statement(['=',
                     first,
-                    ['[]', ['identifier', listtemp], ['identifier', itemp]]
+                    ['[]', ['identifier', listtemp], ['array', ['identifier', itemp]]]
                 ]) + ';'
             ]
         ])
@@ -656,13 +656,13 @@ function forHead(tree):
             'for (' + itemp + ' in ' + listtemp + ') {', [
                 statement(['=',
                     second,
-                    ['[]', ['identifier', listtemp], ['identifier', itemp]]
+                    ['[]', ['identifier', listtemp], ['array', ['identifier', itemp]]]
                 ]) + ';',
                 statement(['=',
                     first,
-                    ['()', ['identifier', 'parseInt'], [['identifier', itemp], ['number', 10]]]
+                    ['()', ['identifier', 'parseInt'], ['array', ['identifier', itemp], ['number', 10]]]
                 ]) + ';',
-                'if (isNaN(' + first[1] + ')) ' + first[1] + ' = ' + itemp + ';'
+                'if (isNaN(' + expression(first) + ')) ' + statement(['=', first, ['identifier', itemp]]) + ';'
             ]
         ])
 
