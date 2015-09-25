@@ -396,14 +396,21 @@ function parseObjectPatternItem(tokens):
     pointer = 0
 
     [expr, end] = parseExpression(tokens, ['operator', '='])
-    output.push([expr, null])
+    output.push(expr)
     pointer += end
+    defaultv = null
 
     if tokens[pointer] equals ['operator', '=']:
         pointer++
         [expr, end] = parseExpression(tokens[pointer...])
         pointer += end
-        output[0][1] = expr
+        defaultv = expr
+
+        if tokens[pointer] equals ['delimiter', ':']:
+            throw {
+                message: "Object pattern keys don't have default values",
+                offset: tokens[pointer].offset
+            }
 
     if tokens[pointer] equals ['delimiter', ':']:
         pointer++
@@ -418,14 +425,14 @@ function parseObjectPatternItem(tokens):
         }
 
     if output.length == 1:
-        node = output[0][0]
+        node = output[0]
 
         if node[0] != 'identifier': throw {
             message: "Identifier expected",
             offset: tokens[0].offset
         }
 
-        output = [output[0], output[0]]
+        output = [output[0], [output[0], defaultv]]
 
     return [output, pointer]
 

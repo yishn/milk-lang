@@ -883,15 +883,19 @@ function arraypattern(tree, ref):
 function objpattern(tree, ref):
     s = ['statements']
 
-    for i, node in tree if i >= 1:
-        if node[1] == '_': continue
+    for i, [key, node] in tree if i >= 1:
+        isProperPattern = node[0] in ['arraypattern', 'objpattern']
+        hasDefault = !isProperPattern && node[1] != null
+        if !isProperPattern && node[0] equals ['keyword', '_']: continue
 
-        s.push(['=',
-            node[1],
-            node[0][0] == 'identifier'
-            ? ['.', ref, node[0]]
-            : ['[]', ref, ['array', tree[i][0]]]
-        ])
+        temp = ['=',
+            isProperPattern ? node : node[0],
+            key[0] == 'identifier'
+            ? ['.', ref, key]
+            : ['[]', ref, ['array', key]]
+        ]
+        if hasDefault: temp[2] = ['??', temp[2], node[1]]
+        s.push(temp)
 
     return s
 
