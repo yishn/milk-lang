@@ -17,3 +17,13 @@ exports.offsetToLinePos = function(offset, input):
             return [lines.length - 1, l.length - 1]
 
     return navigate([0, 0], offset, lines).map(x => x + 1)
+
+exports.findOffset = function(tree):
+    if 'offset' in tree:
+        return tree.offset
+
+    for node in tree if typeof node == 'object':
+        offset = findOffset(tree)
+        if offset != null: return offset
+
+    return null
