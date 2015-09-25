@@ -267,7 +267,7 @@ function parseExpression(tokens, *breakerTokens):
     else if (k = searchTokenL(*unaryOp, output)) != -1:
         [subject, len] = parseExpression(output[k + 1...])
 
-        output[k...k + len] = [['spread', right]]
+        output[k...k + len] = [[output[k][1], subject]]
         [output, _] = parseExpression(output)
 
     else if (k = searchTokenR(['operator', '^'], output)) != -1:
