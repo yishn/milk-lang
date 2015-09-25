@@ -172,7 +172,7 @@ function getCheckExistenceWrapper(token):
         ]]])
         s.push(['keyword', 'return', tree])
 
-        return expression(['()', ['function', null, ['arraypattern'], s], []])
+        return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
 
     return [output, temp]
 
@@ -338,16 +338,16 @@ function assignment(tree):
                 ['.',
                     ['.', ['array'], ['identifier', 'splice']],
                     ['identifier', 'apply']
-                ], ['arraypattern',
+                ], ['array',
                     rtemp,
                     ['()', ['.',
                         ['array', starttemp, lentemp],
                         ['identifier', 'concat']
-                    ], ['arraypattern', tree[2]]]
+                    ], ['array', tree[2]]]
                 ]
             ],
             ['keyword', 'return', rtemp]
-        ]], []])
+        ]], ['array']])
     else:
         list = left[2]
         rtemp = ['identifier', getVarName('r')]
@@ -385,16 +385,16 @@ function array(tree):
 
         for i, expr in tree if i >= 1:
             if expr[0] != 'spread':
-                s.push(['()', ['.', temp, ['identifier', 'push']], [expr]])
+                s.push(['()', ['.', temp, ['identifier', 'push']], ['array', expr]])
             else:
                 s.push(['()', ['.', ['.',
                     temp,
                     ['identifier', 'push']],
                     ['identifier', 'apply']
-                ], [temp, expr[1]]])
+                ], ['array', temp, expr[1]]])
 
         s.push(['keyword', 'return', temp])
-        return expression(['()', ['function', null, [], s], []])
+        return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
 
     [_, expr, *fortrees] = tree
     temp = ['identifier', getVarName('r')]
@@ -412,7 +412,7 @@ function array(tree):
 
     ref.push(['statements', ['()',
         ['.', temp, ['identifier', 'push']],
-        [expr]
+        ['array', expr]
     ]])
 
     return expression(['()', ['function', null, [], s], []])
