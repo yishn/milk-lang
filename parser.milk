@@ -107,6 +107,9 @@ function parseExpression(tokens, *breakerTokens):
             [pattern, _] = parsePattern(tokens[0...i - 1])
             [tree, len] = parseExpression(tokens[i + 1...])
 
+            if pattern[0] not in ['arraypattern', 'objpattern']:
+                pattern = pattern[0]
+
             return [[token[1], pattern, tree], i + 1 + len]
 
         output.push(token)
