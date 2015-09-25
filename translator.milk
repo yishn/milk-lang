@@ -172,7 +172,7 @@ function getCheckExistenceWrapper(token):
         ]]])
         s.push(['keyword', 'return', tree])
 
-        return expression(['()', ['function', null, [], s], []])
+        return expression(['()', ['function', null, ['arraypattern'], s], []])
 
     return [output, temp]
 
