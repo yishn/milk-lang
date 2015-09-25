@@ -895,7 +895,7 @@ function classStatement(tree):
     constructor = functions.filter(x => x[1][1] == 'init')[0]
 
     if constructor == null:
-        constructor = ['function', ['identifier', 'init'], [], ['statements']]
+        constructor = ['function', ['identifier', 'init'], ['arraypattern'], ['statements']]
 
         if superclass != null:
             constructor[3].push(['=', ['identifier', 'self'], ['keyword', 'this']])
@@ -904,7 +904,7 @@ function classStatement(tree):
                 ['identifier', '__super__']],
                 ['identifier', 'init']],
                 ['identifier', 'apply']],
-                [['identifier', 'self'], ['identifier', 'arguments']]
+                ['array', ['identifier', 'self'], ['identifier', 'arguments']]
             ])
 
     s = ['statements']
@@ -912,7 +912,7 @@ function classStatement(tree):
 
     if superclass != null: s.push(['()',
         ['.', ['keyword', '_'], ['identifier', 'extends']],
-        [['identifier', 'init'], superclass]
+        ['array', ['identifier', 'init'], superclass]
     ])
 
     s.push(*functions.filter(f => f != constructor).map(function(f):
@@ -926,5 +926,5 @@ function classStatement(tree):
 
     return expression(['=',
         classname,
-        ['()', ['function', null, [], s], []]
+        ['()', ['function', null, ['arraypattern'], s], ['array']]
     ])
