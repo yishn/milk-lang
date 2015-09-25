@@ -149,10 +149,9 @@ function getVarName(base):
 function formatCode(input):
     return input
         .filter(x => typeof x == 'string' ? x.trim() != '' : x != null)
-        .map(x => typeof x == 'string' ? x
-            : formatCode(x).split('\n')
-                .map(y => exports.indent + y)
-                .join('\n')
+        .map(x => typeof x == 'string' ? x : formatCode(x).split('\n')
+            .map(y => exports.indent + y)
+            .join('\n')
         ).join('\n')
 
 function getCheckExistenceWrapper(token):
