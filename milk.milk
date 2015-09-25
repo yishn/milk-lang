@@ -26,6 +26,9 @@ catch e:
     console.error(e.message + ' @' + row + ':' + col)
     return
 
+comments = tokens.filter(x => x[0] == 'comment')
+tokens = tokens.filter(x => x[0] != 'comment')
+
 // Parser
 
 console.error('Parsing...')
