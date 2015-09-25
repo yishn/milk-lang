@@ -392,9 +392,15 @@ function parseObjectPatternItem(tokens):
     output = []
     pointer = 0
 
-    [expr, end] = parseExpression(tokens)
-    output.push(expr)
+    [expr, end] = parseExpression(tokens, ['operator', '='])
+    output.push([expr, null])
     pointer += end
+
+    if tokens[pointer] equals ['operator', '=']:
+        pointer++
+        [expr, end] = parseExpression(tokens[pointer...])
+        pointer += end
+        output[0][1] = expr
 
     if tokens[pointer] equals ['delimiter', ':']:
         pointer++
@@ -409,14 +415,14 @@ function parseObjectPatternItem(tokens):
         }
 
     if output.length == 1:
-        node = output[0]
+        node = output[0][0]
 
         if node[0] != 'identifier': throw {
             message: "Identifier expected",
             offset: tokens[0].offset
         }
 
-        output = [node, node]
+        output = [output[0], output[0]]
 
     return [output, pointer]
 
