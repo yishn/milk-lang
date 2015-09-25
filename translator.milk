@@ -120,8 +120,9 @@ function register(varname):
     return varname
 
 function isObservable(varname, scope = exports.currentScope):
-    return varname in scope.vars ||
-        scope.parent != null && isObservable(varname, scope.parent)
+    return varname in scope.vars
+        || scope.parent != null
+        && isObservable(varname, scope.parent)
 
 function getIdentifiers(tree, list = []):
     if tree[0] == 'identifier' && tree[1] not in list:
@@ -149,7 +150,8 @@ function getVarName(base):
 function formatCode(input):
     return input
         .filter(x => typeof x == 'string' ? x.trim() != '' : x != null)
-        .map(x => typeof x == 'string' ? x : formatCode(x).split('\n')
+        .map(x => typeof x == 'string' ? x : formatCode(x)
+            .split('\n')
             .map(y => exports.indent + y)
             .join('\n')
         ).join('\n')
@@ -196,9 +198,6 @@ function statements(tree):
 
     for i, node in tree if i >= 1:
         code = statement(node) + ';'
-        if node.offset != null:
-            code = '#OFFSET' + node.offset + '\n' + code
-
         s.push(code)
 
     return formatCode(s)
@@ -226,26 +225,24 @@ function statement(tree):
 function deleteStatement(tree):
     [_, _, subject] = tree
 
-    if subject[0] != '[]' || subject[2][0] != 'range':
+    if subject[0] != '[]' || subject[2].length == 2:
         return 'delete ' + expression(subject)
 
     temp = ['identifier', getVarName('i')]
-    range = subject[2]
+    list = subject[2]
 
-    return forStatement(['for', [temp, null], range, null, ['statements',
-        ['keyword', 'delete', ['[]', subject[1], temp]]
+    return forStatement(['for', [temp, null], list, null, ['statements',
+        ['keyword', 'delete', ['[]', subject[1], ['array', temp]]]
     ]])
 
 function expression(tree):
     [type, subject] = tree
 
-    if type in ['number', 'bool', 'keyword', 'identifier', 'regex']:
+    if type in ['number', 'bool', 'keyword', 'identifier', 'regex', 'string']:
         return subject
-    else if type == 'string':
-        return subject.replace(/\n/g, '\\n')
-    else if type.indexOf('array') == 0:
+    else if type in ['array', 'arrayfor']:
         return array(tree)
-    else if type.indexOf('object') == 0:
+    else if type in ['object', 'objectfor']:
         return object(tree)
     else if type == 'function':
         return func(tree)
@@ -259,7 +256,7 @@ function expression(tree):
         output = expression(['()', ['.',
             ['keyword', '_'],
             ['identifier', 'equals']
-        ], tree[1...2]])
+        ], ['array'].concat(tree[1...2])])
         return type == 'equals' ? output : '!' + output
     else if type[1] == '=' && type.length == 2:
         return [paren(tree[1]), type, paren(tree[2])].join(' ')
