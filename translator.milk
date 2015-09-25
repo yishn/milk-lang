@@ -279,18 +279,18 @@ function expression(tree):
         return expression(['()', ['.',
             ['keyword', '_'],
             ['identifier', 'modulo']
-        ], tree[1...2]])
+        ], ['array'].concat(tree[1...2])])
     else if type == '^':
         return expression(['()', ['.',
             ['identifier', 'Math'],
             ['identifier', 'pow']
-        ], tree[1...2]])
+        ], ['array'].concat(tree[1...2])])
     else if type == 'in' || type == 'not in':
         exports.flags['inOp'] = true
         output = expression(['()', ['.',
             ['keyword', '_'],
             ['identifier', 'inOp']
-        ], tree[1...2]])
+        ], ['array'].concat(tree[1...2])])
         return type == 'in' ? output : '!' + output
     else if type in ['+', '-', '++_', '--_', 'typeof', 'new']:
         op = type in ['new', 'typeof'] ? type + ' ' : type.replace('_', '')
