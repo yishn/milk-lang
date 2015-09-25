@@ -448,42 +448,33 @@ function index(tree):
     [type, left, right] = tree
     output = null
     soak = type[0] == '?'
+    isProperArray = right.length != 2
+    isRange = right[0] == 'range'
 
-    if !soak && right[0] != 'range':
-        return paren(tree[1]) + '[' + expression(tree[2]) + ']'
+    if !soak && !isProperArray:
+        return paren(left) + '[' + expression(right[1]) + ']'
 
-    if right[0] != 'range':
+    if !isProperArray:
         output = token => ['[]', token, right]
-    else:
-        [_, start, step, end] = right
+    else if isRange && right[2] == null:
+        [_, start, _, end] = right
 
         if end == null:
             output = token => ['()',
                 ['.', token, ['identifier', 'slice']],
-                [start]
+                ['array', start]
             ]
         else:
-            output = function(token):
-                t = ['()',
-                    ['.', token, ['identifier', 'slice']],
-                    [start, ['+', end, ['number', 1]]]
-                ]
-
-                if step == null: return t
-
-                modulo = ['-', step, start]
-                xtemp = ['identifier', getVarName('x')]
-                itemp = ['identifier', getVarName('i')]
-
-                return ['()',
-                    ['.', t, ['identifier', 'filter']],
-                    [['lambda', null, [[xtemp, null], [itemp, null]],
-                        ['==',
-                            ['%', itemp, modulo],
-                            ['number', 0]
-                        ]
-                    ]]
-                ]
+            output = token => ['()',
+                ['.', token, ['identifier', 'slice']],
+                ['array', start, ['+', end, ['number', 1]]]
+            ]
+    else:
+        itemp = ['identifier', getVarName('i')]
+        output = token => ['arrayfor',
+            ['[]', token, ['array', itemp]],
+            ['for', [itemp, null], right, null]
+        ]
 
     if soak:
         [wrapper, token] = getCheckExistenceWrapper(left)
