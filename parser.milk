@@ -29,8 +29,6 @@ statementKeywords = keywordmap([
 unaryKeywords = keywordmap(['delete', 'throw', 'return'])
 nullKeywords = keywordmap(['continue', 'pass', 'break'])
 
-exports.parse = tree => parseStatements(tree)[0]
-
 // Expression
 
 function searchTokenR(*needles, hay):
@@ -798,3 +796,5 @@ function parseWhile(tokens):
     [s, len] = parseBlock(tokens[pointer...])
 
     return [['while', expr, s], pointer + len]
+
+exports.parse = tree => parseStatements(tree)[0]
