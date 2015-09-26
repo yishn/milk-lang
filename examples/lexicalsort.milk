@@ -2,6 +2,5 @@ function lexicalSort(xs, ys):
     if !xs.length || !ys.length:
         return xs.length - ys.length
 
-    [x, *xs] = xs
-    [y, *ys] = ys
+    [x, *xs] = xs; [y, *ys] = ys
     return x < y ? -1 : x > y ? 1 : lexicalSort(xs, ys)

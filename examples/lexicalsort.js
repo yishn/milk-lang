@@ -15,14 +15,14 @@ lexicalSort = function(xs, ys) {
         xs = (1 >= ref.length) ? [] : [].slice.call(ref, 1);
         return ref;
     })(xs);
-    /*@6:5*/
+    /*@5:20*/
     (function(ref1) {
         y = ref1[0];
         ys = (1 >= ref1.length) ? [] : [].slice.call(ref1, 1);
         return ref1;
     })(ys);
-    /*@7:5*/
+    /*@6:5*/
     return (x < y) ? (-1) : ((x > y) ? 1 : lexicalSort(xs, ys));
 };
 })();
-//: 47ms
+//: 38ms
