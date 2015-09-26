@@ -572,6 +572,9 @@ function func(tree):
     ], '}']
     vars = popScope()
 
+    if !isProperPattern:
+        vars = vars.filter(x => !args[1...].some(y => y[0][1] == x))
+
     code[1].splice(0, 0, varsDefinition(vars))
     return formatCode(code)
 

@@ -2,27 +2,27 @@
 var _ = {}, lexicalSort;
 
 /*@1:1*/
-lexicalSort = function(xxs, yys) {
-    var x, xs, y, ys;
+lexicalSort = function(xs, ys) {
+    var x, y;
     /*@2:5*/
-    if ((!xxs.length) || (!yys.length)) {
+    if ((!xs.length) || (!ys.length)) {
         /*@3:9*/
-        return xxs.length - yys.length;
+        return xs.length - ys.length;
     };
     /*@5:5*/
     (function(ref) {
         x = ref[0];
         xs = (1 >= ref.length) ? [] : [].slice.call(ref, 1);
         return ref;
-    })(xxs);
+    })(xs);
     /*@6:5*/
     (function(ref1) {
         y = ref1[0];
         ys = (1 >= ref1.length) ? [] : [].slice.call(ref1, 1);
         return ref1;
-    })(yys);
+    })(ys);
     /*@7:5*/
     return (x < y) ? (-1) : ((x > y) ? 1 : lexicalSort(xs, ys));
 };
 })();
-//: 46ms
+//: 47ms
