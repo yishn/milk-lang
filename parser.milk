@@ -605,7 +605,8 @@ function parseStatements(tokens):
                 break
 
     while pointer <= end:
-        if tokens[pointer][0] == 'newline':
+        if tokens[pointer][0] == 'newline'
+        || tokens[pointer] equals ['delimiter', ';']:
             pointer++
             continue
 
