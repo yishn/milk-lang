@@ -617,21 +617,22 @@ function parseStatements(tokens):
 
 function parseStatement(tokens):
     token = tokens[0]
+    output = null
 
     if token equals ['keyword', 'for']:
-        return parseFor(tokens)
+        output = parseFor(tokens)
     else if token equals ['keyword', 'while']:
-        return parseWhile(tokens)
+        output = parseWhile(tokens)
     else if token equals ['keyword', 'class']:
-        return parseClass(tokens)
+        output = parseClass(tokens)
     else if token equals ['keyword', 'if']:
-        return parseIf(tokens)
+        output = parseIf(tokens)
     else if token equals ['keyword', 'try']:
-        return parseTry(tokens)
+        output = parseTry(tokens)
     else if nullKeywords.some(x => x equals token):
-        return [token, 1]
+        output = [token, 1]
     else if unaryKeywords.some(x => x equals token):
-        return parseUnaryKeyword(tokens)
+        output = parseUnaryKeyword(tokens)
     else if token[0] == 'keyword'
     && token not equals ['keyword', 'function']
     && statementKeywords.every(x => x not equals token):
@@ -639,8 +640,11 @@ function parseStatement(tokens):
             message: "Unexpected '" + token[1] + "'",
             offset: token.offset
         }
+    else:
+        output = parseExpression(tokens)
 
-    return parseExpression(tokens)
+    output[0].offset = tokens[0].offset
+    return output
 
 function parseUnaryKeyword(tokens):
     token = tokens[0]
@@ -793,4 +797,4 @@ function parseWhile(tokens):
 
     return [['while', expr, s], pointer + len]
 
-module.exports = tree => parseStatements(tree)[0]
+exports.parse = tree => parseStatements(tree)[0]

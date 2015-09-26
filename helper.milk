@@ -18,12 +18,13 @@ exports.offsetToLinePos = function(offset, input):
 
     return navigate([0, 0], offset, lines).map(x => x + 1)
 
-exports.findOffset = function(tree):
-    if 'offset' in tree:
-        return tree.offset
+exports.replaceOffsets = function(js, milk):
+    function replaceOffsetLine(line):
+        if line.trim().indexOf('//OFFSET') != 0:
+            return line
 
-    for node in tree if typeof node == 'object':
-        offset = findOffset(tree)
-        if offset != null: return offset
+        offset = parseInt(line.trim().replace('//OFFSET', ''), 10)
+        [row, col] = exports.offsetToLinePos(offset, milk)
+        return /^\s*/.exec(line)[0] + '/*@' + row + ':' + col + '*/'
 
-    return null
+    return js.split('\n').map(replaceOffsetLine).join('\n')

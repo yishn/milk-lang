@@ -23,11 +23,12 @@ try:
 
     // Parser
     console.error('Parsing...')
-    tree = parser(tokens)
+    tree = parser.parse(tokens)
 
     // Translating
     console.error('Translating...')
     code = translator.translate(tree)
+    code = helper.replaceOffsets(code, data)
 catch e:
     [row, col] = helper.offsetToLinePos(e.offset, data)
     console.error(e.message + ' @' + row + ':' + col)

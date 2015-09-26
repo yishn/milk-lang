@@ -198,7 +198,11 @@ function statements(tree):
 
     for i, node in tree if i >= 1:
         code = statement(node)
-        if code != null: s.push(code + ';')
+
+        if node.offset != null:
+            s.push('//OFFSET' + node.offset)
+        if code != null:
+            s.push(code + ';')
 
     return formatCode(s)
 
