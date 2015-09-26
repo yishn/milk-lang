@@ -793,4 +793,4 @@ function parseWhile(tokens):
 
     return [['while', expr, s], pointer + len]
 
-module.exports = parseStatements
+module.exports = tree => parseStatements(tree)[0]
