@@ -164,10 +164,7 @@ function getCheckExistenceWrapper(token):
         s = ['statements']
         if needTempVar: s.push(['=', temp, token])
 
-        s.push(['if', [['||',
-            ['==', ['typeof', temp], ['string', "'undefined'"]],
-            ['==', temp, ['keyword', 'null']]
-        ], ['statements',
+        s.push(['if', [['==', temp, ['keyword', 'null']], ['statements',
             ['keyword', 'return', ['keyword', 'null']]
         ]]])
         s.push(['keyword', 'return', tree])
@@ -788,12 +785,13 @@ function existentialOp(tree):
 
     if needTempVar:
         s = ['statements']
+        s.push(['=', temp, subject])
         s.push(['if', [condition, ['statements',
             ['keyword', 'return', defaultv]
         ]]])
         s.push(['keyword', 'return', temp])
 
-        return expression(['()', ['function', null, ['arraypattern', [temp, null]], s], ['array', subject]])
+        return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
 
     return expression(['?', condition, defaultv, temp])
 
