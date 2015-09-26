@@ -179,11 +179,12 @@ function parseExpression(tokens, *breakerTokens):
         output = ['lambda', null, head, body]
 
     else if (k = searchTokenR(['operator', '?'], output)) != -1:
-        m = searchTokenR(['operator', ':'], output)
-        if m < k: throw {
+        m = searchTokenR(['operator', ':'], output[k...])
+        if m < 0: throw {
             message: "Didn't find the ':' to the '?'",
             offset: output[k].offset
         }
+        m += k
 
         [condition, _] = parseExpression(output[0...k - 1])
         [left, _] = parseExpression(output[k + 1...m - 1])
