@@ -538,7 +538,7 @@ function funcCall(tree):
         temps = [getVarName('x') for _ in [1...placeholderCount]]
 
         output = function(token):
-            a = temps.map(x => [['identifier', x], null])
+            a = ['arraypattern'].concat(temps.map(x => [['identifier', x], null]))
             b = args.map(function(x):
                 if x equals ['keyword', '_']:
                     temp = temps.splice(0, 1)[0]
