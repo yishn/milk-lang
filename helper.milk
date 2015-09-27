@@ -18,7 +18,7 @@ exports.offsetToLinePos = function(offset, input):
 
     return navigate([0, 0], offset, lines).map(x => x + 1)
 
-exports.commentator = function(js, milk, comments):
+exports.commentate = function(js, milk, comments):
     lastReportedLine = -5
     lines = js.split('\n')
 

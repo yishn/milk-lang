@@ -6,8 +6,8 @@ backup*/
 *.bat
 
 milk.js
+milkc.js
 helper.js
 translator.js
 lexer.js
-milk2.js
 parser.js

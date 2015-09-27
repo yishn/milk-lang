@@ -110,7 +110,7 @@ rules = {
     ]
 }
 
-module.exports = function(input):
+exports.tokenize = function(input):
     [residue, offset] = [input, 0]
     tokens = []
 

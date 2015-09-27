@@ -1,38 +1,16 @@
-process = require('process')
-fs = require('fs')
-helper = require('./helper')
-lexer = require('./lexer')
-parser = require('./parser')
-translator = require('./translator')
+tokenize = require('./lexer').tokenize
+parse = require('./parser').parse
+translate = require('./translator').translate
+commentate = require('./helper').commentate
 
-filename = process.argv[2]
-data = fs.readFileSync(filename, 'utf-8')
+exports.compile = function(data, options = null):
+    data = data.replace(/\r\n/g, '\n').replace(/\r/g, '')
+    tokens = tokenize(data)
 
-console.time('//')
+    comments = tokens.filter(([type, _]) => type == 'comment')
+    tokens = tokens.filter(([type, _]) => type != 'comment')
 
-// Normalize endings
-data = data.replace(/\r\n/g, '\n').replace(/\r/g, '')
+    tree = parse(tokens)
+    code = translate(tree, options)
 
-try:
-    // Lexer
-    console.error('Lexer...')
-    tokens = lexer(data)
-
-    comments = tokens.filter(x => x[0] == 'comment')
-    tokens = tokens.filter(x => x[0] != 'comment')
-
-    // Parser
-    console.error('Parsing...')
-    tree = parser.parse(tokens)
-
-    // Translating
-    console.error('Translating...')
-    code = translator.translate(tree)
-    code = helper.commentator(code, data, comments)
-catch e:
-    [row, col] = helper.offsetToLinePos(e.offset, data)
-    console.error(e.message + ' @' + row + ':' + col)
-    return
-
-console.log(code)
-console.timeEnd('//')
+    return commentate(code, data, comments)

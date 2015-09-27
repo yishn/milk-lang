@@ -1,0 +1,20 @@
+process = require('process')
+fs = require('fs')
+helper = require('./helper')
+milk = require('./milk')
+
+if process.argv.length >= 3:
+    filename = process.argv[2]
+    data = fs.readFileSync(filename, 'utf-8')
+
+    console.time('//')
+    console.error('Compiling...')
+
+    try:
+        console.log(milk.compile(data))
+    catch e:
+        [row, col] = helper.offsetToLinePos(e.offset, data)
+        console.error(e.message + ' @' + row + ':' + col)
+        return
+
+    console.timeEnd('//')
