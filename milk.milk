@@ -7,8 +7,8 @@ exports.compile = function(data, options = null):
     data = data.replace(/\r\n/g, '\n').replace(/\r/g, '')
     tokens = tokenize(data)
 
-    comments = tokens.filter(([type, _]) => type == 'comment')
-    tokens = tokens.filter(([type, _]) => type != 'comment')
+    comments = tokens.filter([type, _] => type == 'comment')
+    tokens = tokens.filter([type, _] => type != 'comment')
 
     tree = parse(tokens)
     code = translate(tree, options)

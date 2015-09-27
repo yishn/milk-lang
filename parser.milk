@@ -146,6 +146,12 @@ function parseExpression(tokens, *breakerTokens):
             j++
 
         else if token equals ['leftdelimiter', '[']
+        && output[j + 1] equals ['operator', '=>']:
+            // Lambda head
+            [tree, _] = parseArrayPattern(t)
+            output[j] = ['arraypattern', tree]
+
+        else if token equals ['leftdelimiter', '[']
         || token equals ['leftdelimiter', '?[']:
             // Indexer or array
             indexer = output[j - 1]?[0] not in [null, 'operator', 'newline']
@@ -155,6 +161,12 @@ function parseExpression(tokens, *breakerTokens):
             if indexer:
                 output.splice(j, 0, ['operator', token[1] + ']'])
                 j++
+
+        else if token equals ['leftdelimiter', '{']
+        && output[j + 1] equals ['operator', '=>']:
+            // Lambda head
+            [tree, _] = parseObjectPattern(t)
+            output[j] = ['arraypattern', tree]
 
         else if token equals ['leftdelimiter', '{']:
             // Object
