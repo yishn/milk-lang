@@ -42,4 +42,7 @@ exports.commentate = function(js, milk, comments):
             lines[i] += '\n' + indent + comments[0][1]
             comments.splice(0, 1)
 
+    for [_, comment] in comments:
+        lines.push(comment)
+
     return lines.filter(x => x != '').join('\n')
