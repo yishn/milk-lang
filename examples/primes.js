@@ -101,5 +101,4 @@ factorization = function(number) {
 console.log('Here is your prime factorization for 8733:');
 console.log(factorization(8733));
 })();
-
-//: 9263ms
+//: 57ms

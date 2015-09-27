@@ -18,13 +18,24 @@ exports.offsetToLinePos = function(offset, input):
 
     return navigate([0, 0], offset, lines).map(x => x + 1)
 
-exports.replaceOffsets = function(js, milk):
-    function replaceOffsetLine(line):
-        if line.trim().indexOf('//OFFSET') != 0:
-            return line
+exports.commentator = function(js, milk, comments):
+    lastReportedLine = -5
+    lines = js.split('\n')
+
+    for i, line in lines:
+        if line.trim().indexOf('//OFFSET') != 0: continue
 
         offset = parseInt(line.trim().replace('//OFFSET', ''), 10)
+        indent = line.match(/^\s*/)[0]
         [row, col] = exports.offsetToLinePos(offset, milk)
-        return /^\s*/.exec(line)[0] + '/*@' + row + ':' + col + '*/'
+        lines[i] = ''
 
-    return js.split('\n').map(replaceOffsetLine).join('\n')
+        if i - lastReportedLine > 5:
+            lines[i] = indent + '/*@' + row + ':' + col + '*/'
+            lastReportedLine = i
+
+        while comments.length > 0 && comments[0].offset <= offset:
+            lines[i] += '\n' + indent + comments[0][1]
+            comments.splice(0, 1)
+
+    return lines.filter(x => x != '').join('\n')

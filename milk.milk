@@ -28,7 +28,7 @@ try:
     // Translating
     console.error('Translating...')
     code = translator.translate(tree)
-    code = helper.replaceOffsets(code, data)
+    code = helper.commentator(code, data, comments)
 catch e:
     [row, col] = helper.offsetToLinePos(e.offset, data)
     console.error(e.message + ' @' + row + ':' + col)
