@@ -62,9 +62,9 @@ function helperFunctions():
         output.push(formatCode([
             exports.flags['compose'] + ' = function(x, y) {', [
                 'return function() {', [
-                    'if (arguments.length == 0)', [
+                    'if (arguments.length === 0)', [
                         'return x(y());'
-                    ], 'else if (arguments.length == 1)', [
+                    ], 'else if (arguments.length === 1)', [
                         'return x(y(arguments[0]));'
                     ], 'return x(y.apply(this, arguments));'
                 ], '}'
