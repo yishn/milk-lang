@@ -1,10 +1,10 @@
 (function() {
-var _ = {}, getPrimes, factorization;
-_.modulo = function(a, b) {
+var getPrimes, factorization;
+modulo = function(a, b) {
     var c = a % b;
     return c >= 0 ? c : c + b;
 }
-_.enumerate = function(l) {
+enumerate = function(l) {
     var t = toString.call(l);
     if (t !== "[object Array]" && t !== "[object String]")
         return Object.keys(l);
@@ -85,10 +85,10 @@ factorization = function(number) {
     primes = getPrimes(number);
 
     // Search for divisor
-    l2 = _.enumerate(primes);
+    l2 = enumerate(primes);
     for (i3 = 0; i3 < l2.length; i3++) {
         p = l2[i3];
-        if (!(_.modulo(number, p) === 0)) continue;
+        if (!(modulo(number, p) === 0)) continue;
         var result;
         /*@37:9*/
         // Recursively get factorization
@@ -101,4 +101,3 @@ factorization = function(number) {
 console.log('Here is your prime factorization for 8733:');
 console.log(factorization(8733));
 })();
-//: 57ms
