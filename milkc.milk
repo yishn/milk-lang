@@ -1,20 +1,28 @@
 process = require('process')
 fs = require('fs')
+minimist = require('minimist')
 helper = require('./helper')
 milk = require('./milk')
 
-if process.argv.length >= 3:
-    filename = process.argv[2]
+argv = minimist(process.argv[2...])
+
+if argv._.length > 0:
+    filename = argv._[0]
     data = fs.readFileSync(filename, 'utf-8')
 
     console.time('//')
     console.error('Compiling...')
 
     try:
-        console.log(milk.compile(data))
+        output = milk.compile(data)
     catch e:
         [row, col] = helper.offsetToLinePos(e.offset, data)
         console.error(e.message + ' @' + row + ':' + col)
         return
+
+    if argv.o == null:
+        console.log(output)
+    else:
+        fs.writeFileSync(argv.o, output)
 
     console.timeEnd('//')
