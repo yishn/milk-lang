@@ -287,7 +287,7 @@ function expression(tree):
         return [paren(tree[1]), op, paren(tree[2])].join(' ')
     else if type == 'equals' || type == 'not equals':
         temp = ['identifier', addFlag('equals')]
-        output = expression(['()', temp, ['array'].concat(tree[1...2])])
+        output = expression(['()', temp, ['array', *tree[1...2]]])
         return type == 'equals' ? output : '!' + output
     else if type.length == 2 && type[1] == '=':
         return [paren(tree[1]), type, paren(tree[2])].join(' ')
@@ -307,18 +307,18 @@ function expression(tree):
         return [paren(tree[1]), type, paren(tree[2])].join(' ')
     else if type == '%':
         temp = ['identifier', addFlag('modulo')]
-        return expression(['()', temp, ['array'].concat(tree[1...2])])
+        return expression(['()', temp, ['array', *tree[1...2]]])
     else if type == '@':
         temp = ['identifier', addFlag('compose')]
-        return expression(['()', temp, ['array'].concat(tree[1...2])])
+        return expression(['()', temp, ['array', *tree[1...2]]])
     else if type == '^':
         return expression(['()', ['.',
             ['identifier', 'Math'],
             ['identifier', 'pow']
-        ], ['array'].concat(tree[1...2])])
+        ], ['array', *tree[1...2]]])
     else if type == 'in' || type == 'not in':
         temp = ['identifier', addFlag('inOp')]
-        output = expression(['()', temp, ['array'].concat(tree[1...2])])
+        output = expression(['()', temp, ['array', *tree[1...2]]])
         return type == 'in' ? output : '!' + output
     else if type in ['+', '-', '++_', '--_', 'typeof', 'new']:
         op = type in ['new', 'typeof'] ? type + ' ' : type.replace('_', '')
@@ -542,7 +542,7 @@ function funcCall(tree):
         temps = [getVarName('x') for _ in [1...placeholderCount]]
 
         output = function(token):
-            a = ['arraypattern'].concat(temps.map(x => [['identifier', x], null]))
+            a = ['arraypattern', *temps.map(x => [['identifier', x], null])]
             b = args.map(function(x):
                 if x equals ['keyword', '_']:
                     temp = temps.splice(0, 1)[0]
