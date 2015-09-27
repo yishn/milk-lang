@@ -22,6 +22,10 @@ exports.commentate = function(js, milk, comments):
     lastReportedLine = -5
     lines = js.split('\n')
 
+    for [_, comment] in comments:
+        if comment.indexOf('#') != 0: break
+        lines = [comment, *lines]
+
     for i, line in lines:
         if line.trim().indexOf('//OFFSET') != 0: continue
 
