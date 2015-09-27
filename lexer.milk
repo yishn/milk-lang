@@ -122,7 +122,8 @@ module.exports = function(input):
 
         for t, list in rules:
             // Check whether regex or division
-            if t == 'regex' && lastType not in ['operator', 'leftdelimiter', 'delimiter', 'newline', null]:
+            if t == 'regex'
+            && lastType not in ['keyword', 'operator', 'leftdelimiter', 'delimiter', 'newline', null]:
                 continue
 
             for regex in list:

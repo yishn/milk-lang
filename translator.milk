@@ -854,7 +854,7 @@ function arraypattern(tree, ref):
         if hasDefault: temp[2] = ['??', temp[2], node[1]]
         s.push(temp)
 
-    if hasSpread && tree[spreadindex][1][0] not equals ['keyword', '_']:
+    if hasSpread && tree[spreadindex][1] not equals ['keyword', '_']:
         node = tree[spreadindex][1]
         isProperPattern = node[0] in ['arraypattern', 'objpattern']
         hasDefault = !isProperPattern && node[1] != null
