@@ -148,7 +148,7 @@ function parseExpression(tokens, *breakerTokens):
         else if token equals ['leftdelimiter', '[']
         && output[j + 1] equals ['operator', '=>']:
             // Lambda head
-            [tree, _] = parseArrayPattern(t)
+            [tree, _] = parseArrayPattern(t[1...])
             output[j] = ['arraypattern', tree]
 
         else if token equals ['leftdelimiter', '[']
@@ -165,7 +165,7 @@ function parseExpression(tokens, *breakerTokens):
         else if token equals ['leftdelimiter', '{']
         && output[j + 1] equals ['operator', '=>']:
             // Lambda head
-            [tree, _] = parseObjectPattern(t)
+            [tree, _] = parseObjectPattern(t[1...])
             output[j] = ['arraypattern', tree]
 
         else if token equals ['leftdelimiter', '{']:
