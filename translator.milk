@@ -58,7 +58,11 @@ function underscore():
         output.push(formatCode([
             '_.compose = function(x, y) {', [
                 'return function() {', [
-                    'return x(y.apply(this, arguments));'
+                    'if (arguments.length == 0)', [
+                        'return x(y());'
+                    ], 'else if (arguments.length == 1)', [
+                        'return x(y(arguments[0]));'
+                    ], 'return x(y.apply(this, arguments));'
                 ], '}'
             ], '}'
         ]))
