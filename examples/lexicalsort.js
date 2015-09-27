@@ -1,12 +1,9 @@
 (function() {
 var _ = {}, lexicalSort;
-
 /*@1:1*/
 lexicalSort = function(xs, ys) {
     var x, y;
-    /*@2:5*/
     if ((!xs.length) || (!ys.length)) {
-        /*@3:9*/
         return xs.length - ys.length;
     };
     /*@5:5*/
@@ -27,4 +24,4 @@ lexicalSort = function(xs, ys) {
     return (x < y) ? (-1) : ((x > y) ? 1 : lexicalSort(xs, ys));
 };
 })();
-//: 46ms
+//: 49ms
