@@ -17,8 +17,8 @@ exports.translate = function(tree, options):
     vars = popScope()
 
     output = [
-        'var _ = {}; ' + varsDefinition(vars)
-        underscore()
+        varsDefinition(vars)
+        helperFunctions()
         code
     ]
 
@@ -27,20 +27,20 @@ exports.translate = function(tree, options):
 
     return output.join('\n')
 
-function underscore():
+function helperFunctions():
     output = []
 
-    if exports.flags['modulo']:
+    if exports.flags['modulo'] != null:
         output.push(formatCode([
-            '_.modulo = function(a, b) {', [
+            exports.flags['modulo'] + ' = function(a, b) {', [
                 'var c = a % b;'
                 'return c >= 0 ? c : c + b;'
             ], '}'
         ]))
 
-    if exports.flags['enumerate']:
+    if exports.flags['enumerate'] != null:
         output.push(formatCode([
-            '_.enumerate = function(l) {', [
+            exports.flags['enumerate'] + ' = function(l) {', [
                 'var t = toString.call(l);'
                 'if (t !== "[object Array]" && t !== "[object String]")', [
                     'return Object.keys(l);'
@@ -48,9 +48,9 @@ function underscore():
             ], '}'
         ]))
 
-    if exports.flags['inOp']:
+    if exports.flags['inOp'] != null:
         output.push(formatCode([
-            '_.inOp = function(x, l) {', [
+            exports.flags['inOp'] + ' = function(x, l) {', [
                 'var t = toString.call(l);'
                 'if (t !== "[object Array]" && t !== "[object String]")', [
                     'return x in l;'
@@ -58,9 +58,9 @@ function underscore():
             ], '}'
         ]))
 
-    if exports.flags['compose']:
+    if exports.flags['compose'] != null:
         output.push(formatCode([
-            '_.compose = function(x, y) {', [
+            exports.flags['compose'] + ' = function(x, y) {', [
                 'return function() {', [
                     'if (arguments.length == 0)', [
                         'return x(y());'
@@ -71,9 +71,9 @@ function underscore():
             ], '}'
         ]))
 
-    if exports.flags['extends']:
+    if exports.flags['extends'] != null:
         output.push(formatCode([
-            '_.extends = function(x, y) {', [
+            exports.flags['extends'] + ' = function(x, y) {', [
                 'var copy = function() {}'
                 'copy.prototype = y.prototype;'
                 'var c = new copy();'
@@ -85,9 +85,9 @@ function underscore():
             ], '}'
         ]))
 
-    if exports.flags['equals']:
+    if exports.flags['equals'] != null:
         output.push(formatCode([
-            '_.equals = function(a, b) {', [
+            exports.flags['equals'] + ' = function(a, b) {', [
                 'if (a === b) return true;'
                 'if (a == null || b == null) return a == b;'
                 'var t = toString.call(a);'
@@ -97,7 +97,7 @@ function underscore():
                 'if (aa) {', [
                     'if (a.length !== b.length) return false;'
                     'for (var i = 0; i < a.length; i++)', [
-                        'if (!_.equals(a[i], b[i])) return false;'
+                        'if (!' + exports.flags['equals'] + '(a[i], b[i])) return false;'
                     ], 'return true;'
                 ], '} else if (ao) {', [
                     'var kk = Object.keys(a);'
@@ -105,7 +105,7 @@ function underscore():
                     'for (var i = 0; i < kk.length; i++) {', [
                         'k = kk[i];'
                         'if (!(k in b)) return false;'
-                        'if (!_.equals(a[k], b[k])) return false;'
+                        'if (!' + exports.flags['equals'] + '(a[k], b[k])) return false;'
                     ], '}'
                     'return true;'
                 ], '}'
@@ -167,6 +167,15 @@ function getVarName(base):
     return r
 
 // Helper functions
+
+function addFlag(flag):
+    if exports.flags[flag] == null:
+        name = getVarName(flag)
+
+        exports.flags[flag] = name
+        return name
+
+    return exports.flags[flag]
 
 function formatCode(input):
     return input
@@ -277,11 +286,8 @@ function expression(tree):
         op = tree[2][0] == 'keyword' && tree[2][1] == 'null' ? type : type + '='
         return [paren(tree[1]), op, paren(tree[2])].join(' ')
     else if type == 'equals' || type == 'not equals':
-        exports.flags['equals'] = true
-        output = expression(['()', ['.',
-            ['keyword', '_'],
-            ['identifier', 'equals']
-        ], ['array'].concat(tree[1...2])])
+        temp = ['identifier', addFlag('equals')]
+        output = expression(['()', temp, ['array'].concat(tree[1...2])])
         return type == 'equals' ? output : '!' + output
     else if type.length == 2 && type[1] == '=':
         return [paren(tree[1]), type, paren(tree[2])].join(' ')
@@ -300,28 +306,19 @@ function expression(tree):
     else if type in ['<', '>', '+', '-', '*', '/', 'instanceof'] && tree.length == 3:
         return [paren(tree[1]), type, paren(tree[2])].join(' ')
     else if type == '%':
-        exports.flags['modulo'] = true
-        return expression(['()', ['.',
-            ['keyword', '_'],
-            ['identifier', 'modulo']
-        ], ['array'].concat(tree[1...2])])
+        temp = ['identifier', addFlag('modulo')]
+        return expression(['()', temp, ['array'].concat(tree[1...2])])
     else if type == '@':
-        exports.flags['compose'] = true
-        return expression(['()', ['.',
-            ['keyword', '_'],
-            ['identifier', 'compose']
-        ], ['array'].concat(tree[1...2])])
+        temp = ['identifier', addFlag('compose')]
+        return expression(['()', temp, ['array'].concat(tree[1...2])])
     else if type == '^':
         return expression(['()', ['.',
             ['identifier', 'Math'],
             ['identifier', 'pow']
         ], ['array'].concat(tree[1...2])])
     else if type == 'in' || type == 'not in':
-        exports.flags['inOp'] = true
-        output = expression(['()', ['.',
-            ['keyword', '_'],
-            ['identifier', 'inOp']
-        ], ['array'].concat(tree[1...2])])
+        temp = ['identifier', addFlag('inOp')]
+        output = expression(['()', temp, ['array'].concat(tree[1...2])])
         return type == 'in' ? output : '!' + output
     else if type in ['+', '-', '++_', '--_', 'typeof', 'new']:
         op = type in ['new', 'typeof'] ? type + ' ' : type.replace('_', '')
@@ -664,15 +661,12 @@ function forHead(tree):
                     + expression(['+=', second, steptemp]) + ', ' + expression(['_++', first]) + ') {'
             ])
     else if identifierCount == 1:
-        exports.flags['enumerate'] = true
+        temp = ['identifier', addFlag('enumerate')]
         listtemp = getVarName('l')
         itemp = register(getVarName('i'))
 
         s = ['statements', ['=', ['identifier', listtemp],
-            ['()', ['.',
-                ['keyword', '_'],
-                ['identifier', 'enumerate']
-            ], ['array', subject]]
+            ['()', temp, ['array', subject]]
         ]]
 
         output = formatCode([
@@ -938,7 +932,7 @@ function objpattern(tree, ref):
 
 function classStatement(tree):
     [_, classname, superclass, functions] = tree
-    if superclass != null: exports.flags['extends'] = true
+    if superclass != null: temp = ['identifier', addFlag('extends')]
 
     functions = functions
     .filter(x => x[0] == 'function')
@@ -966,7 +960,7 @@ function classStatement(tree):
     s.push(constructor)
 
     if superclass != null: s.push(['()',
-        ['.', ['keyword', '_'], ['identifier', 'extends']],
+        temp,
         ['array', ['identifier', 'init'], superclass]
     ])
 
