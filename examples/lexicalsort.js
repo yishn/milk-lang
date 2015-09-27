@@ -11,18 +11,20 @@ lexicalSort = function(xs, ys) {
     };
     /*@5:5*/
     (function(ref) {
-        x = ref[0];
-        xs = (1 >= ref.length) ? [] : [].slice.call(ref, 1);
+        (function(ref1) {
+            x = ref1[0];
+            xs = (1 >= ref1.length) ? [] : [].slice.call(ref1, 1);
+            return ref1;
+        })(ref[0]);
+        (function(ref2) {
+            y = ref2[0];
+            ys = (1 >= ref2.length) ? [] : [].slice.call(ref2, 1);
+            return ref2;
+        })(ref[1]);
         return ref;
-    })(xs);
-    /*@5:20*/
-    (function(ref1) {
-        y = ref1[0];
-        ys = (1 >= ref1.length) ? [] : [].slice.call(ref1, 1);
-        return ref1;
-    })(ys);
+    })([xs, ys]);
     /*@6:5*/
     return (x < y) ? (-1) : ((x > y) ? 1 : lexicalSort(xs, ys));
 };
 })();
-//: 38ms
+//: 46ms
