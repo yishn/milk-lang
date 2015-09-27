@@ -1,5 +1,5 @@
 (function() {
-var _ = {}, palindrome;
+var _ = {}; var palindrome;
 /*@1:1*/
 palindrome = function(input) {
     var first, rest, last;
@@ -17,4 +17,4 @@ palindrome = function(input) {
     return (first === last) && palindrome(rest);
 };
 })();
-//: 62ms
+//: 32ms

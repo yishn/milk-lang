@@ -12,7 +12,7 @@ exports.translate = function(tree, options = { indent: '    ', wrapper: true }):
     vars = popScope()
 
     output = [
-        'var _ = {}' + (vars.length > 0 ? ', ' + vars.join(', ') : '') + ';'
+        'var _ = {}; ' + varsDefinition(vars)
         underscore()
         code
     ]
