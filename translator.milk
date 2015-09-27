@@ -1,4 +1,9 @@
-exports.translate = function(tree, options = { indent: '    ', wrapper: true }):
+exports.translate = function(tree, options):
+    if options == null: options = {
+        indent: '    ',
+        wrapper: true
+    }
+
     exports.indent = options.indent
     exports.flags = {}
     exports.identifiers = getIdentifiers(tree)
@@ -524,7 +529,7 @@ function funcCall(tree):
 
     if callsuper:
         tree[1] = ['.', ['.', ['.', ['identifier', 'self'], ['identifier', '__super__']], subject[2]], ['identifier', 'call']]
-        tree[2].splice(0, 0, ['identifier', 'self'])
+        tree[2].splice(1, 0, ['identifier', 'self'])
 
     if placeholderCount == 0 && !hasSpread && !soak:
         return paren(subject) + '(' + args[1...].map(x => expression(x)).join(', ') + ')'
@@ -576,7 +581,9 @@ function func(tree):
 
     pushScope()
     if !isProperPattern:
-        output += args[1...].map(x => expression(x[0])).join(', ')
+        vars = args[1...].map(x => expression(x[0]))
+        for x in vars: register(x)
+        output += vars.join(', ')
 
     output += ') {'
     insert = []
