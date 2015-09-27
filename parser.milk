@@ -217,7 +217,8 @@ function parseExpression(tokens, *breakerTokens):
         else:
             output = r
 
-    else if (k = searchTokenL(*elementOp, output)) != -1:
+    else if (k = searchTokenL(*elementOp, output)) != -1
+    || (k = searchTokenR(['operator', '@'], output)) != -1:
         [left, _] = parseExpression(output[0...k - 1])
         [right, _] = parseExpression(output[k + 1...])
 

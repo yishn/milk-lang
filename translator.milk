@@ -54,6 +54,15 @@ function underscore():
             ], '}'
         ]))
 
+    if exports.flags['compose']:
+        output.push(formatCode([
+            '_.compose = function(x, y) {', [
+                'return function() {', [
+                    'return x(y.apply(this, arguments));'
+                ], '}'
+            ], '}'
+        ]))
+
     if exports.flags['extends']:
         output.push(formatCode([
             '_.extends = function(x, y) {', [
@@ -287,6 +296,12 @@ function expression(tree):
         return expression(['()', ['.',
             ['keyword', '_'],
             ['identifier', 'modulo']
+        ], ['array'].concat(tree[1...2])])
+    else if type == '@':
+        exports.flags['compose'] = true
+        return expression(['()', ['.',
+            ['keyword', '_'],
+            ['identifier', 'compose']
         ], ['array'].concat(tree[1...2])])
     else if type == '^':
         return expression(['()', ['.',
