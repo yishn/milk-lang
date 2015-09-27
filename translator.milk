@@ -12,13 +12,16 @@ exports.translate = function(tree, options = { indent: '    ' }):
     code = statements(tree)
     vars = popScope()
 
-    return [
-        '(function() {'
+    output = [
         'var _ = {}' + (vars.length > 0 ? ', ' + vars.join(', ') : '') + ';'
         underscore()
         code
-        '})();'
-    ].join('\n')
+    ]
+
+    if options.wrapper:
+        output = ['(function() {', *output, '})();']
+
+    return output.join('\n')
 
 function underscore():
     output = []
