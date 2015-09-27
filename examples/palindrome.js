@@ -17,5 +17,4 @@ palindrome = function(input) {
     return (first === last) && palindrome(rest);
 };
 })();
-
-//: 524ms
+//: 62ms

@@ -32,5 +32,4 @@ quicksort = function(list) {
 /*@10:1*/
 console.log(quicksort([453, 45, 234, 46, 34, 4, 24, 56]));
 })();
-
-//: 1280ms
+//: 53ms
