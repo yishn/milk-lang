@@ -332,8 +332,8 @@ function expression(tree):
     else if type == 'range':
         return range(tree)
 
-    console.dir(tree, { depth: null })
-    return '/* ... */'
+    // console.dir(tree, { depth: null })
+    return '/*...*/'
 
 function assignment(tree):
     [_, left, right] = tree
