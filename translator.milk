@@ -1,4 +1,4 @@
-exports.translate = function(tree, options = { indent: '    ' }):
+exports.translate = function(tree, options = { indent: '    ', wrapper: true }):
     { indent: exports.indent } = options
 
     exports.flags = {}
