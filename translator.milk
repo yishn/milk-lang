@@ -1,6 +1,5 @@
 exports.translate = function(tree, options = { indent: '    ', wrapper: true }):
-    { indent: exports.indent } = options
-
+    exports.indent = options.indent
     exports.flags = {}
     exports.identifiers = getIdentifiers(tree)
     exports.currentScope = {
