@@ -416,11 +416,10 @@ function array(tree):
             if expr[0] != 'spread':
                 s.push(['()', ['.', temp, ['identifier', 'push']], ['array', expr]])
             else:
-                s.push(['()', ['.', ['.',
-                    temp,
-                    ['identifier', 'push']],
-                    ['identifier', 'apply']
-                ], ['array', temp, expr[1]]])
+                xtemp = ['identifier', getVarName('x')]
+                s.push(['for', [xtemp, null], expr[1], null, ['statements',
+                    ['()', ['.', temp, ['identifier', 'push']], ['array', xtemp]]
+                ]])
 
         s.push(['keyword', 'return', temp])
         return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
