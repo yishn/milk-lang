@@ -1,28 +1,64 @@
 process = require('process')
 fs = require('fs')
+path = require('path')
 minimist = require('minimist')
 helper = require('./helper')
 milk = require('./milk')
 
 argv = minimist(process.argv[2...])
 
+function readdirRecursive(p):
+    items = fs.readdirSync(p).map(x => path.join(p, x))
+
+    for i, item in items if fs.statSync(item).isDirectory():
+        items = items.concat(readdirRecursive(item))
+
+    return items.filter(x => fs.statSync(x).isFile())
+
+function endsWithMilk(filename):
+    if (l = filename.length) < 5: return false
+    return filename[l - 5 ... l - 1] == '.milk'
+
+function replaceMilk(filename):
+    l = filename.length
+    return filename[0 ... l - 6] + '.js'
+
+// Main
+
 if argv._.length > 0:
-    filename = argv._[0]
-    data = fs.readFileSync(filename, 'utf-8')
+    [p, ...] = argv._
+    [stats, deststats] = [fs.statSync(p), argv.o ? fs.statSync(argv.o) : null]
+    files = []
 
-    console.time('//')
-    console.error('Compiling...')
-
-    try:
-        output = milk.compile(data)
-    catch e:
-        [row, col] = helper.offsetToLinePos(e.offset, data)
-        console.error(e.message + ' @' + row + ':' + col)
+    if stats.isFile():
+        files = [p]
+    else if stats.isDirectory():
+        files = readdirRecursive(p).filter(endsWithMilk)
+    else:
+        console.error('Invalid input.')
         return
 
-    if argv.o == null:
-        console.log(output)
-    else:
-        fs.writeFileSync(argv.o, output)
+    for i, file in files:
+        data = fs.readFileSync(file, 'utf-8')
+        console.error('Compiling...')
 
-    console.timeEnd('//')
+        try:
+            output = milk.compile(data)
+        catch e:
+            [row, col] = helper.offsetToLinePos(e.offset, data)
+            console.error(e.message + ' @' + row + ':' + col)
+            return
+
+        if argv.o == null:
+            console.log(output)
+        else if deststats.isFile():
+            fs.writeFileSync(argv.o, output)
+        else if deststats.isDirectory():
+            relative = p
+            if stats.isFile(): relative = path.dirname(p)
+            milkfile = (replaceMilk @ path.join)(argv.o, path.relative(file, relative), file)
+
+            fs.writeFileSync(milkfile, output)
+
+        percent = Math.round((i + 1) * 100 / files.length)
+        console.error(percent + '%')
