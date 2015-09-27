@@ -25,7 +25,7 @@ function removeNewline(tokens, i):
         if k == i:
             tokens[k] = null
         else if depth == 0:
-            tokens[k] = null
+            tokens[k] = ['newline', 'nodent']
             return
 
 rules = {
