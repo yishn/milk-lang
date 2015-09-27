@@ -1,7 +1,7 @@
 exports.offsetToLinePos = function(offset, input):
     lines = [x + '\n' for x in input.split('\n')]
 
-    navigate = function(pos, step):
+    function navigate(pos, step):
         [row, col] = pos
 
         if col + step >= 0 && col + step < lines[row].length:
