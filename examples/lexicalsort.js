@@ -1,5 +1,5 @@
 (function() {
-var _ = {}, lexicalSort;
+var lexicalSort;
 /*@1:1*/
 lexicalSort = function(xs, ys) {
     var x, y;
@@ -24,4 +24,3 @@ lexicalSort = function(xs, ys) {
     return (x < y) ? (-1) : ((x > y) ? 1 : lexicalSort(xs, ys));
 };
 })();
-//: 49ms
