@@ -3,12 +3,12 @@
   "productName": "Milk",
   "version": "0.1.0",
   "author": "Yichuan Shen",
-  "main": "milk.js",
+  "main": "./lib/milk.js",
   "license": "MIT",
   "dependencies": {
     "minimist": "^1.2.0"
   },
   "bin": {
-    "milkc": "./milkc.js"
+    "milkc": "./lib/milkc.js"
   }
 }
