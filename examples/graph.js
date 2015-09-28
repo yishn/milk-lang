@@ -46,10 +46,16 @@ Graph = (function() {
             self.addEdge(v1, v2);
         };
     };
-    init.prototype.getVertices = function() {
+    init.prototype._permute = function(v1, v2) {
         var self;
         self = this;
         /*@9:9*/
+        return [[v1, v2], [v2, v1]];
+    };
+    init.prototype.getVertices = function() {
+        var self;
+        self = this;
+        /*@12:9*/
         return (function() {
             var r1, i4, l2, v;
             r1 = [];
@@ -64,42 +70,42 @@ Graph = (function() {
     init.prototype.getNeighbors = function(v) {
         var self;
         self = this;
-        /*@12:9*/
+        /*@15:9*/
         return self._adjacencyList[v];
     };
     init.prototype.addEdge = function(v1, v2) {
         var self, i5, l3, x, y;
         self = this;
-        /*@15:9*/
-        l3 = enumerate([[v1, v2], [v2, v1]]);
+        /*@18:9*/
+        l3 = enumerate(self._permute(v1, v2));
         for (i5 = 0; i5 < l3.length; i5++) {
             (function(ref2) {
                 x = ref2[0];
                 y = ref2[1];
                 return ref2;
             })(l3[i5]);
-            /*@16:13*/
+            /*@19:13*/
             self._adjacencyList[x].push(y);
         };
     };
     init.prototype.hasEdge = function(v1, v2) {
         var self;
         self = this;
-        /*@19:9*/
+        /*@22:9*/
         return inOp(v2, self._adjacencyList[v1]);
     };
     init.prototype.removeEdge = function(v1, v2) {
         var self, i6, l4, x, y;
         self = this;
-        /*@22:9*/
-        l4 = enumerate([[v1, v2], [v2, v1]]);
+        /*@25:9*/
+        l4 = enumerate(self._permute(v1, v2));
         for (i6 = 0; i6 < l4.length; i6++) {
             (function(ref3) {
                 x = ref3[0];
                 y = ref3[1];
                 return ref3;
             })(l4[i6]);
-            /*@23:13*/
+            /*@26:13*/
             self._adjacencyList[x] = self._adjacencyList[x].filter(function(x) {
                 return x !== y;
             });
@@ -108,7 +114,7 @@ Graph = (function() {
     init.prototype.addVertex = function(v) {
         var self;
         self = this;
-        /*@26:9*/
+        /*@29:9*/
         if (!inOp(v, self._adjacencyList)) {
             self._adjacencyList[v] = [];
         };
@@ -116,19 +122,19 @@ Graph = (function() {
     init.prototype.hasVertex = function(v) {
         var self;
         self = this;
-        /*@30:9*/
+        /*@33:9*/
         return inOp(v, self._adjacencyList);
     };
     init.prototype.removeVertex = function(v) {
         var self, i7, l5, w;
         self = this;
-        /*@33:9*/
+        /*@36:9*/
         l5 = enumerate(self.getNeighbors(v));
         for (i7 = 0; i7 < l5.length; i7++) {
             w = l5[i7];
             self.removeEdge(v, w);
         };
-        /*@36:9*/
+        /*@39:9*/
         delete self._adjacencyList[v];
     };
     return init;
@@ -150,11 +156,11 @@ space = (function() {
     };
     return r2;
 })();
-/*@39:1*/
+/*@42:1*/
 graph = new Graph(space, ['1,1', '1,2'], ['1,1', '1,3'], ['1,1', '2,1'], ['1,1', '3,1']);
 console.log(graph.getVertices());
 console.log(graph.getNeighbors('1,1'));
-/*@44:1*/
+/*@47:1*/
 graph.removeVertex('1,3');
 console.log(graph.getNeighbors('1,1'));
 })();

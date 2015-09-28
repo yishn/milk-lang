@@ -5,6 +5,9 @@ class Graph:
         for [v1, v2] in edges:
             self.addEdge(v1, v2)
 
+    function _permute(v1, v2):
+        return [[v1, v2], [v2, v1]]
+
     function getVertices():
         return [v for v in self._adjacencyList]
 
@@ -12,14 +15,14 @@ class Graph:
         return self._adjacencyList[v]
 
     function addEdge(v1, v2):
-        for [x, y] in [[v1, v2], [v2, v1]]:
+        for [x, y] in self._permute(v1, v2):
             self._adjacencyList[x].push(y)
 
     function hasEdge(v1, v2):
         return v2 in self._adjacencyList[v1]
 
     function removeEdge(v1, v2):
-        for [x, y] in [[v1, v2], [v2, v1]]:
+        for [x, y] in self._permute(v1, v2):
             self._adjacencyList[x] = self._adjacencyList[x].filter(x => x != y)
 
     function addVertex(v):
