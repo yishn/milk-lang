@@ -120,7 +120,7 @@ age = getAge()
 if age < 6:
     console.log('You are way too young for this.')
 else if age < 12:
-    console.log('Okay, but you need adult supervision. Only anima and light magic allowed.')
+    console.log('You need adult supervision. Only anima and light magic allowed.')
 else if age < 18:
     console.log('You can do it on your own, but no dark magic.')
 else:
