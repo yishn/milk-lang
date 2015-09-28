@@ -64,8 +64,8 @@ magic = {
 Milk can flatten arrays inside arrays using the spread operator `*`:
 
 ```js
-days = [*workdays, 'Saturday', 'Sunday']
-// days == ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+days = ['Sunday', *workdays, 'Saturday']
+// days == ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 ```
 
 There is no `range` function, one can use the following Ruby-like shorthand notation. Unlike Ruby, there is only one range construct and it works the same everywhere.
