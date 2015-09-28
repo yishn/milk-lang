@@ -110,4 +110,27 @@ dict = { name: name.length for name in protagonists if name != 'Lio' }
 // }
 ```
 
-### Pattern Matching
+### Control Flow
+
+If statements work just like in Python, except there is no `elif` keyword and expressions look like JavaScript.
+
+```js
+age = getAge()
+
+if age < 6:
+    console.log('You are way too young for this.')
+else if age < 12:
+    console.log('Okay, but you need adult supervision. Only anima and light magic allowed.')
+else if age < 18:
+    console.log('You can do it on your own, but no dark magic.')
+else:
+    console.log('Do what you want, but adhere to the Laws.')
+```
+
+While loops are also straightforward:
+
+```js
+while age >= 18 && !isWorking():
+    // Nosferatu
+    invoke(magic.dark[2])
+```
