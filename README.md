@@ -68,7 +68,7 @@ days = ['Sunday', *workdays, 'Saturday']
 // days == ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 ```
 
-There is no `range` function, one can use the following Ruby-like shorthand notation. Unlike Ruby, there is only one range construct and it works the same everywhere.
+There is no `range` function, but there is the following Ruby-like shorthand notation. Unlike Ruby, there is only one range construct and it works the same everywhere.
 
 ```js
 stop = 875
@@ -133,4 +133,45 @@ While loops are also straightforward:
 while age >= 18 && !isWorking():
     // Nosferatu
     invoke(magic.dark[2])
+```
+
+For loops work similar to those in Python. Like in array comprehensions, you can specify a filtering condition with `if`:
+
+```js
+for day in days if day != 'Monday':
+    console.log(day)
+// =>
+// Sunday
+// Tuesday
+// Wednesday
+// ...
+```
+
+If you loop over objects, Milk will loop over the object keys:
+
+```js
+for key in magic:
+    console.log(magic)
+// =>
+// anima
+// light
+// dark
+```
+
+If you specify two variables, the first one will get the index or key respectively, and the second one will be the value:
+
+```js
+for i, day in days if i >= 1:
+    console.log(i, day)
+// =>
+// 1 Monday
+// 2 Tuesday
+// 3 Wednesday
+// ...
+
+for key, value in magic if key != 'anima':
+    console.log(key, value.length)
+// =>
+// light 5
+// dark 5
 ```
