@@ -7,6 +7,9 @@ milk = require('./milk')
 
 argv = minimist(process.argv[2...])
 
+endsWithMilk = filename => path.extname(filename) == '.milk'
+replaceMilk = filename => filename[0 ... filename.length - 6] + '.js'
+
 function readdirRecursive(p):
     items = fs.readdirSync(p).map(x => path.join(p, x))
 
@@ -14,14 +17,6 @@ function readdirRecursive(p):
         items = items.concat(readdirRecursive(item))
 
     return items.filter(x => fs.statSync(x).isFile())
-
-function endsWithMilk(filename):
-    if (l = filename.length) < 5: return false
-    return filename[l - 5 ... l - 1] == '.milk'
-
-function replaceMilk(filename):
-    l = filename.length
-    return filename[0 ... l - 6] + '.js'
 
 // Main
 
@@ -38,9 +33,14 @@ if argv._.length > 0:
         console.error('Invalid input.')
         return
 
+    if deststats != null && !deststats.isDirectory():
+        console.error('Invalid output.')
+        return
+
     for i, file in files:
         data = fs.readFileSync(file, 'utf-8')
-        console.error('Compiling...')
+        output = null
+        console.error('Compiling ' + path.basename(file) + '...')
 
         try:
             output = milk.compile(data)
@@ -49,14 +49,12 @@ if argv._.length > 0:
             console.error(e.message + ' @' + row + ':' + col)
             return
 
-        if argv.o == null:
+        if deststats == null:
             console.log(output)
-        else if deststats.isFile():
-            fs.writeFileSync(argv.o, output)
-        else if deststats.isDirectory():
-            relative = p
-            if stats.isFile(): relative = path.dirname(p)
-            milkfile = (replaceMilk @ path.join)(argv.o, path.relative(file, relative), file)
+        else:
+            dir = p
+            if stats.isFile(): dir = path.dirname(p)
+            milkfile = (replaceMilk @ path.join)(argv.o, path.relative(dir, file))
 
             fs.writeFileSync(milkfile, output)
 
