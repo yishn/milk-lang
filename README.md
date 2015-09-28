@@ -23,16 +23,16 @@ function square(x):
 There is also the lambda notation, a shorthand notation for functions which return an expression immediately:
 
 ```js
-cube = x => square(x) * x
-exp = (x, n) => n == 0 ? 1 : x * exp(x, n - 1)
+cube      = x => square(x) * x
+exp       = (x, n) => n == 0 ? 1 : x * exp(x, n - 1)
 moduloSum = (x, y, n) => (x % n + y % n) % n
 ```
 
 If you already have a function, you can create a curried function using placeholders `_` like this:
 
 ```js
-square = exp(_, 2)
-cube = exp(_, 3)
+square  = exp(_, 2)
+cube    = exp(_, 3)
 mod5Sum = moduloSum(_, _, 5)
 
 // mod5Sum(4, 8) == 2
