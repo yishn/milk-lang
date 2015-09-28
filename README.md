@@ -20,9 +20,19 @@ function square(x):
     return r
 ```
 
+Unlike Python you actually can pass such a function as a function argument:
+
+```js
+[1, 2, 3, 4, 5].map(function(x):
+    return x * x
+)
+```
+
 There is also the lambda notation, a shorthand notation for functions which return an expression immediately:
 
 ```js
+[1, 2, 3, 4, 5].map(x => x * x)
+
 cube      =  x => square(x) * x
 exp       = (x, n) => n == 0 ? 1 : x * exp(x, n - 1)
 moduloSum = (x, y, n) => (x % n + y % n) % n
@@ -127,7 +137,7 @@ else:
     console.log('Do what you want, but adhere to the Laws.')
 ```
 
-While loops are also straightforward:
+While loops are also straightforward. Loops do not have an `else` clause like in Python.
 
 ```js
 while age >= 18 && !isWorking():
@@ -175,3 +185,5 @@ for key, value in magic if key != 'anima':
 // light 5
 // dark 5
 ```
+
+### Pattern Matching
