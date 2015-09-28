@@ -38,4 +38,4 @@ mod5Sum = moduloSum(_, _, 5)
 // mod5Sum(4, 8) == 2
 ```
 
-That’s why you should avoid using the underscore as a variable name. Technically, underscore is a keyword, but if Milk can’t make sense of `_`, it’s converted to a normal identifier in JavaScript.
+That’s why you should avoid using the underscore as a variable name. Technically, `_` is a keyword, but if Milk can’t make sense of `_`, it’s converted to a normal identifier in JavaScript.
