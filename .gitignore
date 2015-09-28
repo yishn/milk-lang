@@ -4,10 +4,3 @@ test.milk
 backup*/
 
 *.bat
-
-milk.js
-milkc.js
-helper.js
-translator.js
-lexer.js
-parser.js
