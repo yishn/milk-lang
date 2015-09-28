@@ -529,7 +529,7 @@ function parseObject(tokens):
         || token[0] == 'newline':
             pointer++
         else if token equals ['keyword', 'for']:
-            output[0] == 'objectfor'
+            output[0] = 'objectfor'
 
             [forhead, end] = parseForHead(tokens[pointer...])
             output.push(forhead)
@@ -556,7 +556,8 @@ function parseKeyValuePair(tokens):
 
         if token[0] == 'rightdelimiter'
         || token[0] == 'newline'
-        || token equals ['delimiter', ',']:
+        || token equals ['delimiter', ',']
+        || token equals ['keyword', 'for']:
             if output.length > 2: throw {
                 message: "Object literal has wrong syntax",
                 offset: token.offset
