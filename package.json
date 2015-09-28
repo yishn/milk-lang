@@ -1,6 +1,13 @@
 {
   "name": "milk-lang",
   "productName": "Milk",
+  "description": "Pythonesque Javascript",
+  "keywords": [
+    "javascript",
+    "language",
+    "coffeescript",
+    "compiler"
+  ],
   "version": "0.1.0",
   "author": "Yichuan Shen",
   "main": "./lib/milk.js",
