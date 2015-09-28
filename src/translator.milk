@@ -963,7 +963,7 @@ function classStatement(tree):
         ['array', ['identifier', 'init'], superclass]
     ])
 
-    s.push(*functions.filter(f => f != constructor).map(function(f):
+    s = s.concat(functions.filter(f => f != constructor).map(function(f):
         [name, f[1]] = [f[1], null]
         return ['=', ['.',
             ['.', ['identifier', 'init'], ['identifier', 'prototype']],
