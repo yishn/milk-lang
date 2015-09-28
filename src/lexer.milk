@@ -191,7 +191,7 @@ exports.tokenize = function(input):
 
         lastDepth = depth
 
-    for i in [1,2...lastDepth]:
+    for i in [1, 2 ... lastDepth]:
         output.push(['newline', 'dedent'])
 
     // Remove superfluous newlines

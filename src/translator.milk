@@ -127,7 +127,7 @@ function pushScope():
     return ''
 
 function popScope():
-    if exports.currentScope == null: throw 'no scope'
+    if exports.currentScope == null: return []
 
     scope = exports.currentScope
     exports.currentScope = scope.parent
@@ -154,12 +154,10 @@ function getIdentifiers(tree, list = []):
 
 function getVarName(base):
     r = base
+    i = 0
 
-    if r in exports.identifiers:
-        i = 0
-        while true:
-            r = base + ++i
-            if r not in exports.identifiers: break
+    while r in exports.identifiers:
+        r = base + ++i
 
     exports.identifiers.push(r)
     return r
@@ -176,9 +174,11 @@ function addFlag(flag):
     return exports.flags[flag]
 
 function formatCode(input):
-    return input
-        .filter(x => typeof x == 'string' ? x.trim() != '' : x != null)
-        .map(x => typeof x == 'string' ? x : formatCode(x)
+    lineNotEmpty = x => typeof x == 'string' ? x.trim() != '' : x != null
+
+    return input.filter(lineNotEmpty)
+        .map(x => typeof x == 'string' ? x :
+            formatCode(x)
             .split('\n')
             .map(y => exports.indent + y)
             .join('\n')
@@ -448,7 +448,7 @@ function object(tree):
     if tree[0] != 'objectfor':
         if tree.length == 1: return '{}'
         return formatCode(['{',
-            tree[1...].map((x, i) => expression(x[0]) + ': ' + expression(x[1]) + (i == tree.length - 2 ? '' : ',')),
+            tree[1...].map(([x, y], i) => expression(x) + ': ' + expression(y) + (i == tree.length - 2 ? '' : ',')),
         '}'])
 
     [_, [key, value], *fortrees] = tree
@@ -599,7 +599,7 @@ function func(tree):
     vars = popScope()
 
     if !isProperPattern:
-        vars = vars.filter(x => !args[1...].some(y => y[0][1] == x))
+        vars = vars.filter(x => !args[1...].some([[_, y], _] => y == x))
 
     code[1].splice(0, 0, varsDefinition(vars))
     return formatCode(code)
@@ -724,8 +724,7 @@ function ifStatement(tree):
     code[1].splice(0, 0, varsDefinition(vars))
     output = formatCode(code)
 
-    for i, node in tree if i >= 2:
-        [condition, s] = node
+    for i, [condition, s] in tree if i >= 2:
         code = [condition == 'else'
             ? ' else {'
             : ' else if (' + expression(condition) + ') {', [
