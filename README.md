@@ -12,7 +12,7 @@ Just like Python, Milk uses significant whitespace to delimit blocks of code. Se
 
 ### Functions
 
-There are several ways to define a function in Milk.
+There are several ways to define a function in Milk. That’s the standard way to do it:
 
 ```js
 function square(x):
