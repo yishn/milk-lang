@@ -648,13 +648,6 @@ function parseStatement(tokens):
         output = [token, 1]
     else if unaryKeywords.some(x => x equals token):
         output = parseUnaryKeyword(tokens)
-    else if token[0] == 'keyword'
-    && token not equals ['keyword', 'function']
-    && statementKeywords.every(x => x not equals token):
-        throw {
-            message: "Unexpected '" + token[1] + "'",
-            offset: token.offset
-        }
     else:
         output = parseExpression(tokens)
 
