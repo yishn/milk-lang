@@ -137,7 +137,7 @@ else:
     console.log('Do what you want, but adhere to the Laws.')
 ```
 
-While loops are also straightforward. Loops do not have an `else` clause like in Python.
+While loops are also straightforward. Loops do not have an `else` clause like Python does.
 
 ```js
 while age >= 18 && !isWorking():
