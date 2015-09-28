@@ -23,7 +23,7 @@ function square(x):
 There is also the lambda notation, a shorthand notation for functions which return an expression immediately:
 
 ```js
-cube      = x => square(x) * x
+cube      =  x => square(x) * x
 exp       = (x, n) => n == 0 ? 1 : x * exp(x, n - 1)
 moduloSum = (x, y, n) => (x % n + y % n) % n
 ```
@@ -39,3 +39,66 @@ mod5Sum = moduloSum(_, _, 5)
 ```
 
 That’s why you should avoid using the underscore as a variable name. Technically, `_` is a keyword, but if Milk can’t make sense of `_`, it’s converted to a normal identifier in JavaScript.
+
+### Arrays and Objects
+
+The syntax for arrays and objects is nearly identical to those in JavaScript. Commas are optional if the items are separated by a line break.
+
+```js
+workdays = [
+    "Monday", "Tuesday", "Wednesday"
+    "Thursday", "Friday"
+]
+
+magic = {
+    anima: {
+        fire: ['Fire', 'Elfire', 'Meteor', 'Bolganone', 'Forblaze']
+        wind: ['Wind', 'Elwind', 'Tornado', 'Blizzard', 'Fimbulvetr', 'Excalibur']
+        thunder: ['Thunder', 'Elthunder', 'Thoron', 'Bolting', 'Mjölnir']
+    }
+    light: ['Lightning', 'Shine', 'Divine', 'Purge', 'Aura']
+    dark: ['Flux', 'Fenrir', 'Eclipse', 'Nosferatu', 'Luna']
+}
+```
+
+Milk can flatten arrays inside arrays using the spread operator `*`:
+
+```js
+days = [*workdays, 'Saturday', 'Sunday']
+// days == ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+```
+
+There is no `range` function, one can use the following Ruby-like shorthand notation. Unlike Ruby, there is only one range construct and it works the same everywhere.
+
+```js
+stop = 875
+range = [0...stop]
+
+countdown = [10...1]
+// countdown == [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+
+even = [0, 2, ..., stop]
+// even == [0, 2, 4, 6, 8, ..., 874]
+odd = [1, 3, ..., stop]
+// odd == [1, 3, 5, 7, 9, ..., 875]
+```
+
+There are array and object comprehensions just like in Python:
+
+```js
+squares = [x * x for x in [1, ..., 10]]
+// squares == [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+
+nodiag = [[x, y] for x in [1, 2, 3] for y in [1, 2, 3] if x != y]
+// nodiag == [[1, 2], [1, 3], [2, 1], [2, 3], [3, 1], [3, 2]]
+
+goboard = [['empty' for x in [1...19]] for y in [1...19]]
+
+protagonists = ['Ryan', 'Cyn', 'Pat', 'Lio']
+dict = { name: name.length for name in protagonists if name != 'Lio' }
+// dict == {
+//     "Ryan": 4
+//     "Cyn": 3
+//     "Pat": 3
+// }
+```
