@@ -4,7 +4,7 @@ Milk is a language that compiles into JavaScript. It is the love child of Python
 
 ## Philosophy
 
-Milk tries to be as readable and beautiful as Python without sacrificing the typical JavaScript flavor. Thus keywords and operators from JavaScript hasn’t been changed. One can even use a JavaScript syntax highlighter on Milk source code.
+Milk tries to be as readable and beautiful as Python without sacrificing the typical JavaScript flavor. Thus keywords and operators from JavaScript hasn’t been changed. One can even use a JavaScript syntax highlighter on Milk source code. Check out the [examples](https://github.com/yishn/milk-lang/tree/master/examples) for getting a feeling of the language.
 
 ## Language Reference
 
