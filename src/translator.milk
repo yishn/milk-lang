@@ -62,9 +62,7 @@ function helperFunctions():
         output.push(formatCode([
             exports.flags['compose'] + ' = function(x, y) {', [
                 'return function() {', [
-                    'if (arguments.length === 0)', [
-                        'return x(y());'
-                    ], 'else if (arguments.length === 1)', [
+                    'if (arguments.length <= 1)', [
                         'return x(y(arguments[0]));'
                     ], 'return x(y.apply(this, arguments));'
                 ], '}'
@@ -535,9 +533,11 @@ function funcCall(tree):
         if !hasSpread:
             output = token => ['()', token, args]
         else:
+            obj = args
+            if args.length == 2: obj = args[1][1]
             output = token => ['()',
                 ['.', token, ['identifier', 'apply']],
-                ['array', ['keyword', 'this'], args]
+                ['array', ['keyword', 'this'], obj]
             ]
     else:
         temps = [getVarName('x') for _ in [1...placeholderCount]]
