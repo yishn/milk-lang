@@ -33,8 +33,8 @@ If you already have a function, you can create a curried function using placehol
 ```js
 square  = exp(_, 2)
 cube    = exp(_, 3)
-mod5Sum = moduloSum(_, _, 5)
 
+mod5Sum = moduloSum(_, _, 5)
 // mod5Sum(4, 8) == 2
 ```
 
@@ -73,6 +73,7 @@ There is no `range` function, one can use the following Ruby-like shorthand nota
 ```js
 stop = 875
 range = [0...stop]
+// range == [0, 1, 2, 3, ..., 875]
 
 countdown = [10...1]
 // countdown == [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
@@ -93,6 +94,12 @@ nodiag = [[x, y] for x in [1, 2, 3] for y in [1, 2, 3] if x != y]
 // nodiag == [[1, 2], [1, 3], [2, 1], [2, 3], [3, 1], [3, 2]]
 
 goboard = [['empty' for x in [1...19]] for y in [1...19]]
+// goboard == [
+//     ['empty', 'empty', ..., 'empty']
+//     ['empty', 'empty', ..., 'empty']
+//     ...
+//     ['empty', 'empty', ..., 'empty']
+// ]
 
 protagonists = ['Ryan', 'Cyn', 'Pat', 'Lio']
 dict = { name: name.length for name in protagonists if name != 'Lio' }
@@ -102,3 +109,5 @@ dict = { name: name.length for name in protagonists if name != 'Lio' }
 //     "Pat": 3
 // }
 ```
+
+### Pattern Matching
