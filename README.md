@@ -258,15 +258,13 @@ You can use patterns nearly everywhere where you have to define variables. In fa
 function addIngredients(first = 'Milk', second, *rest):
     console.log(first)
     console.log(second)
-
-    for ingredient in rest:
-        console.log(ingredient)
+    console.log(rest)
 
 addIngredients(null, 'Coffee beans', 'Python skin')
 // =>
 // Milk
 // Coffee beans
-// Python skin
+// ["Python skin"]
 ```
 
 Pattern matching work in for loops:
