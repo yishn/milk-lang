@@ -20,6 +20,7 @@
   },
   "scripts": {
     "examples": "node lib/milkc examples -o examples",
-    "build": "node backup/milkc src -o lib"
+    "build": "node backup/milkc src -o lib",
+    "watch": "node backup/milkc src -o lib -w"
   }
 }

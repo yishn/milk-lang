@@ -22,8 +22,11 @@ function readdirRecursive(p):
     return items.filter(x => fs.statSync(x).isFile())
 
 function compile(file):
-    data = fs.readFileSync(file, 'utf-8')
-    output = null
+    [data, output] = [null, null]
+    try: data = fs.readFileSync(file, 'utf-8')
+    catch: return
+
+    console.error('Compiling ' + path.basename(file) + '...')
 
     try:
         output = milk.compile(data)
@@ -43,31 +46,39 @@ function compile(file):
 
 // Main
 
-if argv._.length == 0:
-    console.error('Invalid input.')
-    return
-
-[p, ...] = argv._
+[p = './', ...] = argv._
 [stats, deststats] = [fs.statSync(p), argv.o ? fs.statSync(argv.o) : null]
 files = []
-
-if stats.isFile():
-    files = [p]
-else if stats.isDirectory():
-    files = readdirRecursive(p).filter(endsWithMilk)
-else:
-    console.error('Invalid input.')
-    return
 
 if deststats != null && !deststats.isDirectory():
     console.error('Invalid output.')
     return
 
-for i, file in files:
-    data = fs.readFileSync(file, 'utf-8')
-    console.error('Compiling ' + path.basename(file) + '...')
+if !argv.w:
+    if stats.isFile():
+        files = [p]
+    else if stats.isDirectory():
+        files = readdirRecursive(p).filter(endsWithMilk)
+    else:
+        console.error('Invalid input.')
+        return
 
-    output = compile(file)
+    for i, file in files:
+        compile(file)
+        percent = Math.round((i + 1) * 100 / files.length)
+        console.error(percent + '%')
 
-    percent = Math.round((i + 1) * 100 / files.length)
-    console.error(percent + '%')
+else:
+    lasttime = new Date()
+
+    function callback(event, file):
+        if !endsWithMilk(file)
+        || event != 'change'
+        || new Date() - lasttime <= 1000:
+            return
+
+        lasttime = new Date()
+        compile(path.join(p, file))
+        console.error('100%')
+
+    fs.watch(p, { recursive: true }, callback)
