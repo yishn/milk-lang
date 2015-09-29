@@ -23,7 +23,9 @@ function square(x):
 Unlike Python you actually can pass such a function as a function argument:
 
 ```js
-[1, 2, 3, 4, 5].map(function(x):
+list = [1, 2, 3, 4, 5]
+
+list.map(function(x):
     return x * x
 )
 ```
@@ -31,18 +33,18 @@ Unlike Python you actually can pass such a function as a function argument:
 There is also the lambda notation, a shorthand notation for functions which return an expression immediately:
 
 ```js
-[1, 2, 3, 4, 5].map(x => x * x)
+list.map(x => x * x)
 
-cube      =  x => square(x) * x
-exp       = (x, n) => n == 0 ? 1 : x * exp(x, n - 1)
+cube = x => square(x) * x
+exp = (x, n) => n == 0 ? 1 : x * exp(x, n - 1)
 moduloSum = (x, y, n) => (x % n + y % n) % n
 ```
 
 If you already have a function, you can create a curried function using placeholders `_` like this:
 
 ```js
-square  = exp(_, 2)
-cube    = exp(_, 3)
+square = exp(_, 2)
+cube = exp(_, 3)
 
 mod5Sum = moduloSum(_, _, 5)
 // mod5Sum(4, 8) == 2
@@ -125,7 +127,7 @@ dict = { name: name.length for name in protagonists if name != 'Lio' }
 If statements work just like in Python, except there is no `elif` keyword and expressions look like JavaScript.
 
 ```js
-age = getAge()
+age = 16
 
 if age < 6:
     console.log('You are way too young for this.')
@@ -137,7 +139,20 @@ else:
     console.log('Do what you want, but adhere to the Laws.')
 ```
 
-While loops are also straightforward. Loops do not have an `else` clause like Python does.
+There are no `switch` or `with` statements. Try statements do not require a `catch` or `finally` clause and the error parameter is optional:
+
+```js
+try:
+    // Fire
+    invoke(magic.anima.fire[0])
+catch e:
+    // What now?
+    console.error(e)
+finally:
+    clean()
+```
+
+While loops are also straightforward:
 
 ```js
 while age >= 18 && !isWorking():
@@ -168,7 +183,7 @@ for key in magic:
 // dark
 ```
 
-If you specify two variables, the first one will get the index or key respectively, and the second one will be the value:
+If you specify two variables, the first one will assume the index or key respectively, and the second one will assume the value:
 
 ```js
 for i, day in days if i >= 1:
@@ -179,11 +194,14 @@ for i, day in days if i >= 1:
 // 3 Wednesday
 // ...
 
-for key, value in magic if key != 'anima':
-    console.log(key, value.length)
+for type, list in magic.anima:
+    console.log(type, list.length)
 // =>
-// light 5
-// dark 5
+// fire 5
+// wind 6
+// thunder 5
 ```
+
+These looping techniques can be used in an array/object comprehension.
 
 ### Pattern Matching
