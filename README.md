@@ -269,21 +269,21 @@ addIngredients(null, 'Coffee beans', 'Python skin')
 // Python skin
 ```
 
-Pattern matching works in for loops:
+Pattern matching work in for loops:
 
 ```js
 nodiag = [[x, y] for x in [1, 2, 3] for y in [1, 2, 3] if x != y]
 // nodiag == [[1, 2], [1, 3], [2, 1], [2, 3], [3, 1], [3, 2]]
 
-for [x, y] in nodiag:
-    console.log(x + y)
+for i, [x, y] in nodiag:
+    console.log(i, x + y)
 // =>
-// 3
-// 4
-// 3
-// 5
-// 4
-// 5
+// 0 3
+// 1 4
+// 2 3
+// 3 5
+// 4 4
+// 5 5
 ```
 
 And even in catch clauses:
