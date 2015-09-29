@@ -424,7 +424,13 @@ function parseObjectPatternItem(tokens):
         pointer++
         [pattern, end] = parsePattern(tokens[pointer...], true)
         pointer += end
-        output.push(pattern)
+        output.push([pattern, null])
+
+    if tokens[pointer] equals ['operator', '=']:
+        pointer++
+        [expr, end] = parseExpression(tokens[pointer...])
+        pointer += end
+        output[1][1] = expr
 
     if tokens[pointer] equals ['delimiter', ':']:
         throw {
