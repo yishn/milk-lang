@@ -1,6 +1,6 @@
-exports.translate = function(tree, options = null):
-    exports.indent = options?.indent ?? '    '
-    exports.wrapper = options?.wrapper ?? true
+exports.translate = function(tree, options = {}):
+    exports.indent = options.indent ?? '    '
+    exports.wrapper = options.wrapper ?? true
 
     exports.flags = {}
     exports.identifiers = getIdentifiers(tree)

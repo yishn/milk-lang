@@ -3,9 +3,10 @@ parse = require('./parser').parse
 translate = require('./translator').translate
 commentate = require('./helper').commentate
 
-exports.compile = function(data, options = null):
+exports.compile = function(data, options = {}):
     data = data.replace(/\r\n/g, '\n').replace(/\r/g, '')
-    tokens = tokenize(data)
+    [tokens, indent] = tokenize(data)
+    options.indent = indent
 
     comments = tokens.filter([type, _] => type == 'comment')
     tokens = tokens.filter([type, _] => type != 'comment')

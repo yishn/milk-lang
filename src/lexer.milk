@@ -204,4 +204,5 @@ exports.tokenize = function(input):
         if output[i + 1]?[0] == 'newline' && output[i + 1]?[1] != 'dedent':
             removeNewline(output, i + 1)
 
-    return output.filter(x => x != null)
+    indent = [useTabs ? '\t' : ' ' for _ in [1...indentLength]].join('')
+    return [output.filter(x => x != null), indent]
