@@ -1,5 +1,5 @@
 class Graph:
-    function init(vertices, *edges):
+    function init(vertices, edges):
         self._adjacencyList = { v: [] for v in vertices }
 
         for [v1, v2] in edges:
@@ -12,9 +12,10 @@ class Graph:
         return [v for v in self._adjacencyList]
 
     function getNeighbors(v):
-        return self._adjacencyList[v]
+        return self._adjacencyList[v]?.slice(0)
 
     function addEdge(v1, v2):
+        if self.hasEdge(v1, v2): return
         for [x, y] in self._permute(v1, v2):
             self._adjacencyList[x].push(y)
 
@@ -38,11 +39,15 @@ class Graph:
 
         delete self._adjacencyList[v]
 
-space = [i + ',' + j for i in [1...3] for j in [1...3]]
-graph = new Graph(space, ['1,1', '1,2'], ['1,1', '1,3'], ['1,1', '2,1'], ['1,1', '3,1'])
+class Labyrinth extends Graph:
+    function init(width, height):
+        vertices = [[x, y] for x in [1...width] for y in [1...height]]
+        edges = [[v, w] for v in vertices for w in vertices if self.distance(v, w) == 1]
 
-console.log(graph.getVertices())
-console.log(graph.getNeighbors('1,1'))
+        super.init(vertices, edges)
 
-graph.removeVertex('1,3')
-console.log(graph.getNeighbors('1,1'))
+    function distance([x1, y1], [x2, y2]):
+        return Math.abs(x1 - x2) + Math.abs(y1 - y2)
+
+labyrinth = new Labyrinth(10, 5)
+console.log(labyrinth.getNeighbors([3, 3]))
