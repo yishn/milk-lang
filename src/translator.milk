@@ -550,17 +550,20 @@ function funcCall(tree):
     if placeholderCount == 0 && !hasSpread && !soak:
         return paren(subject) + '(' + args[1...].map(x => expression(x)).join(', ') + ')'
 
+    context = ['keyword', 'null']
+    if subject[0] in ['.', '?.']:
+        context = ['identifier', register(getVarName('ref'))]
+        subject[1] = ['=', context, subject[1]]
+
     if placeholderCount == 0:
         if !hasSpread:
-            output = token => ['()', token, args]
+            output = token => ['()',
+                ['.', token, ['identifier', 'call']],
+                ['array', context, *args[1...]]
+            ]
         else:
             obj = args
             if args.length == 2: obj = args[1][1]
-
-            context = ['keyword', 'null']
-            if subject[0] == '.':
-                context = ['identifier', getVarName('ref')]
-                subject[1] = ['=', context, subject[1]]
 
             output = token => ['()',
                 ['.', token, ['identifier', 'apply']],
@@ -569,9 +572,9 @@ function funcCall(tree):
     else:
         temps = [getVarName('x') for _ in [1...placeholderCount]]
 
-        output = function(token):
+        function output(token):
             a = ['arraypattern', *temps.map(x => [['identifier', x], null])]
-            b = args.map(function(x):
+            b = args[1...].map(function(x):
                 if x equals ['keyword', '_']:
                     temp = temps.splice(0, 1)[0]
                     return ['identifier', temp]
@@ -581,7 +584,10 @@ function funcCall(tree):
                 else:
                     return x
             )
-            return ['lambda', null, a, ['()', token, b]]
+            return ['lambda', null, a, ['()',
+                ['.', token, ['identifier', 'call']],
+                ['array', context, *b]
+            ]]
 
     if soak:
         [wrapper, token] = getCheckExistenceWrapper(subject)

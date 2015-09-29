@@ -12,7 +12,7 @@ class Graph:
         return [v for v in self._adjacencyList]
 
     function getNeighbors(v):
-        return self._adjacencyList[v]?.slice(0)
+        return self._adjacencyList[v]?.slice?(0)
 
     function addEdge(v1, v2):
         if self.hasEdge(v1, v2): return
@@ -51,3 +51,4 @@ class Labyrinth extends Graph:
 
 labyrinth = new Labyrinth(10, 5)
 console.log(labyrinth.getNeighbors([3, 3]))
+console.log(labyrinth.getVertices())
