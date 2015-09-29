@@ -5,7 +5,10 @@ minimist = require('minimist')
 helper = require('./helper')
 milk = require('./milk')
 
-argv = minimist(process.argv[2...])
+argv = minimist(process.argv[2...], {
+    string: 'o',
+    boolean: 'w'
+})
 
 endsWithMilk = filename => path.extname(filename) == '.milk'
 replaceMilk = filename => filename[0 ... filename.length - 6] + '.js'
@@ -18,45 +21,53 @@ function readdirRecursive(p):
 
     return items.filter(x => fs.statSync(x).isFile())
 
+function compile(file):
+    data = fs.readFileSync(file, 'utf-8')
+    output = null
+
+    try:
+        output = milk.compile(data)
+    catch {message, offset}:
+        [row, col] = helper.offsetToLinePos(offset, data)
+        console.error(message + ' @' + row + ':' + col)
+        return
+
+    if deststats == null:
+        console.log(output)
+    else:
+        dir = p
+        if stats.isFile(): dir = path.dirname(p)
+        milkfile = (replaceMilk @ path.join)(argv.o, path.relative(dir, file))
+
+        fs.writeFileSync(milkfile, output)
+
 // Main
 
-if argv._.length > 0:
-    [p, ...] = argv._
-    [stats, deststats] = [fs.statSync(p), argv.o ? fs.statSync(argv.o) : null]
-    files = []
+if argv._.length == 0:
+    console.error('Invalid input.')
+    return
 
-    if stats.isFile():
-        files = [p]
-    else if stats.isDirectory():
-        files = readdirRecursive(p).filter(endsWithMilk)
-    else:
-        console.error('Invalid input.')
-        return
+[p, ...] = argv._
+[stats, deststats] = [fs.statSync(p), argv.o ? fs.statSync(argv.o) : null]
+files = []
 
-    if deststats != null && !deststats.isDirectory():
-        console.error('Invalid output.')
-        return
+if stats.isFile():
+    files = [p]
+else if stats.isDirectory():
+    files = readdirRecursive(p).filter(endsWithMilk)
+else:
+    console.error('Invalid input.')
+    return
 
-    for i, file in files:
-        data = fs.readFileSync(file, 'utf-8')
-        output = null
-        console.error('Compiling ' + path.basename(file) + '...')
+if deststats != null && !deststats.isDirectory():
+    console.error('Invalid output.')
+    return
 
-        try:
-            output = milk.compile(data)
-        catch {message, offset}:
-            [row, col] = helper.offsetToLinePos(offset, data)
-            console.error(message + ' @' + row + ':' + col)
-            return
+for i, file in files:
+    data = fs.readFileSync(file, 'utf-8')
+    console.error('Compiling ' + path.basename(file) + '...')
 
-        if deststats == null:
-            console.log(output)
-        else:
-            dir = p
-            if stats.isFile(): dir = path.dirname(p)
-            milkfile = (replaceMilk @ path.join)(argv.o, path.relative(dir, file))
+    output = compile(file)
 
-            fs.writeFileSync(milkfile, output)
-
-        percent = Math.round((i + 1) * 100 / files.length)
-        console.error(percent + '%')
+    percent = Math.round((i + 1) * 100 / files.length)
+    console.error(percent + '%')
