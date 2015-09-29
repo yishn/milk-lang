@@ -72,7 +72,7 @@ function helperFunctions():
     if exports.flags['extend'] != null:
         output.push(formatCode([
             exports.flags['extend'] + ' = function(x, y) {', [
-                'var copy = function() {}'
+                'var copy = function() {};'
                 'copy.prototype = y.prototype;'
                 'var c = new copy();'
                 'c.constructor = x;'
@@ -80,6 +80,15 @@ function helperFunctions():
                 'x.prototype.__super__ = y.prototype;'
                 'x.prototype.__super__.init = y.prototype.constructor;'
                 'return x;'
+            ], '}'
+        ]))
+
+    if exports.flags['newOp'] != null:
+        output.push(formatCode([
+            exports.flags['newOp'] + ' = function(x, a) {', [
+                'var copy = function() { return x.apply(this, a); };'
+                'copy.prototype = x.prototype;'
+                'return new copy()'
             ], '}'
         ]))
 
@@ -319,9 +328,11 @@ function expression(tree):
         temp = ['identifier', addFlag('inOp')]
         output = expression(['()', temp, ['array', *tree[1...2]]])
         return type == 'in' ? output : '!' + output
-    else if type in ['+', '-', '++_', '--_', 'typeof', 'new']:
-        op = type in ['new', 'typeof'] ? type + ' ' : type.replace('_', '')
+    else if type in ['+', '-', '++_', '--_', 'typeof']:
+        op = type == 'typeof' ? type + ' ' : type.replace('_', '')
         return op + paren(subject)
+    else if type == 'new':
+        return newOp(tree)
     else if type == '_++' || type == '_--':
         return paren(tree[1]) + type[1...]
     else if type in ['.', '?.']:
@@ -400,6 +411,16 @@ function dotOp(tree):
     else:
         [wrapper, token] = getCheckExistenceWrapper(left)
         return wrapper(['.', token, right])
+
+function newOp(tree):
+    isCall = tree[1][0] == '()'
+    [_, [_, subject, args]] = tree
+
+    isProperArray = isCall && args.some(x => x[0] == 'spread')
+    if !isCall || !isProperArray: return 'new ' + paren(tree[1])
+
+    temp = ['identifier', addFlag('newOp')]
+    return expression(['()', temp, ['array', subject, args]])
 
 function array(tree):
     hasSpread = tree.some(x => x[0] == 'spread')

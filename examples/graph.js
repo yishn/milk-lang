@@ -13,7 +13,7 @@ inOp = function(x, l) {
     return l.indexOf(x) != -1;
 }
 extend = function(x, y) {
-    var copy = function() {}
+    var copy = function() {};
     copy.prototype = y.prototype;
     var c = new copy();
     c.constructor = x;
