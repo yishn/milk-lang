@@ -69,9 +69,9 @@ function helperFunctions():
             ], '}'
         ]))
 
-    if exports.flags['extends'] != null:
+    if exports.flags['extend'] != null:
         output.push(formatCode([
-            exports.flags['extends'] + ' = function(x, y) {', [
+            exports.flags['extend'] + ' = function(x, y) {', [
                 'var copy = function() {}'
                 'copy.prototype = y.prototype;'
                 'var c = new copy();'
@@ -935,7 +935,7 @@ function objpattern(tree, ref):
 
 function classStatement(tree):
     [_, classname, superclass, functions] = tree
-    if superclass != null: temp = ['identifier', addFlag('extends')]
+    if superclass != null: temp = ['identifier', addFlag('extend')]
 
     functions = functions
     .filter(x => x[0] == 'function')
