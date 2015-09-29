@@ -139,6 +139,13 @@ else:
     console.log('Do what you want, but adhere to the Laws.')
 ```
 
+Milk supports chained comparisons à la Python. Each expression is evaluated once at most:
+
+```js
+if 12 <= age < 18 <= getSupervisorAge() || 18 <= age:
+    console.log('You can do dark magic.')
+```
+
 There are no `switch` or `with` statements. Try statements do not require a `catch` or `finally` clause and the error parameter is optional:
 
 ```js
