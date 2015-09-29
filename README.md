@@ -353,8 +353,8 @@ You can soak up null references in a chain of function calls, membership accesse
 
 ```js
 for i, item in list:
-    prev = list[i - 1]?.getValue()?[1]
-    next = list[i + 1]?.getValue()?[1]
+    prev = list[i - 1]?.getValue?(item)?[1]
+    next = list[i + 1]?.getValue?(item)?[1]
 
     if prev == next:
         console.log(item)
