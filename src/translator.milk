@@ -523,8 +523,8 @@ function funcCall(tree):
     soak = type[0] == '?'
 
     if callsuper:
-        tree[1] = ['.', ['.', ['.', ['identifier', 'self'], ['identifier', '__super__']], subject[2]], ['identifier', 'call']]
-        tree[2].splice(1, 0, ['identifier', 'self'])
+        subject = ['.', ['.', ['.', ['identifier', 'self'], ['identifier', '__super__']], subject[2]], ['identifier', 'call']]
+        args.splice(1, 0, ['identifier', 'self'])
 
     if placeholderCount == 0 && !hasSpread && !soak:
         return paren(subject) + '(' + args[1...].map(x => expression(x)).join(', ') + ')'
