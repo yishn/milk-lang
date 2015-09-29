@@ -8,7 +8,7 @@ Milk tries to be as readable and beautiful as Python without sacrificing the typ
 
 ## Language Reference
 
-Just like Python, Milk uses significant whitespace to delimit blocks of code. Semicolons are not necessary to terminate statements, however they can be used to fit several statements onto a single line. A statement is usually terminated by a line ending, but if an expression is too long, a line break at any binary operation such as `+`, `*` or `.` won’t terminate it.
+Just like Python, Milk uses significant whitespace to delimit blocks of code. Semicolons are not necessary to terminate statements, however they can be used to fit several statements onto a single line. A statement is usually terminated by a line ending, but if an expression is too long, a line break at any binary operator such as `+`, `*` or `.` won’t terminate it.
 
 ### Functions
 
