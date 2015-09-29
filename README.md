@@ -139,7 +139,7 @@ else:
     console.log('Do what you want, but adhere to the Laws.')
 ```
 
-Milk supports chained comparisons à la Python. Each expression is evaluated once at most:
+Milk supports chained comparisons à la Python. Each expression is evaluated at most once:
 
 ```js
 if 12 <= age < 18 <= getSupervisorAge() || 18 <= age:
