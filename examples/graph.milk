@@ -51,4 +51,3 @@ class Labyrinth extends Graph:
 
 labyrinth = new Labyrinth(10, 5)
 console.log(labyrinth.getNeighbors([3, 3]))
-console.log(labyrinth.getVertices())

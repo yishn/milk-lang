@@ -229,5 +229,4 @@ Labyrinth = (function() {
 labyrinth = new Labyrinth(10, 5);
 /*@53:1*/
 console.log(labyrinth.getNeighbors([3, 3]));
-console.log(labyrinth.getVertices());
 })();
