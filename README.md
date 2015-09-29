@@ -61,6 +61,16 @@ mod5Sum = moduloSum(_, _, 5)
 
 That’s why you should avoid using the underscore as a variable name. Technically, `_` is a keyword, but if Milk can’t make sense of `_`, it’s converted to a normal identifier in JavaScript.
 
+You can use the spread operator `*` if you want to pass an array as arguments to a function call:
+
+```js
+items = [6, 7, 8, 9, 10]
+list.push(*items)
+
+// This is equivalent to:
+list.push(6, 7, 8, 9, 10)
+```
+
 ### Arrays and Objects
 
 The syntax for arrays and objects is nearly identical to those in JavaScript. Commas are optional if the items are separated by a line break.
