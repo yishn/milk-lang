@@ -10,6 +10,13 @@ Milk tries to be as readable and beautiful as Python without sacrificing the typ
 
 Just like Python, Milk uses significant whitespace to delimit blocks of code. Semicolons are not necessary to terminate statements, however they can be used to fit several statements onto a single line. A statement is usually terminated by a line ending, but if an expression is too long, a line break at any binary operator such as `+`, `*` or `.` won’t terminate it.
 
+### Contents
+
+* [Functions](#functions)
+* [Arrays and Objects](#arrays-and-objects)
+* [Control Flow](#control-flow)
+* [Pattern Matching](#pattern-matching)
+
 ### Functions
 
 There are several ways to define a function in Milk. That’s the standard way to do it:
