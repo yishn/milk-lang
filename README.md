@@ -309,7 +309,7 @@ finally:
 
 Apart from the usual arithmetic operators `+`, `-`, `*`, `/`, Milk has a right associative exponential operator `^`. Milk’s modulo operator `%` always returns a positive number.
 
-Milk compiles `==` and `!=` into `===` and `!==` respectively, unless the right hand side is `null`. Milk has a `equals` operator for deep comparison between two objects and a `not equals` operator for its negation:
+Milk compiles `==` and `!=` into `===` and `!==` respectively, unless the right hand side is `null`. Milk has an `equals` operator for deep comparison between two objects and a `not equals` operator for its negation:
 
 ```js
 tuple = ['Wind', 'Excalibur']
@@ -330,7 +330,7 @@ The `in` operator works differently in Milk. If the right hand side is an array 
 // true
 ```
 
-For function composition you can use the `@` keyword:
+For function composition you can use the `@` operator:
 
 ```js
 // Flux
