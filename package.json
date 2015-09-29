@@ -17,5 +17,9 @@
   },
   "bin": {
     "milkc": "./lib/milkc.js"
+  },
+  "scripts": {
+    "examples": "node lib/milkc examples -o examples",
+    "build": "node backup/milkc src -o lib"
   }
 }
