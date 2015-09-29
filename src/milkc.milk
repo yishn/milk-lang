@@ -44,9 +44,9 @@ if argv._.length > 0:
 
         try:
             output = milk.compile(data)
-        catch e:
-            [row, col] = helper.offsetToLinePos(e.offset, data)
-            console.error(e.message + ' @' + row + ':' + col)
+        catch {message, offset}:
+            [row, col] = helper.offsetToLinePos(offset, data)
+            console.error(message + ' @' + row + ':' + col)
             return
 
         if deststats == null:

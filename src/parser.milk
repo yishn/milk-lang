@@ -711,8 +711,12 @@ function parseTry(tokens):
 
     if tokens[pointer] equals ['keyword', 'catch']:
         pointer++
-        [pattern, len] = parsePattern(tokens[pointer...])
-        pointer += len
+        pattern = null
+
+        if tokens[pointer] not equals ['delimiter', ':']:
+            [pattern, len] = parsePattern(tokens[pointer...])
+            pointer += len
+
         [block, len] = parseBlock(tokens[pointer...])
         pointer += len + 1
         output.push([pattern, block])

@@ -749,8 +749,12 @@ function tryStatement(tree):
     output = formatCode(code)
 
     if catchblock != null:
-        code = [' catch (' + expression(catchblock[0]) + ') {', [
-            pushScope() + statements(catchblock[1])
+        temp = getVarName('e')
+
+        code = [' catch (' + temp + ') {', [
+            pushScope()
+            catchblock[0] != null ? expression(['=', catchblock[0], ['identifier', temp]]) : ''
+            statements(catchblock[1])
         ], '}']
         vars = popScope()
 
