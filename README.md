@@ -16,6 +16,7 @@ Just like Python, Milk uses significant whitespace to delimit blocks of code. Se
 * [Arrays and Objects](#arrays-and-objects)
 * [Control Flow](#control-flow)
 * [Pattern Matching](#pattern-matching)
+* [Operators](#operators)
 
 ### Functions
 
@@ -302,4 +303,59 @@ catch {message, location = getCurrentLocation()}:
     console.log(message)
 finally:
     clean()
+```
+
+### Operators
+
+Apart from the usual arithmetic operators `+`, `-`, `*`, `/`, Milk has a right associative exponential operator `^`. Milk’s modulo operator `%` always returns a positive number.
+
+Milk compiles `==` and `!=` into `===` and `!==` respectively, unless the right hand side is `null`. Milk has a `equals` operator for deep comparison between two objects and a `not equals` operator for its negation:
+
+```js
+tuple = ['Wind', 'Excalibur']
+clone = ['Wind', 'Excalibur']
+
+console.log(clone equals tuple)
+// => true
+```
+
+The `in` operator works differently in Milk. If the right hand side is an array or a string, it will test for collection membership. Otherwise, it will behave as the vanilla JavaScript `in` operator. You can use `not in` for its negation.
+
+```js
+'Tornado' in magic.anima.wind
+// true
+'Tornado' in magic.anima
+// false
+'wind' in magic.anima
+// true
+```
+
+For function composition you can use the `@` keyword:
+
+```js
+// Flux
+(console.log @ invoke)(magic.dark[0])
+
+// This is equivalent to:
+console.log(invoke(magic.dark[0]))
+```
+
+The existential operator `??` is syntactic sugar for a `null` or `undefined` check:
+
+```js
+context = module ?? window
+
+// This is equivalent to:
+context = typeof module == 'undefined' || module == null ? window : module
+```
+
+You can soak up null references in a chain of function calls, membership accesses and properties using the soak operators `?()`, `?[]` and `?.`. If all properties and calls exist, you’ll get the expected result. If the chain is broken, `null` is returned.
+
+```js
+for i, item in list:
+    prev = list[i - 1]?.getValue()?[1]
+    next = list[i + 1]?.getValue()?[1]
+
+    if prev == next:
+        console.log(item)
 ```
