@@ -17,6 +17,7 @@ Just like Python, Milk uses significant whitespace to delimit blocks of code. Se
 * [Control Flow](#control-flow)
 * [Pattern Matching](#pattern-matching)
 * [Operators](#operators)
+* [Classes and Inheritance](#classes-and-inheritance)
 
 ### Functions
 
@@ -359,3 +360,53 @@ for i, item in list:
     if prev == next:
         console.log(item)
 ```
+
+### Classes and Inheritance
+
+Milk provides syntactical sugar for creating classes. The constructor is called `init`:
+
+```js
+class Graph:
+    function init(vertices, edges):
+        self._adjacencyList = {v: [] for v in vertices}
+
+        for [v1, v2] in edges:
+            self.addEdge(v1, v2)
+
+    function getNeighbors(v):
+        return self._adjacencyList[v].slice(0)
+
+    function addEdge(v1, v2):
+        self._adjacencyList[v1].push(v2)
+        self._adjacencyList[v2].push(v1)
+
+    function hasEdge(v1, v2):
+        return v2 in self._adjacencyList[v1]
+
+vertices = [1...10]
+edges = [[v, w] for v in vertices for w in vertices if Math.abs(v - w) == 1]
+graph = new Graph(vertices, edges)
+
+console.log(graph.getNeighbors(5))
+// => [4, 6]
+```
+
+Note that anything other than functions in a class block will be ignored. In each class function there is a `self` variable referencing the current instance, so you don’t have to worry about binding. There is syntactic sugar for inheriting as well:
+
+```js
+class Labyrinth extends Graph:
+    function init(width, height):
+        vertices = [[x, y] for x in [1...width] for y in [1...height]]
+        edges = [[v, w] for v in vertices for w in vertices if self.distance(v, w) == 1]
+
+        super.init(vertices, edges)
+
+    function distance([x1, y1], [x2, y2]):
+        return Math.abs(x1 - x2) + Math.abs(y1 - y2)
+
+labyrinth = new Labyrinth(10, 5)
+console.log(labyrinth.getNeighbors([3, 3]))
+// => [[2, 3], [3, 2], [3, 4], [4, 3]]
+```
+
+To call a function from the immediate ancestor, you can use the `super` keyword.
