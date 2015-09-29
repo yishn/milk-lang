@@ -65,10 +65,10 @@ You can use the spread operator `*` if you want to pass an array as arguments to
 
 ```js
 items = [6, 7, 8, 9, 10]
-list.push(*items)
+list.push(*items, 11, 12)
 
 // This is equivalent to:
-list.push(6, 7, 8, 9, 10)
+list.push(6, 7, 8, 9, 10, 11, 12)
 ```
 
 ### Arrays and Objects
