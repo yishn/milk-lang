@@ -6,8 +6,8 @@ helper = require('./helper')
 milk = require('./milk')
 
 argv = minimist(process.argv[2...], {
-    string: 'o',
-    boolean: 'w'
+    string: ['o'],
+    boolean: ['w', 'h', 'b']
 })
 
 endsWithMilk = filename => path.extname(filename) == '.milk'
@@ -29,7 +29,9 @@ function compile(file):
     console.error('Compiling ' + path.basename(file) + '...')
 
     try:
-        output = milk.compile(data)
+        output = milk.compile(data, {
+            wrapper: !argv.b
+        })
     catch {message, offset}:
         [row, col] = helper.offsetToLinePos(offset, data)
         console.error(message + ' @' + row + ':' + col)

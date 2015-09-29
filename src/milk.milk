@@ -12,5 +12,6 @@ exports.compile = function(data, options = null):
 
     tree = parse(tokens)
     code = translate(tree, options)
+    code = commentate(code, data, comments)
 
-    return commentate(code, data, comments)
+    return code
