@@ -114,7 +114,7 @@ goboard = [['empty' for x in [1...19]] for y in [1...19]]
 // ]
 
 protagonists = ['Ryan', 'Cyn', 'Pat', 'Lio']
-dict = { name: name.length for name in protagonists if name != 'Lio' }
+dict = {name: name.length for name in protagonists if name != 'Lio'}
 // dict == {
 //     "Ryan": 4
 //     "Cyn": 3
@@ -205,3 +205,89 @@ for type, list in magic.anima:
 These looping techniques can be used in an array/object comprehension.
 
 ### Pattern Matching
+
+Milk has destructuring assignment syntax like JavaScript:
+
+```js
+tome1 = 'General Compositional Theory of Anima Magic, Volume Eight'
+tome2 = 'Elder Summoning Theory'
+
+[tome1, tome2] = [tome2, tome1]
+
+index2grid = (i, width) => [i % width, Math.floor(i / width)]
+index2goboard = index2grid(_, 19)
+[x, y] = index2goboard(243)
+```
+
+Pattern matching can be used with any depth of array and object nesting. Use the placeholder keyword if you don’t want to assign the corresponding value.
+
+```js
+{anima: {wind: [a, _, b, _, _, _]}, dark} = magic
+
+// Tornado
+invoke(b)
+
+console.log(dark)
+// => ["Flux", "Fenrir", "Eclipse", "Nosferatu", "Luna"]
+```
+
+Use the spread operator `*` to extract a sublist of items:
+
+```js
+{anima: {wind: [wind, *rest, excalibur]}} = magic
+// rest == ["Elwind", "Tornado", "Blizzard", "Fimbulvetr"]
+```
+
+You can use `...` instead of `*_`. It is possible to assign default values to variables, should the extraction be `null` or `undefined`:
+
+```js
+[first, second, third = 'Blah'] = [tome1, tome2]
+// third == "Blah"
+```
+
+You can use patterns nearly everywhere where you have to define variables. In fact, function arguments is just another array pattern:
+
+```js
+function addIngredients(first = 'Milk', second, *rest):
+    console.log(first)
+    console.log(second)
+
+    for ingredient in rest:
+        console.log(ingredient)
+
+addIngredients(null, 'Coffee beans', 'Python skin')
+// =>
+// Milk
+// Coffee beans
+// Python skin
+```
+
+Pattern matching works in for loops:
+
+```js
+nodiag = [[x, y] for x in [1, 2, 3] for y in [1, 2, 3] if x != y]
+// nodiag == [[1, 2], [1, 3], [2, 1], [2, 3], [3, 1], [3, 2]]
+
+for [x, y] in nodiag:
+    console.log(x + y)
+// =>
+// 3
+// 4
+// 3
+// 5
+// 4
+// 5
+```
+
+And even in catch clauses:
+
+```js
+try:
+    // Thunder
+    invoke(magic.anima.thunder[0])
+catch {message, location = getCurrentLocation()}:
+    // Probably no thunder
+    console.log(message)
+finally:
+    clean()
+```
