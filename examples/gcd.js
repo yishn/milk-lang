@@ -20,6 +20,6 @@ gcd = function() {
     };
     /*@6:5*/
     middle = Math.floor((args.length - 1) / 2);
-    return gcdInner(gcd.apply(this, args.slice(0, middle + 1)), gcd.apply(this, args.slice(middle + 1)));
+    return gcdInner(gcd.apply(null, args.slice(0, middle + 1)), gcd.apply(null, args.slice(middle + 1)));
 };
 })();
