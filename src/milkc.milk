@@ -81,6 +81,6 @@ else:
 
         lasttime = new Date()
         compile(path.join(p, file))
-        console.error('100%')
+        console.error('Done.')
 
     fs.watch(p, { recursive: true }, callback)
