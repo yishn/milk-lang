@@ -176,14 +176,9 @@ exports.tokenize = function(input):
                     offset: tokens[i].offset
                 }
 
-        if depth > lastDepth:
-            for _ in [1, ..., depth - lastDepth]:
-                token = ['newline', 'indent']
-                token.offset = tokens[i].offset
-                output.push(token)
-        else if depth < lastDepth:
-            for _ in [1, ..., lastDepth - depth]:
-                token = ['newline', 'dedent']
+        if depth != lastDepth:
+            for _ in [1, 2, ..., Math.abs(depth - lastDepth)]:
+                token = ['newline', depth > lastDepth ? 'indent' : 'dedent']
                 token.offset = tokens[i].offset
                 output.push(token)
         else:
