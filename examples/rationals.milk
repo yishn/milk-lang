@@ -1,0 +1,13 @@
+function rationals(n):
+    function f(n):
+        if n <= 1:
+            return n
+        else if n % 2 == 0:
+            return f(n/2)
+        else:
+            return f((n - 1)/2) + f((n - 1)/2 + 1)
+
+    return f(n) + '/' + f(n + 1)
+
+for n in [0...100]:
+    console.log(rationals(n))
