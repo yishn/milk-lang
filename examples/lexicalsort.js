@@ -7,18 +7,18 @@ lexicalSort = function(xs, ys) {
         return xs.length - ys.length;
     };
     /*@5:5*/
-    (function(ref) {
-        (function(ref1) {
-            x = ref1[0];
-            xs = (1 >= ref1.length) ? [] : [].slice.call(ref1, 1);
-            return ref1;
-        })(ref[0]);
-        (function(ref2) {
-            y = ref2[0];
-            ys = (1 >= ref2.length) ? [] : [].slice.call(ref2, 1);
-            return ref2;
-        })(ref[1]);
-        return ref;
+    (function(r) {
+        (function(r1) {
+            x = r1[0];
+            xs = (1 >= r1.length) ? [] : [].slice.call(r1, 1);
+            return r1;
+        })(r[0]);
+        (function(r2) {
+            y = r2[0];
+            ys = (1 >= r2.length) ? [] : [].slice.call(r2, 1);
+            return r2;
+        })(r[1]);
+        return r;
     })([xs, ys]);
     /*@6:5*/
     return (x < y) ? (-1) : ((x > y) ? 1 : lexicalSort(xs, ys));

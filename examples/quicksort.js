@@ -13,10 +13,10 @@ quicksort = function(list) {
         return [];
     };
     /*@4:5*/
-    (function(ref) {
-        pivot = ref[0];
-        rest = (1 >= ref.length) ? [] : [].slice.call(ref, 1);
-        return ref;
+    (function(r) {
+        pivot = r[0];
+        rest = (1 >= r.length) ? [] : [].slice.call(r, 1);
+        return r;
     })(list);
     /*@5:5*/
     smaller = quicksort(rest.filter(function(x) {
@@ -27,20 +27,20 @@ quicksort = function(list) {
     }));
     /*@8:5*/
     return (function() {
-        var r, i, l, x1, i1, l1, x2;
-        r = [];
+        var r1, i, l, x1, i1, l1, x2;
+        r1 = [];
         l = enumerate(smaller);
         for (i = 0; i < l.length; i++) {
             x1 = l[i];
-            r.push(x1);
+            r1.push(x1);
         };
-        r.push(pivot);
+        r1.push(pivot);
         l1 = enumerate(bigger);
         for (i1 = 0; i1 < l1.length; i1++) {
             x2 = l1[i1];
-            r.push(x2);
+            r1.push(x2);
         };
-        return r;
+        return r1;
     })();
 };
 /*@10:1*/

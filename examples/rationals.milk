@@ -10,4 +10,4 @@ function rationals(n):
     return f(n) + '/' + f(n + 1)
 
 for n in [0...100]:
-    console.log(rationals(n))
+    (console.log @ rationals)(n)

@@ -42,10 +42,10 @@ Graph = (function() {
         /*@5:9*/
         l1 = enumerate(edges);
         for (i1 = 0; i1 < l1.length; i1++) {
-            (function(ref) {
-                v1 = ref[0];
-                v2 = ref[1];
-                return ref;
+            (function(r1) {
+                v1 = r1[0];
+                v2 = r1[1];
+                return r1;
             })(l1[i1]);
             /*@6:13*/
             self.addEdge(v1, v2);
@@ -62,34 +62,34 @@ Graph = (function() {
         self = this;
         /*@12:9*/
         return (function() {
-            var r1, i2, l2, v;
-            r1 = [];
+            var r2, i2, l2, v;
+            r2 = [];
             l2 = enumerate(self._adjacencyList);
             for (i2 = 0; i2 < l2.length; i2++) {
                 v = l2[i2];
-                r1.push(v);
+                r2.push(v);
             };
-            return r1;
+            return r2;
         })();
     };
     init.prototype.getNeighbors = function(v) {
-        var self, ref1;
+        var self, r3;
         self = this;
         /*@15:9*/
         return (function() {
-            var r2;
-            r2 = (function() {
-                var r3;
-                r3 = ref1 = self._adjacencyList[v];
-                if (((typeof r3) === 'undefined') || (r3 == null)) {
+            var r4;
+            r4 = (function() {
+                var r5;
+                r5 = r3 = self._adjacencyList[v];
+                if (((typeof r5) === 'undefined') || (r5 == null)) {
                     return null;
                 };
-                return r3.slice;
+                return r5.slice;
             })();
-            if (((typeof r2) === 'undefined') || (r2 == null)) {
+            if (((typeof r4) === 'undefined') || (r4 == null)) {
                 return null;
             };
-            return r2.call(ref1, 0);
+            return r4.call(r3, 0);
         })();
     };
     init.prototype.addEdge = function(v1, v2) {
@@ -101,10 +101,10 @@ Graph = (function() {
         };
         l3 = enumerate(self._permute(v1, v2));
         for (i3 = 0; i3 < l3.length; i3++) {
-            (function(ref2) {
-                x = ref2[0];
-                y = ref2[1];
-                return ref2;
+            (function(r6) {
+                x = r6[0];
+                y = r6[1];
+                return r6;
             })(l3[i3]);
             /*@20:13*/
             self._adjacencyList[x].push(y);
@@ -122,10 +122,10 @@ Graph = (function() {
         /*@26:9*/
         l4 = enumerate(self._permute(v1, v2));
         for (i4 = 0; i4 < l4.length; i4++) {
-            (function(ref3) {
-                x = ref3[0];
-                y = ref3[1];
-                return ref3;
+            (function(r7) {
+                x = r7[0];
+                y = r7[1];
+                return r7;
             })(l4[i4]);
             /*@27:13*/
             self._adjacencyList[x] = self._adjacencyList[x].filter(function(x) {
@@ -168,8 +168,8 @@ Labyrinth = (function() {
         var self, vertices, edges;
         self = this;
         vertices = (function() {
-            var r4, start, end, step, x;
-            r4 = [];
+            var r8, start, end, step, x;
+            r8 = [];
             start = 1;
             end = width;
             step = (end === start) ? 1 : Math.sign(end - start);
@@ -179,15 +179,15 @@ Labyrinth = (function() {
                 end1 = height;
                 step1 = (end1 === start1) ? 1 : Math.sign(end1 - start1);
                 for (y = start1; step1 > 0 ? y <= end1 : y >= end1; y += step1) {
-                    r4.push([x, y]);
+                    r8.push([x, y]);
                 };
             };
-            return r4;
+            return r8;
         })();
         /*@45:9*/
         edges = (function() {
-            var r5, i6, l6, v;
-            r5 = [];
+            var r9, i6, l6, v;
+            r9 = [];
             l6 = enumerate(vertices);
             for (i6 = 0; i6 < l6.length; i6++) {
                 v = l6[i6];
@@ -196,10 +196,10 @@ Labyrinth = (function() {
                 for (i7 = 0; i7 < l7.length; i7++) {
                     w = l7[i7];
                     if (!(self.distance(v, w) === 1)) continue;
-                    r5.push([v, w]);
+                    r9.push([v, w]);
                 };
             };
-            return r5;
+            return r9;
         })();
         /*@47:9*/
         self.__super__.init.call(self, vertices, edges);
@@ -207,18 +207,18 @@ Labyrinth = (function() {
     extend(init, Graph);
     init.prototype.distance = function() {
         var x1, y1, x2, y2, self;
-        (function(ref4) {
-            (function(ref5) {
-                x1 = ref5[0];
-                y1 = ref5[1];
-                return ref5;
-            })(ref4[0]);
-            (function(ref6) {
-                x2 = ref6[0];
-                y2 = ref6[1];
-                return ref6;
-            })(ref4[1]);
-            return ref4;
+        (function(r10) {
+            (function(r11) {
+                x1 = r11[0];
+                y1 = r11[1];
+                return r11;
+            })(r10[0]);
+            (function(r12) {
+                x2 = r12[0];
+                y2 = r12[1];
+                return r12;
+            })(r10[1]);
+            return r10;
         })(arguments);
         self = this;
         /*@50:9*/

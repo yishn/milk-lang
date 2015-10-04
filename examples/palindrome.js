@@ -7,11 +7,11 @@ palindrome = function(input) {
         return true;
     };
     /*@4:5*/
-    (function(ref) {
-        first = ref[0];
-        rest = (1 >= (ref.length - 1)) ? [] : [].slice.call(ref, 1, -1);
-        last = ref[ref.length - 1];
-        return ref;
+    (function(r) {
+        first = r[0];
+        rest = (1 >= (r.length - 1)) ? [] : [].slice.call(r, 1, -1);
+        last = r[r.length - 1];
+        return r;
     })(input);
     /*@5:5*/
     return (first === last) && palindrome(rest);

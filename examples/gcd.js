@@ -7,9 +7,9 @@ modulo = function(a, b) {
 /*@1:1*/
 gcd = function() {
     var args, gcdInner, middle;
-    (function(ref) {
-        args = (0 >= ref.length) ? [] : [].slice.call(ref, 0);
-        return ref;
+    (function(r) {
+        args = (0 >= r.length) ? [] : [].slice.call(r, 0);
+        return r;
     })(arguments);
     /*@2:5*/
     if (args.length === 1) {

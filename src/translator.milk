@@ -57,11 +57,9 @@ function helperFunctions():
 
     if exports.flags['compose'] != null:
         output.push(formatCode([
-            exports.flags['compose'] + ' = function(x, y) {', [
+            exports.flags['compose'] + ' = function(x, y, c1, c2) {', [
                 'return function() {', [
-                    'if (arguments.length <= 1)', [
-                        'return x(y(arguments[0]));'
-                    ], 'return x(y.apply(this, arguments));'
+                    'return x.call(c1, y.apply(c2, arguments));'
                 ], '}'
             ], '}'
         ]))
@@ -314,8 +312,7 @@ function expression(tree):
         temp = ['identifier', addFlag('modulo')]
         return expression(['()', temp, ['array', *tree[1...2]]])
     else if type == '@':
-        temp = ['identifier', addFlag('compose')]
-        return expression(['()', temp, ['array', *tree[1...2]]])
+        return composeOp(tree)
     else if type == '^':
         return expression(['()', ['.',
             ['identifier', 'Math'],
@@ -408,6 +405,22 @@ function dotOp(tree):
     else:
         [wrapper, token] = getCheckExistenceWrapper(left)
         return wrapper(['.', token, right])
+
+function composeOp(tree):
+    [_, left, right] = tree
+
+    context1 = ['keyword', 'null']
+    if left[0] in ['.', '?.', '[]', '?[]']:
+        context1 = ['identifier', register(getVarName('r'))]
+        left[1] = ['=', context1, left[1]]
+
+    context2 = ['keyword', 'null']
+    if right[0] in ['.', '?.', '[]', '?[]']:
+        context2 = ['identifier', register(getVarName('r'))]
+        right[1] = ['=', context2, right[1]]
+
+    temp = ['identifier', addFlag('compose')]
+    return expression(['()', temp, ['array', left, right, context1, context2]])
 
 function newOp(tree):
     isCall = tree[1][0] == '()'
@@ -548,8 +561,8 @@ function funcCall(tree):
         return paren(subject) + '(' + args[1...].map(x => expression(x)).join(', ') + ')'
 
     context = ['keyword', 'null']
-    if subject[0] in ['.', '?.']:
-        context = ['identifier', register(getVarName('ref'))]
+    if subject[0] in ['.', '?.', '[]', '?[]']:
+        context = ['identifier', register(getVarName('r'))]
         subject[1] = ['=', context, subject[1]]
 
     if placeholderCount == 0:
@@ -863,7 +876,7 @@ function existentialOp(tree):
 function patternMatch(tree):
     [_, pattern, subject] = tree
 
-    temp = ['identifier', getVarName('ref')]
+    temp = ['identifier', getVarName('r')]
     s = pattern[0] == 'arraypattern' ? arraypattern(pattern, temp) : objpattern(pattern, temp)
     s.push(['keyword', 'return', temp])
 
