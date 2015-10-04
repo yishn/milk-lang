@@ -700,7 +700,7 @@ function forHead(tree):
             output = formatCode([
                 statements(s),
                 'for (' + statement(['=', second, starttemp]) + ', ' + statement(['=', first, ['number', 0]]) + '; '
-                    + (end ? steptemp[1] + ' > 0 ? ' + expression(['<=', second, endtemp]) + ' : ' + expression('>=', second, endtemp) : 'true') + '; '
+                    + (end ? steptemp[1] + ' > 0 ? ' + expression(['<=', second, endtemp]) + ' : ' + expression(['>=', second, endtemp]) : 'true') + '; '
                     + expression(['+=', second, steptemp]) + ', ' + expression(['_++', first]) + ') {'
             ])
     else if identifierCount == 1:
