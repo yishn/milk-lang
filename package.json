@@ -11,6 +11,13 @@
   "version": "0.1.0",
   "author": "Yichuan Shen",
   "main": "./lib/milk.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yishn/milk-lang"
+  },
+  "bugs": {
+    "url": "https://github.com/yishn/milk-lang/issues"
+  },
   "license": "MIT",
   "dependencies": {
     "minimist": "^1.2.0"
@@ -21,6 +28,6 @@
   "scripts": {
     "examples": "node lib/milkc examples -o examples",
     "build": "node backup/milkc src -o lib",
-    "watch": "node backup/milkc src -o lib -w"
+    "watch": "node backup/milkc src -wo lib"
   }
 }
