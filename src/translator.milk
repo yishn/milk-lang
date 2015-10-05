@@ -553,12 +553,14 @@ function index(tree):
 
 function funcCall(tree):
     [type, subject, args] = tree
-
     output = null
+
     placeholderCount = args.filter(x =>
         x equals ['keyword', '_']
         || x equals ['spread', ['keyword', '_']]
     ).length
+    temps = []
+
     hasSpread = args.some(x => x[0] == 'spread')
     callsuper = subject[0] in ['.', '?.']
         && subject[1] equals ['keyword', 'super']
@@ -577,8 +579,6 @@ function funcCall(tree):
         subject[1] = ['=', context, subject[1]]
 
     if placeholderCount == 0:
-        temps = []
-
         if !hasSpread:
             output = token => ['()',
                 ['.', token, ['identifier', 'call']],
