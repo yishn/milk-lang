@@ -66,11 +66,11 @@ if argv.h:
         ['', '-v      ', 'display the version number'].join('    ')
         ['', '-w      ', 'watch Milk scripts for changes and rerun commands'].join('    ')
     ].join('\n'))
-
     return
 
 if argv.v:
     console.log([app.productName, 'version', app.version].join(' '))
+    return
 
 if deststats != null && !deststats.isDirectory():
     console.error('Invalid output.')
