@@ -8,7 +8,7 @@
     "milk",
     "compiler"
   ],
-  "version": "0.1.3",
+  "version": "0.1.4",
   "author": "Yichuan Shen",
   "main": "./lib/milk.js",
   "repository": {

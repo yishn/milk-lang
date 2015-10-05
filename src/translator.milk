@@ -597,13 +597,12 @@ function funcCall(tree):
 
         function output(token):
             a = ['arraypattern', *temps.map(x => [['identifier', x], null])]
+            i = 0
             b = args[1...].map(function(x):
                 if x equals ['keyword', '_']:
-                    temp = temps.splice(0, 1)[0]
-                    return ['identifier', temp]
+                    return ['identifier', temps[i++]]
                 else if x equals ['spread', ['keyword', '_']]:
-                    temp = temps.splice(0, 1)[0]
-                    return ['spread', ['identifier', temp]]
+                    return ['spread', ['identifier', temps[i++]]]
                 else:
                     return x
             )
