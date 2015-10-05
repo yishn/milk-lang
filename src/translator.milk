@@ -166,6 +166,10 @@ function getVarName(base):
     exports.identifiers.push(r)
     return r
 
+function unregister(*varnames):
+    exports.identifiers = exports.identifiers.filter(x => x not in varnames)
+    return ''
+
 // Helper functions
 
 function addFlag(flag):
@@ -204,7 +208,9 @@ function getCheckExistenceWrapper(token):
         ]]])
         s.push(['keyword', 'return', tree])
 
-        return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
+        o = expression(['()', ['function', null, ['arraypattern'], s], ['array']])
+        if needTempVar: unregister(temp[1])
+        return o
 
     return [output, temp]
 
@@ -270,7 +276,7 @@ function deleteStatement(tree):
 
     return forStatement(['for', [temp, null], list, null, ['statements',
         ['keyword', 'delete', ['[]', subject[1], ['array', temp]]]
-    ]])
+    ]]) + unregister(temp[1])
 
 function expression(tree):
     [type, subject] = tree
@@ -380,7 +386,7 @@ function assignment(tree):
                 ]
             ],
             ['keyword', 'return', rtemp]
-        ]], ['array']])
+        ]], ['array']]) + unregister(rtemp[1], starttemp[1], lentemp[1])
     else:
         list = left[2]
         rtemp = ['identifier', getVarName('r')]
@@ -395,7 +401,7 @@ function assignment(tree):
                 ['=', ['[]', rtemp, ['array', jtemp]], ['[]', listtemp, ['array', itemp]]]
             ]],
             ['keyword', 'return', listtemp]
-        ]], []])
+        ]], []]) + unregister(rtemp[1], listtemp[1], itemp[1], jtemp[1])
 
 function dotOp(tree):
     [type, left, right] = tree
@@ -420,7 +426,10 @@ function composeOp(tree):
         right[1] = ['=', context2, right[1]]
 
     temp = ['identifier', addFlag('compose')]
-    return expression(['()', temp, ['array', left, right, context1, context2]])
+    return expression(['()',
+        temp,
+        ['array', left, right, context1, context2]
+    ]) + unregister(context1[1], context2[1])
 
 function newOp(tree):
     isCall = tree[1][0] == '()'
@@ -452,7 +461,9 @@ function array(tree):
                 ]])
 
         s.push(['keyword', 'return', temp])
-        return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
+        return expression(['()',
+            ['function', null, ['arraypattern'], s], ['array']
+        ]) + unregister(temp[1], xtemp?[1])
 
     [_, expr, *fortrees] = tree
     temp = ['identifier', getVarName('r')]
@@ -473,7 +484,7 @@ function array(tree):
         ['array', expr]
     ]])
 
-    return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
+    return expression(['()', ['function', null, ['arraypattern'], s], ['array']]) + unregister(temp[1])
 
 function object(tree):
     if tree[0] != 'objectfor':
@@ -500,7 +511,7 @@ function object(tree):
         temp, ['array', key]
     ], value]])
 
-    return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
+    return expression(['()', ['function', null, ['arraypattern'], s], ['array']]) + unregister(temp[1])
 
 function index(tree):
     [type, left, right] = tree
@@ -536,9 +547,9 @@ function index(tree):
 
     if soak:
         [wrapper, token] = getCheckExistenceWrapper(left)
-        return wrapper(output(token))
+        return wrapper(output(token)) + unregister(itemp?[1])
 
-    return expression(output(left))
+    return expression(output(left)) + unregister(itemp?[1])
 
 function funcCall(tree):
     [type, subject, args] = tree
@@ -566,6 +577,8 @@ function funcCall(tree):
         subject[1] = ['=', context, subject[1]]
 
     if placeholderCount == 0:
+        temps = []
+
         if !hasSpread:
             output = token => ['()',
                 ['.', token, ['identifier', 'call']],
@@ -601,9 +614,9 @@ function funcCall(tree):
 
     if soak:
         [wrapper, token] = getCheckExistenceWrapper(subject)
-        return wrapper(output(token))
+        return wrapper(output(token)) + unregister(context[1], *temps)
 
-    return expression(output(subject))
+    return expression(output(subject)) + unregister(context[1], *temps)
 
 // Block constructs
 
@@ -645,26 +658,30 @@ function func(tree):
         vars = vars.filter(x => !args[1...].some([[_, y], _] => y == x))
 
     code[1].splice(0, 0, varsDefinition(vars))
-    return formatCode(code)
+    return formatCode(code) + unregister(itemp?[1])
 
 function forStatement(tree):
-    code = [forHead(tree), [
+    [head, temps] = forHead(tree)
+    code = [head, [
         pushScope() + statements(tree[4])
     ], '}']
     vars = popScope()
 
     code[1].splice(0, 0, varsDefinition(vars))
-    return formatCode(code)
+    return formatCode(code) + unregister(*temps)
 
 function forHead(tree):
     [_, [first, second], subject, condition, s] = tree
     identifierCount = second != null ? 2 : 1
     output = ''
+    temps = []
 
     if first[1] == '_':
         first = ['identifier', getVarName('x')]
+        temps.push(first[1])
     if second != null && second[1] == '_':
         second = ['identifier', getVarName('y')]
+        temps.push(second[1])
 
     if subject[0] == 'range':
         [_, start, next, end] = subject
@@ -703,6 +720,8 @@ function forHead(tree):
                     + (end ? steptemp[1] + ' > 0 ? ' + expression(['<=', second, endtemp]) + ' : ' + expression(['>=', second, endtemp]) : 'true') + '; '
                     + expression(['+=', second, steptemp]) + ', ' + expression(['_++', first]) + ') {'
             ])
+
+        temps.push(starttemp[1], endtemp?[1], steptemp[1])
     else if identifierCount == 1:
         temp = ['identifier', addFlag('enumerate')]
         listtemp = getVarName('l')
@@ -721,6 +740,8 @@ function forHead(tree):
                 ]) + ';'
             ]
         ])
+
+        temps.push(listtemp, itemp)
     else:
         itemp = register(getVarName('i'))
         listtemp = getVarName('l')
@@ -741,11 +762,13 @@ function forHead(tree):
             ]
         ])
 
+        temps.push(listtemp, itemp)
+
     if condition != null:
         output += '\n' + exports.indent
             + 'if (!(' + expression(condition) + ')) continue;'
 
-    return output
+    return [output, temps]
 
 function whileStatement(tree):
     [_, condition, s] = tree
@@ -791,9 +814,9 @@ function tryStatement(tree):
     code[1].splice(0, 0, varsDefinition(vars))
     output = formatCode(code)
 
-    if catchblock != null:
-        temp = getVarName('e')
+    temp = getVarName('e')
 
+    if catchblock != null:
         code = [' catch (' + temp + ') {', [
             pushScope()
             catchblock[0] != null ? expression(['=', catchblock[0], ['identifier', temp]]) + ';' : ''
@@ -804,7 +827,6 @@ function tryStatement(tree):
         code[1].splice(0, 0, varsDefinition(vars))
         output += formatCode(code)
     else:
-        temp = getVarName('e')
         output += ' catch(' + temp + ') {}'
 
     if finallyblock != null:
@@ -816,7 +838,7 @@ function tryStatement(tree):
         code[1].splice(0, 0, varsDefinition(vars))
         output += formatCode(code)
 
-    return output
+    return output + unregister(temp)
 
 // Rewriter functions
 
@@ -837,11 +859,14 @@ function chainCmp(tree):
             expr = ['&&', expr, [tree[i - 1], temps[(i - 1) / 2 - 1], temps[(i + 1) / 2 - 1]]]
 
     s.push(['keyword', 'return', expr])
-    return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
+    return expression(['()',
+        ['function', null, ['arraypattern'], s],
+        ['array']
+    ]) + unregister(temps.map(x => x[1]))
 
 function range(tree):
     temp = ['identifier', getVarName('i')]
-    return array(['arrayfor', temp, ['for', [temp, null], tree, null]])
+    return array(['arrayfor', temp, ['for', [temp, null], tree, null]]) + unregister(temp[1])
 
 function lambda(tree):
     [_, _, args, s] = tree
@@ -869,7 +894,10 @@ function existentialOp(tree):
         ]]])
         s.push(['keyword', 'return', temp])
 
-        return expression(['()', ['function', null, ['arraypattern'], s], ['array']])
+        return expression(['()',
+            ['function', null, ['arraypattern'], s],
+            ['array']
+        ]) + unregister(temp[1])
 
     return expression(['?', condition, defaultv, temp])
 
@@ -884,7 +912,7 @@ function patternMatch(tree):
         '(function(' + expression(temp) + ') {', [
             statements(s)
         ], '})(' + expression(subject) + ')'
-    ])
+    ]) + unregister(temp[1])
 
 function arraypattern(tree, ref):
     s = ['statements']

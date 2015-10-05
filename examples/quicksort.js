@@ -27,20 +27,20 @@ quicksort = function(list) {
     }));
     /*@8:5*/
     return (function() {
-        var r1, i, l, x1, i1, l1, x2;
-        r1 = [];
+        var r, i, l, x1, x2;
+        r = [];
         l = enumerate(smaller);
         for (i = 0; i < l.length; i++) {
             x1 = l[i];
-            r1.push(x1);
+            r.push(x1);
         };
-        r1.push(pivot);
-        l1 = enumerate(bigger);
-        for (i1 = 0; i1 < l1.length; i1++) {
-            x2 = l1[i1];
-            r1.push(x2);
+        r.push(pivot);
+        l = enumerate(bigger);
+        for (i = 0; i < l.length; i++) {
+            x2 = l[i];
+            r.push(x2);
         };
-        return r1;
+        return r;
     })();
 };
 /*@10:1*/

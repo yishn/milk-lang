@@ -13,10 +13,10 @@ lexicalSort = function(xs, ys) {
             xs = (1 >= r1.length) ? [] : [].slice.call(r1, 1);
             return r1;
         })(r[0]);
-        (function(r2) {
-            y = r2[0];
-            ys = (1 >= r2.length) ? [] : [].slice.call(r2, 1);
-            return r2;
+        (function(r1) {
+            y = r1[0];
+            ys = (1 >= r1.length) ? [] : [].slice.call(r1, 1);
+            return r1;
         })(r[1]);
         return r;
     })([xs, ys]);

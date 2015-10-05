@@ -40,30 +40,30 @@ getPrimes = function(limit) {
         i = parseInt(i1, 10);
         if (isNaN(i)) i = i1;
         if (!(!checked)) continue;
-        var start1, end1, step1, j;
+        var start, end, step, j;
         /*@14:9*/
         // Check all multiples of i
-        start1 = i * i;
-        end1 = limit;
-        step1 = ((i + 1) * i) - start1;
-        for (j = start1; step1 > 0 ? j <= end1 : j >= end1; j += step1) {
+        start = i * i;
+        end = limit;
+        step = ((i + 1) * i) - start;
+        for (j = start; step > 0 ? j <= end : j >= end; j += step) {
             checklist[j] = true;
         };
     };
     /*@18:5*/
     // Accumulate unchecked items
     return (function() {
-        var r1, i2, l1;
-        r1 = [];
-        l1 = checklist;
-        for (i2 in l1) {
-            checked = l1[i2];
-            i = parseInt(i2, 10);
-            if (isNaN(i)) i = i2;
+        var r;
+        r = [];
+        l = checklist;
+        for (i1 in l) {
+            checked = l[i1];
+            i = parseInt(i1, 10);
+            if (isNaN(i)) i = i1;
             if (!(!checked)) continue;
-            r1.push(i);
+            r.push(i);
         };
-        return r1;
+        return r;
     })();
 };
 /*@28:1*/
@@ -76,7 +76,7 @@ getPrimes = function(limit) {
  *                         of number
  */
 factorization = function(number) {
-    var primes, i3, l2, p;
+    var primes, i1, l, p;
     if (number <= 1) {
         return [];
     };
@@ -85,9 +85,9 @@ factorization = function(number) {
     primes = getPrimes(number);
 
     // Search for divisor
-    l2 = enumerate(primes);
-    for (i3 = 0; i3 < l2.length; i3++) {
-        p = l2[i3];
+    l = enumerate(primes);
+    for (i1 = 0; i1 < l.length; i1++) {
+        p = l[i1];
         if (!(modulo(number, p) === 0)) continue;
         var result;
         /*@37:9*/

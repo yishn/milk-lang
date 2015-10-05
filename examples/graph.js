@@ -26,7 +26,7 @@ extend = function(x, y) {
 Graph = (function() {
     var init;
     init = function(vertices, edges) {
-        var self, i1, l1, v1, v2;
+        var self, i, l, v1, v2;
         self = this;
         /*@3:9*/
         self._adjacencyList = (function() {
@@ -40,13 +40,13 @@ Graph = (function() {
             return r;
         })();
         /*@5:9*/
-        l1 = enumerate(edges);
-        for (i1 = 0; i1 < l1.length; i1++) {
-            (function(r1) {
-                v1 = r1[0];
-                v2 = r1[1];
-                return r1;
-            })(l1[i1]);
+        l = enumerate(edges);
+        for (i = 0; i < l.length; i++) {
+            (function(r) {
+                v1 = r[0];
+                v2 = r[1];
+                return r;
+            })(l[i]);
             /*@6:13*/
             self.addEdge(v1, v2);
         };
@@ -62,50 +62,50 @@ Graph = (function() {
         self = this;
         /*@12:9*/
         return (function() {
-            var r2, i2, l2, v;
-            r2 = [];
-            l2 = enumerate(self._adjacencyList);
-            for (i2 = 0; i2 < l2.length; i2++) {
-                v = l2[i2];
-                r2.push(v);
+            var r, i, l, v;
+            r = [];
+            l = enumerate(self._adjacencyList);
+            for (i = 0; i < l.length; i++) {
+                v = l[i];
+                r.push(v);
             };
-            return r2;
+            return r;
         })();
     };
     init.prototype.getNeighbors = function(v) {
-        var self, r3;
+        var self, r;
         self = this;
         /*@15:9*/
         return (function() {
-            var r4;
-            r4 = (function() {
-                var r5;
-                r5 = r3 = self._adjacencyList[v];
-                if (((typeof r5) === 'undefined') || (r5 == null)) {
+            var r1;
+            r1 = (function() {
+                var r2;
+                r2 = r = self._adjacencyList[v];
+                if (((typeof r2) === 'undefined') || (r2 == null)) {
                     return null;
                 };
-                return r5.slice;
+                return r2.slice;
             })();
-            if (((typeof r4) === 'undefined') || (r4 == null)) {
+            if (((typeof r1) === 'undefined') || (r1 == null)) {
                 return null;
             };
-            return r4.call(r3, 0);
+            return r1.call(r, 0);
         })();
     };
     init.prototype.addEdge = function(v1, v2) {
-        var self, i3, l3, x, y;
+        var self, i, l, x, y;
         self = this;
         /*@18:9*/
         if (self.hasEdge(v1, v2)) {
             return;
         };
-        l3 = enumerate(self._permute(v1, v2));
-        for (i3 = 0; i3 < l3.length; i3++) {
-            (function(r6) {
-                x = r6[0];
-                y = r6[1];
-                return r6;
-            })(l3[i3]);
+        l = enumerate(self._permute(v1, v2));
+        for (i = 0; i < l.length; i++) {
+            (function(r) {
+                x = r[0];
+                y = r[1];
+                return r;
+            })(l[i]);
             /*@20:13*/
             self._adjacencyList[x].push(y);
         };
@@ -117,16 +117,16 @@ Graph = (function() {
         return inOp(v2, self._adjacencyList[v1]);
     };
     init.prototype.removeEdge = function(v1, v2) {
-        var self, i4, l4, x, y;
+        var self, i, l, x, y;
         self = this;
         /*@26:9*/
-        l4 = enumerate(self._permute(v1, v2));
-        for (i4 = 0; i4 < l4.length; i4++) {
-            (function(r7) {
-                x = r7[0];
-                y = r7[1];
-                return r7;
-            })(l4[i4]);
+        l = enumerate(self._permute(v1, v2));
+        for (i = 0; i < l.length; i++) {
+            (function(r) {
+                x = r[0];
+                y = r[1];
+                return r;
+            })(l[i]);
             /*@27:13*/
             self._adjacencyList[x] = self._adjacencyList[x].filter(function(x) {
                 return x !== y;
@@ -148,12 +148,12 @@ Graph = (function() {
         return inOp(v, self._adjacencyList);
     };
     init.prototype.removeVertex = function(v) {
-        var self, i5, l5, w;
+        var self, i, l, w;
         self = this;
         /*@37:9*/
-        l5 = enumerate(self.getNeighbors(v));
-        for (i5 = 0; i5 < l5.length; i5++) {
-            w = l5[i5];
+        l = enumerate(self.getNeighbors(v));
+        for (i = 0; i < l.length; i++) {
+            w = l[i];
             self.removeEdge(v, w);
         };
         /*@40:9*/
@@ -168,8 +168,8 @@ Labyrinth = (function() {
         var self, vertices, edges;
         self = this;
         vertices = (function() {
-            var r8, start, end, step, x;
-            r8 = [];
+            var r, start, end, step, x;
+            r = [];
             start = 1;
             end = width;
             step = (end === start) ? 1 : Math.sign(end - start);
@@ -179,27 +179,27 @@ Labyrinth = (function() {
                 end1 = height;
                 step1 = (end1 === start1) ? 1 : Math.sign(end1 - start1);
                 for (y = start1; step1 > 0 ? y <= end1 : y >= end1; y += step1) {
-                    r8.push([x, y]);
+                    r.push([x, y]);
                 };
             };
-            return r8;
+            return r;
         })();
         /*@45:9*/
         edges = (function() {
-            var r9, i6, l6, v;
-            r9 = [];
-            l6 = enumerate(vertices);
-            for (i6 = 0; i6 < l6.length; i6++) {
-                v = l6[i6];
-                var i7, l7, w;
-                l7 = enumerate(vertices);
-                for (i7 = 0; i7 < l7.length; i7++) {
-                    w = l7[i7];
+            var r, i, l, v;
+            r = [];
+            l = enumerate(vertices);
+            for (i = 0; i < l.length; i++) {
+                v = l[i];
+                var i1, l1, w;
+                l1 = enumerate(vertices);
+                for (i1 = 0; i1 < l1.length; i1++) {
+                    w = l1[i1];
                     if (!(self.distance(v, w) === 1)) continue;
-                    r9.push([v, w]);
+                    r.push([v, w]);
                 };
             };
-            return r9;
+            return r;
         })();
         /*@47:9*/
         self.__super__.init.call(self, vertices, edges);
@@ -207,18 +207,18 @@ Labyrinth = (function() {
     extend(init, Graph);
     init.prototype.distance = function() {
         var x1, y1, x2, y2, self;
-        (function(r10) {
-            (function(r11) {
-                x1 = r11[0];
-                y1 = r11[1];
-                return r11;
-            })(r10[0]);
-            (function(r12) {
-                x2 = r12[0];
-                y2 = r12[1];
-                return r12;
-            })(r10[1]);
-            return r10;
+        (function(r) {
+            (function(r1) {
+                x1 = r1[0];
+                y1 = r1[1];
+                return r1;
+            })(r[0]);
+            (function(r1) {
+                x2 = r1[0];
+                y2 = r1[1];
+                return r1;
+            })(r[1]);
+            return r;
         })(arguments);
         self = this;
         /*@50:9*/
