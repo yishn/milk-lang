@@ -14,6 +14,7 @@ Just like Python, Milk uses significant whitespace to delimit blocks of code. Se
 
 * [Functions](#functions)
 * [Arrays and Objects](#arrays-and-objects)
+* [Lexical Scoping](#lexical-scoping)
 * [Control Flow](#control-flow)
 * [Pattern Matching](#pattern-matching)
 * [Operators](#operators)
@@ -140,6 +141,12 @@ dict = {name: name.length for name in protagonists if name != 'Lio'}
 //     "Pat": 3
 // }
 ```
+
+### Lexical Scoping
+
+You don’t need to declare variables with the `var` keyword. Milk makes sure that all of your variables are declared within lexical scope. The behavior is identical to CoffeeScript or Ruby; it’s impossible to shadow an outer variable on purpose.
+
+Like CoffeeScript, all Milk output is wrapped in a safety wrapper. This makes it difficult to pollute the global namespace.
 
 ### Control Flow
 
