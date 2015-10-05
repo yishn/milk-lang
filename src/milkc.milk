@@ -24,8 +24,11 @@ function readdirRecursive(p):
 
 function compile(file):
     [data, output] = [null, null]
-    try: data = fs.readFileSync(file, 'utf-8')
-    catch: return
+    try:
+        data = fs.readFileSync(file, 'utf-8')
+    catch:
+        console.error('File cannot be read.')
+        return
 
     console.error('Compiling ' + path.basename(file) + '...')
 
