@@ -25,6 +25,8 @@ exports.commentate = function(js, milk, comments):
     for [_, comment] in comments if comment[0] == '#':
         lines.splice(0, 0, comment)
 
+    comments = comments.filter([_, x] => x[0] != '#')
+
     for i, line in lines:
         if line.trim().indexOf('//OFFSET') != 0: continue
 
@@ -41,7 +43,7 @@ exports.commentate = function(js, milk, comments):
             lines[i] += '\n' + indent + comments[0][1]
             comments.splice(0, 1)
 
-    for [_, comment] in comments if comment[0] != '#':
+    for [_, comment] in comments:
         lines.push(comment)
 
     return lines.filter(x => x != '').join('\n') + '\n'
