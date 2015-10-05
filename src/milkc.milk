@@ -1,3 +1,4 @@
+app = require('../package.json')
 process = require('process')
 fs = require('fs')
 path = require('path')
@@ -7,7 +8,7 @@ milk = require('./milk')
 
 argv = minimist(process.argv[2...], {
     string: ['o'],
-    boolean: ['w', 'h', 'b']
+    boolean: ['b', 'h', 'v', 'w']
 })
 
 endsWithMilk = filename => path.extname(filename) == '.milk'
@@ -51,6 +52,25 @@ function compile(file):
 [p = './', ...] = argv._
 [stats, deststats] = [fs.statSync(p), argv.o ? fs.statSync(argv.o) : null]
 files = []
+
+if argv.h:
+    console.log([
+        'Usage: milkc [options] [path]'
+        ''
+        '[path] can be a Milk file or a directory. If [path] is not specified,'
+        '`milkc` will use the current directory.'
+        ''
+        ['', '-b      ', 'compile without a top-level function wrapper'].join('    ')
+        ['', '-h      ', 'display this help message'].join('    ')
+        ['', '-o [dir]', 'set the output directory for compiled JavaScript'].join('    ')
+        ['', '-v      ', 'display the version number'].join('    ')
+        ['', '-w      ', 'watch Milk scripts for changes and rerun commands'].join('    ')
+    ].join('\n'))
+
+    return
+
+if argv.v:
+    console.log([app.productName, 'version', app.version].join(' '))
 
 if deststats != null && !deststats.isDirectory():
     console.error('Invalid output.')
