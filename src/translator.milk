@@ -219,7 +219,7 @@ function paren(tree):
         'bool', 'number', 'keyword', 'identifier',
         'array', 'object', 'string',
         '^', '%', '@',
-        'chaincmp', '??', 'range']
+        'chaincmp', 'range']
 
     if tree[0] in list:
         return expression(tree)
