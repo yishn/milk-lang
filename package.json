@@ -1,12 +1,13 @@
 {
   "name": "milk-lang",
   "productName": "Milk",
-  "description": "Pythonesque JavaScript",
+  "description": "Pythonesque JavaScript.",
   "keywords": [
     "javascript",
     "language",
     "milk",
-    "compiler"
+    "compiler",
+    "python"
   ],
   "version": "0.1.4",
   "author": "Yichuan Shen",
