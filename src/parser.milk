@@ -1,3 +1,5 @@
+// -*- javascript -*-
+
 typemap = (type, l) => l.map(x => [type, x])
 operatormap = typemap('operator', _)
 leftdelimitermap = typemap('leftdelimiter', _)

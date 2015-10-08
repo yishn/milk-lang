@@ -1,3 +1,5 @@
+// -*- javascript -*-
+
 class Graph:
     function init(vertices, edges):
         self._adjacencyList = { v: [] for v in vertices }

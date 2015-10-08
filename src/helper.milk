@@ -1,3 +1,5 @@
+// -*- javascript -*-
+
 exports.offsetToLinePos = function(offset, input):
     lines = [x + '\n' for x in input.split('\n')]
 

@@ -10,7 +10,8 @@ enumerate = function(l) {
         return Object.keys(l);
     return l;
 }
-/*@7:1*/
+/*@9:1*/
+// -*- javascript -*-
 /**
  * Gets all the primes below a certain integer
  * Naive implementation of the sieve of Eratosthenes
@@ -32,7 +33,7 @@ getPrimes = function(limit) {
         };
         return r;
     })();
-    /*@10:5*/
+    /*@12:5*/
     checklist[0] = checklist[1] = true;
     l = checklist;
     for (i1 in l) {
@@ -41,7 +42,7 @@ getPrimes = function(limit) {
         if (isNaN(i)) i = i1;
         if (!(!checked)) continue;
         var start, end, step, j;
-        /*@14:9*/
+        /*@16:9*/
         // Check all multiples of i
         start = i * i;
         end = limit;
@@ -50,7 +51,7 @@ getPrimes = function(limit) {
             checklist[j] = true;
         };
     };
-    /*@18:5*/
+    /*@20:5*/
     // Accumulate unchecked items
     return (function() {
         var r;
@@ -66,7 +67,7 @@ getPrimes = function(limit) {
         return r;
     })();
 };
-/*@28:1*/
+/*@30:1*/
 /**
  * Factorizes a given number in its unique prime
  * number factorization
@@ -80,7 +81,7 @@ factorization = function(number) {
     if (number <= 1) {
         return [];
     };
-    /*@32:5*/
+    /*@34:5*/
     // Get primes
     primes = getPrimes(number);
 
@@ -90,14 +91,14 @@ factorization = function(number) {
         p = l[i1];
         if (!(modulo(number, p) === 0)) continue;
         var result;
-        /*@37:9*/
+        /*@39:9*/
         // Recursively get factorization
         result = factorization(number / p);
         result.push(p);
         return result;
     };
 };
-/*@41:1*/
+/*@43:1*/
 console.log('Here is your prime factorization for 8733:');
 console.log(factorization(8733));
 })();

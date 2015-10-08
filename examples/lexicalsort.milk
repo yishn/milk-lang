@@ -1,3 +1,5 @@
+// -*- javascript -*-
+
 function lexicalSort(xs, ys):
     if !xs.length || !ys.length:
         return xs.length - ys.length

@@ -1,3 +1,5 @@
+// -*- javascript -*-
+
 exports.translate = function(tree, options = {}):
     exports.indent = options.indent ?? '    '
     exports.wrapper = options.wrapper ?? true

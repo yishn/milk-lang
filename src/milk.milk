@@ -1,3 +1,5 @@
+// -*- javascript -*-
+
 tokenize = require('./lexer').tokenize
 parse = require('./parser').parse
 translate = require('./translator').translate

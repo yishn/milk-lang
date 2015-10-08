@@ -1,3 +1,5 @@
+// -*- javascript -*-
+
 /**
  * Gets all the primes below a certain integer
  * Naive implementation of the sieve of Eratosthenes

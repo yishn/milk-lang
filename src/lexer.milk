@@ -1,3 +1,5 @@
+// -*- javascript -*-
+
 escaperegex = x => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 regexmap = l => l.map(x => new RegExp('^' + escaperegex(x)))
 

@@ -1,3 +1,5 @@
+// -*- javascript -*-
+
 function gcd(*args):
     if args.length == 1: return args[0]
 

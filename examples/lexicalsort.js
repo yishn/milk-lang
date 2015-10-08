@@ -1,12 +1,13 @@
 (function() {
 var lexicalSort;
-/*@1:1*/
+/*@3:1*/
+// -*- javascript -*-
 lexicalSort = function(xs, ys) {
     var x, y;
     if ((!xs.length) || (!ys.length)) {
         return xs.length - ys.length;
     };
-    /*@5:5*/
+    /*@7:5*/
     (function(r) {
         (function(r1) {
             x = r1[0];
@@ -20,7 +21,7 @@ lexicalSort = function(xs, ys) {
         })(r[1]);
         return r;
     })([xs, ys]);
-    /*@6:5*/
+    /*@8:5*/
     return (x < y) ? (-1) : ((x > y) ? 1 : lexicalSort(xs, ys));
 };
 })();

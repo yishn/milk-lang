@@ -1,3 +1,5 @@
+// -*- javascript -*-
+
 function rationals(n):
     function f(n):
         if n <= 1:
@@ -9,5 +11,7 @@ function rationals(n):
 
     return f(n) + '/' + f(n + 1)
 
-for n in [0...100]:
+for n in [0...100]:// -*- javascript -*-
+
+
     (console.log @ rationals)(n)
