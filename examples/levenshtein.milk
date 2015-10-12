@@ -1,0 +1,18 @@
+// -*- javascript -*-
+
+function levenshtein(a, b):
+    for [x, y] in [[a, b], [b, a]] if x.length == 0:
+        return y.length
+
+    // Initialize matrix
+    matrix = [[i] for i in [0...b.length]]
+    matrix[0] = [j for j in [0...a.length]]
+
+    for i in [1...b.length]:
+        for j in [1...a.length]:
+            if b[i - 1] == a[j - 1]:
+                matrix[i][j] = matrix[i - 1][j - 1]
+            else:
+                matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+
+    return matrix[b.length][a.length]
