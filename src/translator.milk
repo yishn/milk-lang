@@ -600,14 +600,14 @@ function funcCall(tree):
         function output(token):
             a = ['arraypattern', *temps.map(x => [['identifier', x], null])]
             i = 0
-            b = args[1...].map(function(x):
+            b = args[1...].map | function(x):
                 if x equals ['keyword', '_']:
                     return ['identifier', temps[i++]]
                 else if x equals ['spread', ['keyword', '_']]:
                     return ['spread', ['identifier', temps[i++]]]
                 else:
                     return x
-            )
+
             return ['lambda', null, a, ['()',
                 ['.', token, ['identifier', 'call']],
                 ['array', context, *b]
@@ -1011,10 +1011,9 @@ function classStatement(tree):
 
     functions = functions
     .filter(x => x[0] == 'function')
-    .map(function(f):
+    .map | function(f):
         f[3].splice(1, 0, ['=', ['identifier', 'self'], ['keyword', 'this']])
         return f
-    )
 
     constructor = functions.filter(x => x[1][1] == 'init')[0]
 
@@ -1039,13 +1038,13 @@ function classStatement(tree):
         ['array', ['identifier', 'init'], superclass]
     ])
 
-    s = s.concat(functions.filter(f => f != constructor).map(function(f):
+    s = s.concat | functions.filter(f => f != constructor).map | function(f):
         [name, f[1]] = [f[1], null]
         return ['=', ['.',
             ['.', ['identifier', 'init'], ['identifier', 'prototype']],
             name
         ], f]
-    ))
+
     s.push(['keyword', 'return', ['identifier', 'init']])
 
     return expression(['=',

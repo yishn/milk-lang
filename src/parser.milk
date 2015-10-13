@@ -102,7 +102,9 @@ function parseExpression(tokens, *breakerTokens):
         else if token equals ['keyword', 'function']:
             // Function closure
             [tree, len] = parseFunction(tokens[i...])
-            return [tree, i + len]
+            output.push(tree)
+            i += len
+            break
 
         else if assignmentOp.some(x => x equals token):
             // Drop everything!
