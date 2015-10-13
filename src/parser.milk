@@ -192,6 +192,12 @@ function parseExpression(tokens, *breakerTokens):
 
         output = ['lambda', null, head, body]
 
+    else if (k = searchTokenR(['operator', '|'], output)) != -1:
+        [left, _] = parseExpression(output[0...k - 1])
+        [right, _] = parseExpression(output[k + 1...])
+
+        output = ['()', left, ['array', right]]
+
     else if (k = searchTokenR(['operator', '?'], output)) != -1:
         m = searchTokenR(['operator', ':'], output[k...])
         if m < 0: throw {
