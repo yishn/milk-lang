@@ -40,7 +40,7 @@ function helperFunctions():
     if exports.flags['enumerate'] != null:
         output.push(formatCode([
             exports.flags['enumerate'] + ' = function(l) {', [
-                'var t = toString.call(l);'
+                'var t = Object.prototype.toString.call(l);'
                 'if (t !== "[object Array]" && t !== "[object String]")', [
                     'return Object.keys(l);'
                 ], 'return l;'
@@ -50,7 +50,7 @@ function helperFunctions():
     if exports.flags['inOp'] != null:
         output.push(formatCode([
             exports.flags['inOp'] + ' = function(x, l) {', [
-                'var t = toString.call(l);'
+                'var t = Object.prototype.toString.call(l);'
                 'if (t !== "[object Array]" && t !== "[object String]")', [
                     'return x in l;'
                 ], 'return l.indexOf(x) != -1;'
@@ -94,8 +94,8 @@ function helperFunctions():
             exports.flags['equals'] + ' = function(a, b) {', [
                 'if (a === b) return true;'
                 'if (a == null || b == null) return a == b;'
-                'var t = toString.call(a);'
-                'if (t !== toString.call(b)) return false;'
+                'var t = Object.prototype.toString.call(a);'
+                'if (t !== Object.prototype.toString.call(b)) return false;'
                 'var aa = t === "[object Array]";'
                 'var ao = t === "[object Object]";'
                 'if (aa) {', [
