@@ -37,6 +37,13 @@ function helperFunctions():
             ], '}'
         ]))
 
+    if exports.flags['sign'] != null:
+        output.push(formatCode([
+            exports.flags['sign'] + ' = function(x) {', [
+                'return x == 0 ? 0 : (x > 0 ? 1 : -1);'
+            ], '}'
+        ]))
+
     if exports.flags['enumerate'] != null:
         output.push(formatCode([
             exports.flags['enumerate'] + ' = function(l) {', [
@@ -692,17 +699,14 @@ function forHead(tree):
         starttemp = ['identifier', getVarName('start')]
         endtemp = end != null ? ['identifier', getVarName('end')] : null
         steptemp = ['identifier', getVarName('step')]
+        temp = ['identifier', addFlag('sign')]
 
         step = ['number', 1]
         if next != null: step = ['-', next, starttemp]
         else if end != null: step = ['?',
             ['==', endtemp, starttemp],
             ['number', 1],
-            ['()', ['.',
-                ['identifier', 'Math'],
-                ['identifier', 'sign']],
-                ['array', ['-', endtemp, starttemp]]
-            ]
+            ['()', sign, ['array', ['-', endtemp, starttemp]]]
         ]
 
         s = ['statements', ['=', starttemp, start]]
