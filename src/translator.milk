@@ -217,15 +217,17 @@ function getCheckExistenceWrapper(token):
     return [output, temp]
 
 function paren(tree):
-    list = ['.', '?.', '()', '?()', '[]', '?[]',
+    types = ['.', '?.', '()', '?()', '[]', '?[]',
         'bool', 'number', 'keyword', 'identifier',
         'array', 'object', 'string',
         '^', '%', '@',
         'chaincmp', 'range']
+    list = ['function']
+    output = expression(tree)
 
-    if tree[0] in list:
-        return expression(tree)
-    return '(' + expression(tree) + ')'
+    if tree[0] in types && list.every(x => output.indexOf(x) != 0):
+        return output
+    return '(' + output + ')'
 
 function varsDefinition(vars):
     if vars.length != 0:

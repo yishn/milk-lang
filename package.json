@@ -9,7 +9,7 @@
     "compiler",
     "python"
   ],
-  "version": "0.1.7",
+  "version": "0.1.8",
   "author": "Yichuan Shen",
   "main": "./lib/milk.js",
   "repository": {
