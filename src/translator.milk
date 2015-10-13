@@ -706,7 +706,7 @@ function forHead(tree):
         else if end != null: step = ['?',
             ['==', endtemp, starttemp],
             ['number', 1],
-            ['()', sign, ['array', ['-', endtemp, starttemp]]]
+            ['()', temp, ['array', ['-', endtemp, starttemp]]]
         ]
 
         s = ['statements', ['=', starttemp, start]]
