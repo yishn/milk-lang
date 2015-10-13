@@ -223,7 +223,7 @@ function paren(tree):
         '^', '%', '@',
         'chaincmp', 'range']
     list = ['function ', 'function(']
-    output = expression(tree)
+    output = expression(tree) + ''
 
     if tree[0] in types && list.every(x => output.indexOf(x) != 0):
         return output
