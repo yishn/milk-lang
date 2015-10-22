@@ -76,7 +76,7 @@ getPrimes = function(limit) {
  * Factorizes a given number in its unique prime
  * number factorization
  * @param  int   number    the number
- * @return array           a list of descending numbers,
+ * @return array           a list of ascending numbers,
  *                         the unique prime factorization
  *                         of number
  */;
@@ -86,31 +86,28 @@ factorization = function(number) {
     if (number <= 1) {
         return [];
     };
-    /*@34:5*/
-    // Get primes
+    /*@33:5*/
     primes = getPrimes(number);
-
-    // Search for divisor
     l = enumerate(primes);
     for (i1 = 0; i1 < l.length; i1++) {
         p = l[i1];
         if (!(modulo(number, p) === 0)) continue;
-        /*@39:9*/
-        // Recursively get factorization
-        return (function() {
-            var r, i2, l1, x;
-            r = [];
-            r.push(p);
-            l1 = enumerate(factorization(number / p));
-            for (i2 = 0; i2 < l1.length; i2++) {
-                x = l1[i2];
-                r.push(x);
-            };
-            return r;
-        })();
+        /*@34:41*/
+        break;
     };
+    return (function() {
+        var r, x;
+        r = [];
+        r.push(p);
+        l = enumerate(factorization(number / p));
+        for (i1 = 0; i1 < l.length; i1++) {
+            x = l[i1];
+            r.push(x);
+        };
+        return r;
+    })();
 };
-/*@41:1*/
+/*@38:1*/
 console.log('Here is your prime factorization for 8733:');
 console.log(factorization(8733));
 })();

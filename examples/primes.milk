@@ -23,20 +23,17 @@ function getPrimes(limit):
  * Factorizes a given number in its unique prime
  * number factorization
  * @param  int   number    the number
- * @return array           a list of descending numbers,
+ * @return array           a list of ascending numbers,
  *                         the unique prime factorization
  *                         of number
  */
 function factorization(number):
     if number <= 1: return []
 
-    // Get primes
     primes = getPrimes(number)
+    for p in primes if number % p == 0: break
 
-    // Search for divisor
-    for p in primes if number % p == 0:
-        // Recursively get factorization
-        return [p, *factorization(number / p)]
+    return [p, *factorization(number / p)]
 
 console.log('Here is your prime factorization for 8733:')
 console.log(factorization(8733))
