@@ -4,6 +4,9 @@ modulo = function(a, b) {
     var c = a % b;
     return c >= 0 ? c : c + b;
 }
+sign = function(x) {
+    return x == 0 ? 0 : (x > 0 ? 1 : -1);
+}
 compose = function(x, y, c1, c2) {
     return function() {
         return x.call(c1, y.apply(c2, arguments));
@@ -29,7 +32,7 @@ rationals = function(n) {
 /*@14:1*/
 start = 0;
 end = 100;
-step = (end === start) ? 1 : Math.sign(end - start);
+step = (end === start) ? 1 : sign(end - start);
 for (n = start; step > 0 ? n <= end : n >= end; n += step) {
     var r;
     /*@17:5*/

@@ -1,13 +1,16 @@
 (function() {
 var Graph, Labyrinth, labyrinth;
+sign = function(x) {
+    return x == 0 ? 0 : (x > 0 ? 1 : -1);
+}
 enumerate = function(l) {
-    var t = toString.call(l);
+    var t = Object.prototype.toString.call(l);
     if (t !== "[object Array]" && t !== "[object String]")
         return Object.keys(l);
     return l;
 }
 inOp = function(x, l) {
-    var t = toString.call(l);
+    var t = Object.prototype.toString.call(l);
     if (t !== "[object Array]" && t !== "[object String]")
         return x in l;
     return l.indexOf(x) != -1;
@@ -173,12 +176,12 @@ Labyrinth = (function() {
             r = [];
             start = 1;
             end = width;
-            step = (end === start) ? 1 : Math.sign(end - start);
+            step = (end === start) ? 1 : sign(end - start);
             for (x = start; step > 0 ? x <= end : x >= end; x += step) {
                 var start1, end1, step1, y;
                 start1 = 1;
                 end1 = height;
-                step1 = (end1 === start1) ? 1 : Math.sign(end1 - start1);
+                step1 = (end1 === start1) ? 1 : sign(end1 - start1);
                 for (y = start1; step1 > 0 ? y <= end1 : y >= end1; y += step1) {
                     r.push([x, y]);
                 };

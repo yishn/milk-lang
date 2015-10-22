@@ -4,20 +4,24 @@ modulo = function(a, b) {
     var c = a % b;
     return c >= 0 ? c : c + b;
 }
+sign = function(x) {
+    return x == 0 ? 0 : (x > 0 ? 1 : -1);
+}
 enumerate = function(l) {
-    var t = toString.call(l);
+    var t = Object.prototype.toString.call(l);
     if (t !== "[object Array]" && t !== "[object String]")
         return Object.keys(l);
     return l;
 }
-/*@9:1*/
+/*@3:1*/
 // -*- javascript -*-
 /**
  * Gets all the primes below a certain integer
  * Naive implementation of the sieve of Eratosthenes
  * @param  int   limit    the limit
  * @return array          the list of all primes below limit
- */
+ */;
+/*@9:1*/
 getPrimes = function(limit) {
     var checklist, i1, l, checked, i;
 
@@ -27,7 +31,7 @@ getPrimes = function(limit) {
         r = [];
         start = 0;
         end = limit;
-        step = (end === start) ? 1 : Math.sign(end - start);
+        step = (end === start) ? 1 : sign(end - start);
         for (i = start; step > 0 ? i <= end : i >= end; i += step) {
             r.push(false);
         };
@@ -67,7 +71,7 @@ getPrimes = function(limit) {
         return r;
     })();
 };
-/*@30:1*/
+/*@22:1*/
 /**
  * Factorizes a given number in its unique prime
  * number factorization
@@ -75,7 +79,8 @@ getPrimes = function(limit) {
  * @return array           a list of descending numbers,
  *                         the unique prime factorization
  *                         of number
- */
+ */;
+/*@30:1*/
 factorization = function(number) {
     var primes, i1, l, p;
     if (number <= 1) {
@@ -90,15 +95,22 @@ factorization = function(number) {
     for (i1 = 0; i1 < l.length; i1++) {
         p = l[i1];
         if (!(modulo(number, p) === 0)) continue;
-        var result;
         /*@39:9*/
         // Recursively get factorization
-        result = factorization(number / p);
-        result.push(p);
-        return result;
+        return (function() {
+            var r, i2, l1, x;
+            r = [];
+            r.push(p);
+            l1 = enumerate(factorization(number / p));
+            for (i2 = 0; i2 < l1.length; i2++) {
+                x = l1[i2];
+                r.push(x);
+            };
+            return r;
+        })();
     };
 };
-/*@43:1*/
+/*@41:1*/
 console.log('Here is your prime factorization for 8733:');
 console.log(factorization(8733));
 })();

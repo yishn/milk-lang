@@ -1,7 +1,10 @@
 (function() {
 var levenshtein;
+sign = function(x) {
+    return x == 0 ? 0 : (x > 0 ? 1 : -1);
+}
 enumerate = function(l) {
-    var t = toString.call(l);
+    var t = Object.prototype.toString.call(l);
     if (t !== "[object Array]" && t !== "[object String]")
         return Object.keys(l);
     return l;
@@ -28,7 +31,7 @@ levenshtein = function(a, b) {
         r = [];
         start = 0;
         end = b.length;
-        step = (end === start) ? 1 : Math.sign(end - start);
+        step = (end === start) ? 1 : sign(end - start);
         for (i = start; step > 0 ? i <= end : i >= end; i += step) {
             r.push([i]);
         };
@@ -40,7 +43,7 @@ levenshtein = function(a, b) {
         r = [];
         start = 0;
         end = a.length;
-        step = (end === start) ? 1 : Math.sign(end - start);
+        step = (end === start) ? 1 : sign(end - start);
         for (j = start; step > 0 ? j <= end : j >= end; j += step) {
             r.push(j);
         };
@@ -49,13 +52,13 @@ levenshtein = function(a, b) {
     /*@11:5*/
     start = 1;
     end = b.length;
-    step = (end === start) ? 1 : Math.sign(end - start);
+    step = (end === start) ? 1 : sign(end - start);
     for (i = start; step > 0 ? i <= end : i >= end; i += step) {
         var start1, end1, step1, j;
         /*@12:9*/
         start1 = 1;
         end1 = a.length;
-        step1 = (end1 === start1) ? 1 : Math.sign(end1 - start1);
+        step1 = (end1 === start1) ? 1 : sign(end1 - start1);
         for (j = start1; step1 > 0 ? j <= end1 : j >= end1; j += step1) {
             if (b[i - 1] === a[j - 1]) {
                 /*@14:17*/

@@ -1,7 +1,7 @@
 (function() {
 var quicksort;
 enumerate = function(l) {
-    var t = toString.call(l);
+    var t = Object.prototype.toString.call(l);
     if (t !== "[object Array]" && t !== "[object String]")
         return Object.keys(l);
     return l;

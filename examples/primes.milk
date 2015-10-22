@@ -36,9 +36,7 @@ function factorization(number):
     // Search for divisor
     for p in primes if number % p == 0:
         // Recursively get factorization
-        result = factorization(number / p)
-        result.push(p)
-        return result
+        return [p, *factorization(number / p)]
 
 console.log('Here is your prime factorization for 8733:')
 console.log(factorization(8733))
