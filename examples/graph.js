@@ -21,8 +21,8 @@ extend = function(x, y) {
     var c = new copy();
     c.constructor = x;
     x.prototype = c;
-    x.prototype.__super__ = y.prototype;
-    x.prototype.__super__.init = y.prototype.constructor;
+    x.__super__ = y.prototype;
+    x.__super__.init = y.prototype.constructor;
     return x;
 }
 /*@3:1*/
@@ -206,7 +206,7 @@ Labyrinth = (function() {
             return r;
         })();
         /*@49:9*/
-        self.__super__.init.call(self, vertices, edges);
+        Labyrinth.__super__.init.call(self, vertices, edges);
     };
     extend(init, Graph);
     init.prototype.distance = function() {

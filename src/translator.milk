@@ -81,8 +81,8 @@ function helperFunctions():
                 'var c = new copy();'
                 'c.constructor = x;'
                 'x.prototype = c;'
-                'x.prototype.__super__ = y.prototype;'
-                'x.prototype.__super__.init = y.prototype.constructor;'
+                'x.__super__ = y.prototype;'
+                'x.__super__.init = y.prototype.constructor;'
                 'return x;'
             ], '}'
         ]))
@@ -578,7 +578,11 @@ function funcCall(tree):
     soak = type[0] == '?'
 
     if callsuper:
-        subject = ['.', ['.', ['.', ['identifier', 'self'], ['identifier', '__super__']], subject[2]], ['identifier', 'call']]
+        subject = ['.', ['.', ['.',
+            ['identifier', exports.currentClassName],
+            ['identifier', '__super__']
+        ], subject[2]], ['identifier', 'call']]
+
         args.splice(1, 0, ['identifier', 'self'])
 
     if placeholderCount == 0 && !hasSpread && !soak:
@@ -1013,6 +1017,8 @@ function objpattern(tree, ref):
 
 function classStatement(tree):
     [_, classname, superclass, functions] = tree
+    exports.currentClassName = classname[1]
+    
     if superclass != null: temp = ['identifier', addFlag('extend')]
 
     functions = functions
@@ -1029,7 +1035,7 @@ function classStatement(tree):
         if superclass != null:
             constructor[3].push(['=', ['identifier', 'self'], ['keyword', 'this']])
             constructor[3].push(['()', ['.', ['.', ['.',
-                ['identifier', 'self'],
+                classname,
                 ['identifier', '__super__']],
                 ['identifier', 'init']],
                 ['identifier', 'apply']],
