@@ -1,4 +1,4 @@
-# Milk
+# Milk [![npm version](https://badge.fury.io/js/milk-lang.svg)](https://badge.fury.io/js/milk-lang)
 
 Milk is a language that compiles into JavaScript. It is the love child of Python and JavaScript.
 
