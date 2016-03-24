@@ -42,7 +42,7 @@ getPrimes = function(limit) {
     l = checklist;
     for (i1 in l) {
         checked = l[i1];
-        i = parseInt(i1, 10);
+        i = +i1;
         if (isNaN(i)) i = i1;
         if (!(!checked)) continue;
         var start, end, step, j;
@@ -63,7 +63,7 @@ getPrimes = function(limit) {
         l = checklist;
         for (i1 in l) {
             checked = l[i1];
-            i = parseInt(i1, 10);
+            i = +i1;
             if (isNaN(i)) i = i1;
             if (!(!checked)) continue;
             r.push(i);

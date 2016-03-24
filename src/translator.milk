@@ -767,7 +767,7 @@ function forHead(tree):
                 ]) + ';',
                 statement(['=',
                     first,
-                    ['()', ['identifier', 'parseInt'], ['array', ['identifier', itemp], ['number', 10]]]
+                    ['+', ['identifier', itemp]]
                 ]) + ';',
                 'if (isNaN(' + expression(first) + ')) ' + statement(['=', first, ['identifier', itemp]]) + ';'
             ]
@@ -1018,7 +1018,7 @@ function objpattern(tree, ref):
 function classStatement(tree):
     [_, classname, superclass, functions] = tree
     exports.currentClassName = classname[1]
-    
+
     if superclass != null: temp = ['identifier', addFlag('extend')]
 
     functions = functions
